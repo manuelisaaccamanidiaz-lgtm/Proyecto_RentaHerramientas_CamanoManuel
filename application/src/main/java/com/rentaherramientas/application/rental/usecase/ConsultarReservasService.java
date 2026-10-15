@@ -5,18 +5,22 @@ import com.rentaherramientas.application.rental.dto.DisponibilidadResponse;
 import com.rentaherramientas.application.rental.dto.ReservaResponse;
 import com.rentaherramientas.application.rental.exception.HerramientaNoEncontradaException;
 import com.rentaherramientas.application.rental.port.CatalogoHerramientas;
+import com.rentaherramientas.application.rental.port.ConsultaPagos;
 import com.rentaherramientas.application.shared.command.Solicitante;
 import com.rentaherramientas.application.shared.dto.PaginaResponse;
+import com.rentaherramientas.domain.rental.model.aggregate.Reserva;
 import com.rentaherramientas.domain.rental.model.valueobject.EstadoReserva;
 import com.rentaherramientas.domain.rental.model.valueobject.RangoFechas;
 import com.rentaherramientas.domain.rental.port.repository.CriteriosBusquedaReserva;
 import com.rentaherramientas.domain.rental.port.repository.ReservaRepository;
 import com.rentaherramientas.domain.shared.exception.ValorInvalidoException;
+import com.rentaherramientas.domain.shared.model.Pagina;
 import com.rentaherramientas.domain.shared.model.SolicitudPagina;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Consultas de solo lectura sobre reservas; siempre devuelve DTOs. El periodo
@@ -30,19 +34,22 @@ public class ConsultarReservasService implements ConsultarReservasUseCase {
 
     private final ReservaRepository reservaRepository;
     private final CatalogoHerramientas catalogoHerramientas;
+    private final ConsultaPagos consultaPagos;
     private final Clock clock;
 
     public ConsultarReservasService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas,
-                                    Clock clock) {
+                                    ConsultaPagos consultaPagos, Clock clock) {
         this.reservaRepository = reservaRepository;
         this.catalogoHerramientas = catalogoHerramientas;
+        this.consultaPagos = consultaPagos;
         this.clock = clock;
     }
 
     @Override
     public ReservaResponse porId(Long reservaId, Solicitante solicitante) {
-        return ReservaResponse.desde(PropiedadReserva.cargarParaVer(reservaRepository, catalogoHerramientas,
-                reservaId, solicitante));
+        Reserva reserva = PropiedadReserva.cargarParaVer(reservaRepository, catalogoHerramientas, reservaId,
+                solicitante);
+        return ReservaResponse.desde(reserva, consultaPagos.tienePagoAprobado(reservaId));
     }
 
     @Override
@@ -86,6 +93,10 @@ public class ConsultarReservasService implements ConsultarReservasUseCase {
     }
 
     private PaginaResponse<ReservaResponse> buscar(CriteriosBusquedaReserva criterios) {
-        return PaginaResponse.desde(reservaRepository.buscar(criterios), ReservaResponse::desde);
+        Pagina<Reserva> pagina = reservaRepository.buscar(criterios);
+        Set<Long> pagadas = pagina.contenido().isEmpty() ? Set.of()
+                : consultaPagos.reservasPagadas(pagina.contenido().stream().map(Reserva::getId).toList());
+        return PaginaResponse.desde(pagina, reserva -> ReservaResponse.desde(reserva,
+                pagadas.contains(reserva.getId())));
     }
 }

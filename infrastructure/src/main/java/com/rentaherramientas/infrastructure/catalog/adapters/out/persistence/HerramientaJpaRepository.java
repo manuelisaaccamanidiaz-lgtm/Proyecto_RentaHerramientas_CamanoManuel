@@ -21,6 +21,9 @@ public interface HerramientaJpaRepository extends JpaRepository<HerramientaEntit
 
     List<HerramientaEntity> findByProveedorId(Long proveedorId);
 
+    @Query("select h.id from HerramientaEntity h where h.proveedorId = :proveedorId order by h.id")
+    List<Long> idsPorProveedor(@Param("proveedorId") Long proveedorId);
+
     List<HerramientaEntity> findByEstado(EstadoHerramienta estado);
 
     @Query("select distinct h from HerramientaEntity h left join fetch h.imagenes where h.id in :ids")

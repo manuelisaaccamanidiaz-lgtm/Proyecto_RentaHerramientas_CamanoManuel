@@ -3,6 +3,7 @@ package com.rentaherramientas.application.rental.usecase;
 import com.rentaherramientas.application.rental.command.ReportarDanioCommand;
 import com.rentaherramientas.application.rental.dto.ReservaResponse;
 import com.rentaherramientas.application.rental.port.CatalogoHerramientas;
+import com.rentaherramientas.application.rental.port.ConsultaPagos;
 import com.rentaherramientas.domain.rental.model.aggregate.Reserva;
 import com.rentaherramientas.domain.rental.port.repository.ReservaRepository;
 import com.rentaherramientas.domain.shared.model.valueobject.Dinero;
@@ -16,10 +17,13 @@ public class ReportarDanioService implements ReportarDanioUseCase {
 
     private final ReservaRepository reservaRepository;
     private final CatalogoHerramientas catalogoHerramientas;
+    private final ConsultaPagos consultaPagos;
 
-    public ReportarDanioService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas) {
+    public ReportarDanioService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas,
+                                ConsultaPagos consultaPagos) {
         this.reservaRepository = reservaRepository;
         this.catalogoHerramientas = catalogoHerramientas;
+        this.consultaPagos = consultaPagos;
     }
 
     @Override
@@ -32,6 +36,6 @@ public class ReportarDanioService implements ReportarDanioUseCase {
         reserva.reportarDanio(command.descripcion(), costo);
         Reserva guardada = reservaRepository.guardar(reserva);
         catalogoHerramientas.marcarDanada(guardada.getHerramientaId());
-        return ReservaResponse.desde(guardada);
+        return ReservaResponse.desde(guardada, consultaPagos.tienePagoAprobado(guardada.getId()));
     }
 }

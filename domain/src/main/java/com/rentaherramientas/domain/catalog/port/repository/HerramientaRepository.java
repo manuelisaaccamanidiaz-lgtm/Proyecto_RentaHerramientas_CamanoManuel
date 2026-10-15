@@ -19,6 +19,9 @@ public interface HerramientaRepository {
 
     List<Herramienta> buscarPorProveedorId(Long proveedorId);
 
+    /** Solo los ids de las herramientas del proveedor (sin cargar imágenes ni categorías). */
+    List<Long> idsPorProveedor(Long proveedorId);
+
     List<Herramienta> buscarPorEstado(EstadoHerramienta estado);
 
     /** Búsqueda paginada con filtros opcionales, ordenada por id. */

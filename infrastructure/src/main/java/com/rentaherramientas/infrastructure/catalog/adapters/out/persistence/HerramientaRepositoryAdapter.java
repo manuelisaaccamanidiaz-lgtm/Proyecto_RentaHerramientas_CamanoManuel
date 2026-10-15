@@ -51,6 +51,12 @@ public class HerramientaRepositoryAdapter implements HerramientaRepository {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Long> idsPorProveedor(Long proveedorId) {
+        return jpaRepository.idsPorProveedor(proveedorId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Herramienta> buscarPorEstado(EstadoHerramienta estado) {
         return jpaRepository.findByEstado(estado).stream().map(mapper::toDomain).toList();
     }

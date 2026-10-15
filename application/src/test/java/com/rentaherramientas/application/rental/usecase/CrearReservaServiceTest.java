@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,6 +178,16 @@ class CrearReservaServiceTest {
 
         @Override
         public List<Reserva> buscarPorHerramientaId(Long herramientaId) {
+            throw new UnsupportedOperationException("no lo usa CrearReservaService");
+        }
+
+        @Override
+        public List<Long> idsPorCliente(Long clienteId) {
+            throw new UnsupportedOperationException("no lo usa CrearReservaService");
+        }
+
+        @Override
+        public List<Long> idsPorHerramientas(Collection<Long> herramientaIds) {
             throw new UnsupportedOperationException("no lo usa CrearReservaService");
         }
 

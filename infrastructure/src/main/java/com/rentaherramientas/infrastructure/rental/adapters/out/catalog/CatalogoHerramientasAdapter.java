@@ -2,7 +2,6 @@ package com.rentaherramientas.infrastructure.rental.adapters.out.catalog;
 
 import com.rentaherramientas.application.rental.port.CatalogoHerramientas;
 import com.rentaherramientas.application.rental.port.HerramientaReservable;
-import com.rentaherramientas.domain.catalog.model.aggregate.Herramienta;
 import com.rentaherramientas.domain.catalog.model.valueobject.EstadoHerramienta;
 import com.rentaherramientas.domain.catalog.port.repository.HerramientaRepository;
 import org.springframework.stereotype.Component;
@@ -36,9 +35,7 @@ public class CatalogoHerramientasAdapter implements CatalogoHerramientas {
 
     @Override
     public List<Long> idsDelProveedor(Long proveedorId) {
-        return herramientaRepository.buscarPorProveedorId(proveedorId).stream()
-                .map(Herramienta::getId)
-                .toList();
+        return herramientaRepository.idsPorProveedor(proveedorId);
     }
 
     /**

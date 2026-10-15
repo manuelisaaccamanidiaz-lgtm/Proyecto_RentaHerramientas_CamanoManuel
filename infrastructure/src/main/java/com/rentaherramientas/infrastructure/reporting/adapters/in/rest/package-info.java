@@ -1,4 +1,4 @@
 /**
- * Adaptadores de entrada REST de reporting (controllers); se implementarán junto con los casos de uso.
+ * Adaptadores de entrada REST de reporting: reportes del ADMIN y resumen del proveedor.
  */
 package com.rentaherramientas.infrastructure.reporting.adapters.in.rest;

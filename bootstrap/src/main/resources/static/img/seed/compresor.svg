@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Compresor de aire">
+  <title>Compresor de aire</title>
+  <rect width="200" height="200" rx="24" fill="#E8F5E9"/>
+  <rect x="40" y="80" width="120" height="60" rx="30" fill="#43A047"/>
+  <rect x="70" y="55" width="50" height="25" rx="6" fill="#2E7D32"/>
+  <circle cx="135" cy="68" r="12" fill="#ECEFF1" stroke="#2E7D32" stroke-width="4"/>
+  <circle cx="60" cy="150" r="12" fill="#37474F"/>
+  <circle cx="140" cy="150" r="12" fill="#37474F"/>
+</svg>

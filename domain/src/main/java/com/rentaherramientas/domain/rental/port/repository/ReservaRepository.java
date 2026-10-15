@@ -1,6 +1,7 @@
 package com.rentaherramientas.domain.rental.port.repository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +26,12 @@ public interface ReservaRepository {
     List<Reserva> buscarPorClienteId(Long clienteId);
 
     List<Reserva> buscarPorHerramientaId(Long herramientaId);
+
+    /** Solo los ids (sin cargar reportes de daño): los usan otros BC para filtrar por cliente. */
+    List<Long> idsPorCliente(Long clienteId);
+
+    /** Ids de las reservas de esas herramientas (vacía = ninguna). */
+    List<Long> idsPorHerramientas(Collection<Long> herramientaIds);
 
     /**
      * Indica si la herramienta ya tiene una reserva que bloquea disponibilidad

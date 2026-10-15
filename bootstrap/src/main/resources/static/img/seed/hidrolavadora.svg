@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Hidrolavadora">
+  <title>Hidrolavadora</title>
+  <rect width="200" height="200" rx="24" fill="#E1F5FE"/>
+  <rect x="50" y="60" width="70" height="90" rx="14" fill="#0288D1"/>
+  <circle cx="70" cy="155" r="14" fill="#37474F"/>
+  <path d="M120 90 C160 90 160 130 175 130" fill="none" stroke="#263238" stroke-width="6"/>
+  <rect x="165" y="120" width="10" height="30" rx="3" fill="#455A64"/>
+  <circle cx="85" cy="90" r="12" fill="#B3E5FC"/>
+</svg>

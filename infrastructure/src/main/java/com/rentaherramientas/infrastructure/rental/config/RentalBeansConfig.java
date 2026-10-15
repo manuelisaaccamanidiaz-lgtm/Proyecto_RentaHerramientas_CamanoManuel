@@ -1,6 +1,7 @@
 package com.rentaherramientas.infrastructure.rental.config;
 
 import com.rentaherramientas.application.rental.port.CatalogoHerramientas;
+import com.rentaherramientas.application.rental.port.ConsultaPagos;
 import com.rentaherramientas.application.rental.usecase.AceptarReservaService;
 import com.rentaherramientas.application.rental.usecase.AceptarReservaUseCase;
 import com.rentaherramientas.application.rental.usecase.ConsultarReservasService;
@@ -23,24 +24,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.time.Clock;
-import java.time.ZoneId;
 
 /**
  * Ensambla los casos de uso de rental y habilita las tareas programadas
- * (vencimiento de reservas). El "hoy" del negocio es el de Colombia: los
- * servicios reciben un Clock en esa zona, que en las pruebas se sustituye por
- * uno fijo.
+ * (vencimiento de reservas). El Clock del negocio (zona de Bogotá) lo declara
+ * RelojConfig y se comparte con los demás BC.
  */
 @Configuration
 @EnableScheduling
 public class RentalBeansConfig {
-
-    public static final String ZONA_NEGOCIO = "America/Bogota";
-
-    @Bean
-    Clock relojNegocio() {
-        return Clock.system(ZoneId.of(ZONA_NEGOCIO));
-    }
 
     @Bean
     CrearReservaUseCase crearReservaUseCase(ReservaRepository reservaRepository,
@@ -62,28 +54,30 @@ public class RentalBeansConfig {
 
     @Bean
     RegistrarEntregaUseCase registrarEntregaUseCase(ReservaRepository reservaRepository,
-                                                    CatalogoHerramientas catalogoHerramientas, Clock relojNegocio) {
-        return new RegistrarEntregaService(reservaRepository, catalogoHerramientas, relojNegocio);
+                                                    CatalogoHerramientas catalogoHerramientas,
+                                                    ConsultaPagos consultaPagos, Clock relojNegocio) {
+        return new RegistrarEntregaService(reservaRepository, catalogoHerramientas, consultaPagos, relojNegocio);
     }
 
     @Bean
     RegistrarDevolucionUseCase registrarDevolucionUseCase(ReservaRepository reservaRepository,
                                                           CatalogoHerramientas catalogoHerramientas,
-                                                          Clock relojNegocio) {
-        return new RegistrarDevolucionService(reservaRepository, catalogoHerramientas, relojNegocio);
+                                                          ConsultaPagos consultaPagos, Clock relojNegocio) {
+        return new RegistrarDevolucionService(reservaRepository, catalogoHerramientas, consultaPagos, relojNegocio);
     }
 
     @Bean
     ReportarDanioUseCase reportarDanioUseCase(ReservaRepository reservaRepository,
-                                              CatalogoHerramientas catalogoHerramientas) {
-        return new ReportarDanioService(reservaRepository, catalogoHerramientas);
+                                              CatalogoHerramientas catalogoHerramientas,
+                                              ConsultaPagos consultaPagos) {
+        return new ReportarDanioService(reservaRepository, catalogoHerramientas, consultaPagos);
     }
 
     @Bean
     ConsultarReservasUseCase consultarReservasUseCase(ReservaRepository reservaRepository,
                                                       CatalogoHerramientas catalogoHerramientas,
-                                                      Clock relojNegocio) {
-        return new ConsultarReservasService(reservaRepository, catalogoHerramientas, relojNegocio);
+                                                      ConsultaPagos consultaPagos, Clock relojNegocio) {
+        return new ConsultarReservasService(reservaRepository, catalogoHerramientas, consultaPagos, relojNegocio);
     }
 
     @Bean

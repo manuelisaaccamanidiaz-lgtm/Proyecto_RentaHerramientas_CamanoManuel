@@ -24,6 +24,7 @@ public class AceptarReservaService implements AceptarReservaUseCase {
         Reserva reserva = PropiedadReserva.cargarParaGestionar(reservaRepository, catalogoHerramientas,
                 reservaId, solicitante);
         reserva.aceptar();
-        return ReservaResponse.desde(reservaRepository.guardar(reserva));
+        // Venía de PENDIENTE, que no admite pagos: recién aceptada aún no está pagada.
+        return ReservaResponse.desde(reservaRepository.guardar(reserva), false);
     }
 }

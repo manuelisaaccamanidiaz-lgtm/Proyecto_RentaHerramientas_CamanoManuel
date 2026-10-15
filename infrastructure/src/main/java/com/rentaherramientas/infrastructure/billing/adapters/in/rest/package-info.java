@@ -1,4 +1,4 @@
 /**
- * Adaptadores de entrada REST de billing (controllers); se implementarán junto con los casos de uso.
+ * Adaptadores de entrada REST de billing: pagos simulados y facturas (incluida la descarga en PDF).
  */
 package com.rentaherramientas.infrastructure.billing.adapters.in.rest;

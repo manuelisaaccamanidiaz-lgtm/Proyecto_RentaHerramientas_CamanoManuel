@@ -25,6 +25,7 @@ public class RechazarReservaService implements RechazarReservaUseCase {
         Reserva reserva = PropiedadReserva.cargarParaGestionar(reservaRepository, catalogoHerramientas,
                 reservaId, solicitante);
         reserva.rechazar();
-        return ReservaResponse.desde(reservaRepository.guardar(reserva));
+        // Solo se rechaza una reserva PENDIENTE, que no admite pagos.
+        return ReservaResponse.desde(reservaRepository.guardar(reserva), false);
     }
 }

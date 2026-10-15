@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Renta de Herramientas API",
-    "description": "Peticiones de los Días 2 y 3. Orden sugerido: 1) Registro, 2) Login de cada rol (cada login guarda su token en una variable de colección), 3) resto de carpetas.\n\nVariables: baseUrl, adminEmail/adminPassword (los de ADMIN_EMAIL/ADMIN_PASSWORD del .env), tokenAdmin/tokenProveedor/tokenCliente (se rellenan solos), categoriaId, herramientaId y usuarioId (se rellenan al crear).",
+    "description": "Peticiones de los Días 2 a 5. Orden sugerido: 1) Registro, 2) Login de cada rol (cada login guarda su token en una variable de colección), 3) resto de carpetas.\n\nVariables: baseUrl, adminEmail/adminPassword (los de ADMIN_EMAIL/ADMIN_PASSWORD del .env), tokenAdmin/tokenProveedor/tokenCliente (se rellenan solos), categoriaId, herramientaId, usuarioId, reservaId, pagoId y facturaId (se rellenan al crear).\n\nDATOS SEMILLA (perfil dev): todos los usuarios semilla usan la contraseña Clave123*. Para usarlos, pon en las variables adminEmail=admin@rentaherramientas.co, adminPassword=Clave123*, proveedorEmail=carlos.rueda@ferreteriaeltornillo.co, clienteEmail=andres.rueda@gmail.com y password=Clave123*.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -18,6 +18,8 @@
     { "key": "herramientaId", "value": "1" },
     { "key": "usuarioId", "value": "1" },
     { "key": "reservaId", "value": "1" },
+    { "key": "pagoId", "value": "1" },
+    { "key": "facturaId", "value": "1" },
     { "key": "fechaInicio", "value": "" },
     { "key": "fechaFin", "value": "" }
   ],
@@ -442,6 +444,207 @@
                 { "key": "size", "value": "20" }
               ]
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Pagos y facturas",
+      "description": "Pagos SIMULADOS (nunca se envían ni guardan datos de tarjeta). Flujo: la reserva debe estar ACEPTADA → Pagar (CLIENTE). TARJETA/PSE se aprueban al instante y emiten la factura; EFECTIVO queda PENDIENTE hasta que el proveedor lo confirme. El monto lo calcula el servidor: si el body trae \"monto\", se ignora.",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenCliente}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Pagar reserva con TARJETA (CLIENTE)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('201 Created', () => pm.response.to.have.status(201));",
+            "if (pm.response.code === 201) {",
+            "  const pago = pm.response.json();",
+            "  pm.collectionVariables.set('pagoId', pago.id);",
+            "  if (pago.factura) { pm.collectionVariables.set('facturaId', pago.factura.id); }",
+            "  pm.test('Pago aprobado con factura', () => { pm.expect(pago.estado).to.eql('APROBADO'); pm.expect(pago.factura).to.not.be.null; });",
+            "}"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/pagos",
+            "body": { "mode": "raw", "raw": "{\n  \"reservaId\": {{reservaId}},\n  \"metodo\": \"TARJETA\"\n}" }
+          }
+        },
+        {
+          "name": "Pagar con monto manipulado (se ignora el monto)",
+          "description": "El servidor cobra el precio total de la reserva aunque el body diga otra cosa. Si la reserva ya está pagada responde 409.",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/pagos",
+            "body": { "mode": "raw", "raw": "{\n  \"reservaId\": {{reservaId}},\n  \"metodo\": \"PSE\",\n  \"monto\": 1\n}" }
+          }
+        },
+        {
+          "name": "Pagar reserva en EFECTIVO (queda PENDIENTE)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) { pm.collectionVariables.set('pagoId', pm.response.json().id); }"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/pagos",
+            "body": { "mode": "raw", "raw": "{\n  \"reservaId\": {{reservaId}},\n  \"metodo\": \"EFECTIVO\"\n}" }
+          }
+        },
+        {
+          "name": "Confirmar pago en efectivo (PROVEEDOR dueño o ADMIN)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 200 && pm.response.json().factura) { pm.collectionVariables.set('facturaId', pm.response.json().factura.id); }"
+          ] } }],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenProveedor}}", "type": "string" }] },
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/pagos/{{pagoId}}/confirmar"
+          }
+        },
+        {
+          "name": "Rechazar pago en efectivo (PROVEEDOR dueño o ADMIN)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenProveedor}}", "type": "string" }] },
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/pagos/{{pagoId}}/rechazar"
+          }
+        },
+        {
+          "name": "Mis pagos (CLIENTE)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/pagos/mios?page=0&size=20" }
+        },
+        {
+          "name": "Detalle de pago (cliente, proveedor dueño o ADMIN)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/pagos/{{pagoId}}" }
+        },
+        {
+          "name": "Pagos de mis herramientas (PROVEEDOR)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenProveedor}}", "type": "string" }] },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/proveedor/pagos?page=0&size=20"
+          }
+        },
+        {
+          "name": "Historial de pagos con filtros (ADMIN)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}", "type": "string" }] },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/pagos?estado=APROBADO&page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "pagos"],
+              "query": [
+                { "key": "estado", "value": "APROBADO" },
+                { "key": "metodo", "value": "TARJETA", "disabled": true },
+                { "key": "desde", "value": "2026-01-01", "disabled": true },
+                { "key": "hasta", "value": "2026-12-31", "disabled": true },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mis facturas (CLIENTE)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/facturas/mias?page=0&size=20" }
+        },
+        {
+          "name": "Detalle de factura (cliente, proveedor dueño o ADMIN)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/facturas/{{facturaId}}" }
+        },
+        {
+          "name": "Descargar factura en PDF",
+          "description": "En Postman usa \"Send and Download\" para guardar el archivo.",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('Es un PDF', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf'));",
+            "pm.test('Se descarga como adjunto', () => pm.expect(pm.response.headers.get('Content-Disposition')).to.include('attachment'));"
+          ] } }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/pdf" }],
+            "url": "{{baseUrl}}/api/facturas/{{facturaId}}/pdf"
+          }
+        },
+        {
+          "name": "Facturas de mis herramientas (PROVEEDOR)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenProveedor}}", "type": "string" }] },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/proveedor/facturas?page=0&size=20"
+          }
+        },
+        {
+          "name": "Todas las facturas (ADMIN)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}", "type": "string" }] },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/facturas?page=0&size=20"
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Reportes",
+      "description": "Reportes de solo lectura. /api/admin/reportes/** solo ADMIN; /api/proveedor/reportes/resumen solo PROVEEDOR (siempre sobre SUS herramientas). Ingresos = pagos APROBADOS.",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Resumen general (ADMIN)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/reportes/resumen" }
+        },
+        {
+          "name": "Ingresos por mes (ADMIN)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reportes/ingresos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "reportes", "ingresos"],
+              "query": [
+                { "key": "desde", "value": "2026-01-01", "disabled": true },
+                { "key": "hasta", "value": "2026-12-31", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Herramientas más alquiladas (ADMIN)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/reportes/herramientas-mas-alquiladas?limite=10" }
+        },
+        {
+          "name": "Clientes frecuentes (ADMIN)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/reportes/clientes-frecuentes?limite=10" }
+        },
+        {
+          "name": "Inventario por estado y categoría (ADMIN)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/reportes/inventario" }
+        },
+        {
+          "name": "Rentabilidad por herramienta y proveedor (ADMIN)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/reportes/rentabilidad?limite=10" }
+        },
+        {
+          "name": "Resumen general pedido por CLIENTE (403)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('403 Forbidden', () => pm.response.to.have.status(403));"
+          ] } }],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenCliente}}", "type": "string" }] },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/reportes/resumen"
+          }
+        },
+        {
+          "name": "Resumen de mis herramientas (PROVEEDOR)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenProveedor}}", "type": "string" }] },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/proveedor/reportes/resumen"
           }
         }
       ]

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Carretilla">
+  <title>Carretilla</title>
+  <rect width="200" height="200" rx="24" fill="#F3E5F5"/>
+  <path d="M40 80 L150 80 L135 125 L55 125 Z" fill="#8E24AA"/>
+  <circle cx="70" cy="150" r="18" fill="#37474F"/>
+  <circle cx="70" cy="150" r="6" fill="#B0BEC5"/>
+  <rect x="140" y="110" width="45" height="8" rx="4" fill="#6A1B9A" transform="rotate(-20 140 114)"/>
+</svg>

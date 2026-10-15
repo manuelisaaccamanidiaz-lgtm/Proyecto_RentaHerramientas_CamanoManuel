@@ -13,6 +13,13 @@ spring:
     username: ${POSTGRES_USER:renta_user}
     password: ${POSTGRES_PASSWORD:}
 
+  flyway:
+    # Solo en dev se cargan además los datos semilla (db/seed/V100__...). prod no los ve.
+    locations: classpath:db/migration,classpath:db/seed
+    # V100 queda aplicada antes que migraciones futuras (V7, V8...); sin esto Flyway
+    # las rechazaría en dev por llegar "fuera de orden".
+    out-of-order: true
+
   jpa:
     show-sql: true
     properties:

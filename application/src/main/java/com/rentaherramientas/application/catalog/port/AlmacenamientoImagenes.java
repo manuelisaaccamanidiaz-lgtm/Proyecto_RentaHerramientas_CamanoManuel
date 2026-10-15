@@ -7,7 +7,7 @@ package com.rentaherramientas.application.catalog.port;
  */
 public interface AlmacenamientoImagenes {
 
-    /** Guarda el archivo y devuelve su URL pública absoluta (http/https). */
+    /** Guarda el archivo y devuelve su URL pública: absoluta http/https o ruta relativa que empieza con "/". */
     String guardar(byte[] contenido, String contentType);
 
     /** Borra el archivo de esa URL; si no existe o no es de este almacenamiento, no hace nada. */

@@ -38,8 +38,9 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         // Spring Boot reenvía los errores a /error; sin esto un 400/404 llegaría como 401.
                         .requestMatchers("/error").permitAll()
-                        // Imágenes del catálogo, servidas como recursos estáticos.
-                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                        // Imágenes del catálogo, servidas como recursos estáticos: las subidas por los
+                        // proveedores (/uploads) y las ilustraciones de los datos semilla (/img).
+                        .requestMatchers(HttpMethod.GET, "/uploads/**", "/img/**").permitAll()
                         // Catálogo público de solo lectura. La disponibilidad (rental) va ANTES de la
                         // regla general /api/herramientas/**, que la dejaría solo para PROVEEDOR/ADMIN.
                         .requestMatchers(HttpMethod.GET, "/api/categorias", "/api/categorias/*").permitAll()
@@ -57,6 +58,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/reservas/mias").hasRole(CLIENTE)
                         .requestMatchers(HttpMethod.PATCH, "/api/reservas/*/*").hasAnyRole(PROVEEDOR, ADMIN)
                         .requestMatchers(HttpMethod.POST, "/api/reservas/*/danios").hasAnyRole(PROVEEDOR, ADMIN)
+                        // Pagos y facturas: el cliente paga y consulta los suyos; el proveedor (dueño) o
+                        // un ADMIN confirman/rechazan pagos en efectivo. GET /api/pagos/{id},
+                        // /api/facturas/{id} y su PDF quedan para cualquier autenticado: el acceso
+                        // (cliente, proveedor o ADMIN de esa reserva) lo decide el caso de uso.
+                        .requestMatchers(HttpMethod.POST, "/api/pagos").hasRole(CLIENTE)
+                        .requestMatchers(HttpMethod.GET, "/api/pagos/mios", "/api/facturas/mias").hasRole(CLIENTE)
+                        .requestMatchers(HttpMethod.PATCH, "/api/pagos/*/*").hasAnyRole(PROVEEDOR, ADMIN)
                         .requestMatchers("/api/proveedor/**").hasRole(PROVEEDOR)
                         .requestMatchers("/api/admin/**").hasRole(ADMIN)
                         .anyRequest().authenticated())

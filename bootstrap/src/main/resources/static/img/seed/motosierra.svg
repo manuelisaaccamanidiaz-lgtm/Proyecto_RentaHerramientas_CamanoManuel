@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Motosierra">
+  <title>Motosierra</title>
+  <rect width="200" height="200" rx="24" fill="#FFF3E0"/>
+  <rect x="30" y="80" width="70" height="50" rx="12" fill="#EF6C00"/>
+  <rect x="95" y="92" width="85" height="26" rx="13" fill="#B0BEC5"/>
+  <rect x="95" y="92" width="85" height="26" rx="13" fill="none" stroke="#455A64" stroke-width="3" stroke-dasharray="6 4"/>
+  <path d="M40 80 Q65 50 90 80" fill="none" stroke="#424242" stroke-width="6"/>
+</svg>

@@ -66,6 +66,7 @@ public class CrearReservaService implements CrearReservaUseCase {
 
         Reserva reserva = Reserva.registrar(herramientaId, command.solicitante().id(), rango,
                 herramienta.tarifaDiaria());
-        return ReservaResponse.desde(reservaRepository.guardar(reserva));
+        // Una reserva recién creada no puede tener pagos: solo se pagan las ACEPTADAS.
+        return ReservaResponse.desde(reservaRepository.guardar(reserva), false);
     }
 }

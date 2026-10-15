@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -18,8 +19,9 @@ import java.util.regex.Pattern;
 /**
  * Adaptador de salida: guarda las imágenes en un directorio local con nombre
  * UUID + extensión (el nombre original del cliente nunca se usa, así no hay
- * colisiones ni rutas maliciosas) y devuelve la URL absoluta con la que
- * UploadsWebConfig las sirve en /uploads/**.
+ * colisiones ni rutas maliciosas) y devuelve la ruta RELATIVA /uploads/<archivo>,
+ * que UploadsWebConfig sirve. Al no incluir dominio, los datos siguen siendo
+ * válidos si la API cambia de URL; el frontend antepone su URL base.
  */
 @Component
 public class AlmacenamientoLocalImagenes implements AlmacenamientoImagenes {
@@ -31,18 +33,15 @@ public class AlmacenamientoLocalImagenes implements AlmacenamientoImagenes {
     private static final Pattern NOMBRE_VALIDO = Pattern.compile("^[0-9a-f-]{36}\\.(jpg|png|webp)$");
 
     private final Path directorio;
-    private final String prefijoUrl;
 
-    public AlmacenamientoLocalImagenes(@Value("${app.uploads.dir:./uploads}") String directorio,
-                                       @Value("${app.public-base-url:http://localhost:8080}") String baseUrl) {
+    public AlmacenamientoLocalImagenes(@Value("${app.uploads.dir:./uploads}") String directorio) {
         this.directorio = Path.of(directorio).toAbsolutePath().normalize();
-        this.prefijoUrl = baseUrl.replaceAll("/+$", "") + RUTA_PUBLICA;
         try {
             Files.createDirectories(this.directorio);
         } catch (IOException e) {
             throw new UncheckedIOException("No se pudo crear el directorio de imágenes " + this.directorio, e);
         }
-        log.info("Imágenes en {} publicadas como {}*", this.directorio, prefijoUrl);
+        log.info("Imágenes en {} publicadas como {}*", this.directorio, RUTA_PUBLICA);
     }
 
     @Override
@@ -53,15 +52,17 @@ public class AlmacenamientoLocalImagenes implements AlmacenamientoImagenes {
         } catch (IOException e) {
             throw new UncheckedIOException("No se pudo guardar la imagen " + nombre, e);
         }
-        return prefijoUrl + nombre;
+        return RUTA_PUBLICA + nombre;
     }
 
+    /** Acepta la ruta relativa y, por compatibilidad, URLs absolutas antiguas (http://host/uploads/...). */
     @Override
     public void eliminar(String url) {
-        if (url == null || !url.startsWith(prefijoUrl)) {
+        String ruta = rutaDe(url);
+        if (ruta == null || !ruta.startsWith(RUTA_PUBLICA)) {
             return;
         }
-        String nombre = url.substring(prefijoUrl.length());
+        String nombre = ruta.substring(RUTA_PUBLICA.length());
         if (!NOMBRE_VALIDO.matcher(nombre).matches()) {
             return;
         }
@@ -70,6 +71,20 @@ public class AlmacenamientoLocalImagenes implements AlmacenamientoImagenes {
         } catch (IOException e) {
             // El registro en BD ya no la referencia: un archivo huérfano no debe romper la operación.
             log.warn("No se pudo borrar la imagen {}", nombre, e);
+        }
+    }
+
+    private static String rutaDe(String url) {
+        if (url == null) {
+            return null;
+        }
+        if (url.startsWith("/")) {
+            return url;
+        }
+        try {
+            return URI.create(url).getPath();
+        } catch (IllegalArgumentException e) {
+            return null;
         }
     }
 

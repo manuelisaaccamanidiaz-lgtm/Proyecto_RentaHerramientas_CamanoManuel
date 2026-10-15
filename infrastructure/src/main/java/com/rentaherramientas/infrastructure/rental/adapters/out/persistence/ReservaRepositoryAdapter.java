@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,6 +79,19 @@ public class ReservaRepositoryAdapter implements ReservaRepository {
     public List<Reserva> buscarPorHerramientaId(Long herramientaId) {
         return jpaRepository.findByHerramientaIdOrderByFechaInicioAsc(herramientaId).stream()
                 .map(mapper::toDomain).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> idsPorCliente(Long clienteId) {
+        return jpaRepository.idsPorCliente(clienteId);
+    }
+
+    /** Un IN vacío no es SQL válido: sin herramientas no hay reservas. */
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> idsPorHerramientas(Collection<Long> herramientaIds) {
+        return herramientaIds.isEmpty() ? List.of() : jpaRepository.idsPorHerramientas(herramientaIds);
     }
 
     @Override

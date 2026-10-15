@@ -50,6 +50,11 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
+        <!-- PDF de facturas. Versión en la propiedad openpdf.version del POM padre. -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+        </dependency>
         <!-- Spring Boot 4.x: la autoconfiguración de Flyway vive en su propio módulo/starter. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

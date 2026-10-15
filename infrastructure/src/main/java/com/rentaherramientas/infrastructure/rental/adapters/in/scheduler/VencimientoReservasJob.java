@@ -1,7 +1,7 @@
 package com.rentaherramientas.infrastructure.rental.adapters.in.scheduler;
 
 import com.rentaherramientas.application.rental.usecase.VencerReservasUseCase;
-import com.rentaherramientas.infrastructure.rental.config.RentalBeansConfig;
+import com.rentaherramientas.infrastructure.shared.config.RelojConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,7 +24,7 @@ public class VencimientoReservasJob {
         this.vencerReservas = vencerReservas;
     }
 
-    @Scheduled(cron = "${app.reservas.cron-vencimiento:0 5 0 * * *}", zone = RentalBeansConfig.ZONA_NEGOCIO)
+    @Scheduled(cron = "${app.reservas.cron-vencimiento:0 5 0 * * *}", zone = RelojConfig.ZONA_NEGOCIO)
     public void vencerReservas() {
         try {
             int vencidas = vencerReservas.vencer();

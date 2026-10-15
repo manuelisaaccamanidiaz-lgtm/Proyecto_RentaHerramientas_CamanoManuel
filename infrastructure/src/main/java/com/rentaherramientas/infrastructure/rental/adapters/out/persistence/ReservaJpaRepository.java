@@ -21,6 +21,12 @@ public interface ReservaJpaRepository extends JpaRepository<ReservaEntity, Long>
 
     List<ReservaEntity> findByHerramientaIdOrderByFechaInicioAsc(Long herramientaId);
 
+    @Query("select r.id from ReservaEntity r where r.clienteId = :clienteId order by r.id")
+    List<Long> idsPorCliente(@Param("clienteId") Long clienteId);
+
+    @Query("select r.id from ReservaEntity r where r.herramientaId in :herramientaIds order by r.id")
+    List<Long> idsPorHerramientas(@Param("herramientaIds") Collection<Long> herramientaIds);
+
     /** Rangos inclusivos: se cruzan si cada uno empieza antes (o el mismo día) de que termine el otro. */
     @Query("""
             select count(r) > 0 from ReservaEntity r

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Llave inglesa">
+  <title>Llave inglesa</title>
+  <rect width="200" height="200" rx="24" fill="#ECEFF1"/>
+  <rect x="88" y="60" width="24" height="110" rx="10" fill="#78909C" transform="rotate(35 100 110)"/>
+  <path d="M58 40 h40 v22 h-14 v14 h-26 z" fill="#607D8B" transform="rotate(35 100 110)"/>
+  <circle cx="100" cy="150" r="6" fill="#CFD8DC" transform="rotate(35 100 110)"/>
+</svg>
