@@ -1,0 +1,13 @@
+# Secretos locales
+.env
+
+# Maven
+target/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
