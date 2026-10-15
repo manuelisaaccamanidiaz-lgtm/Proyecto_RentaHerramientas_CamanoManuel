@@ -12,6 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Pruebas del value object UrlImagen: qué URLs y rutas acepta y cuáles rechaza
+ * (esquemas peligrosos, "..", rutas sin "/" y valores demasiado largos).
+ */
 class UrlImagenTest {
 
     @ParameterizedTest(name = "acepta {0}")

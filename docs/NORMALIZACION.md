@@ -1,4 +1,4 @@
-    # Normalización de la base de datos (hasta 4FN)
+# Normalización de la base de datos (hasta 4FN)
 
 Plataforma de Renta de Herramientas · PostgreSQL · migraciones Flyway
 
@@ -194,5 +194,9 @@ erDiagram
     }
 ```
 
-> GitHub dibuja este diagrama automáticamente. El enunciado lo pide **en imagen**: se
-> exporta a PNG el Día 7 (por ejemplo, desde <https://mermaid.live>).
+> GitHub dibuja este diagrama automáticamente. La versión en imagen que pide el
+> enunciado es [`diagrama-er.png`](diagrama-er.png), generada desde este mismo bloque con
+> [@mermaid-js/mermaid-cli](https://github.com/mermaid-js/mermaid-cli):
+> `npx -p @mermaid-js/mermaid-cli mmdc -i er.mmd -o docs/diagrama-er.png -b white -s 2`
+> (donde `er.mmd` es el contenido del bloque `mermaid`). Si cambia el esquema, se
+> actualiza el bloque y se vuelve a generar la imagen.

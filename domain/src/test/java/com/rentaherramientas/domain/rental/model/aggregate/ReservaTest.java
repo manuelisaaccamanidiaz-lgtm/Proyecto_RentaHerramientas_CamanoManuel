@@ -31,6 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Pruebas del agregado Reserva: cálculo del precio, máquina de estados completa
+ * (estado × acción), fechas de entrega/devolución y reglas de los reportes de daño.
+ */
 class ReservaTest {
 
     private static final RangoFechas RANGO = new RangoFechas(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 13));

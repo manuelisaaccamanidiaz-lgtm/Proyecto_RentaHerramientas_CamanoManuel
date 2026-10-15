@@ -1,0 +1,25 @@
+# Solo se envía al build lo necesario para compilar (POM + src de cada módulo).
+
+# Secretos: las variables llegan por docker-compose, nunca dentro de la imagen.
+.env
+.env.*
+
+# Resultados de compilación y archivos locales
+**/target/
+uploads/
+node_modules/
+
+# Control de versiones, IDE y documentación
+.git/
+.gitignore
+.idea/
+.vscode/
+.settings/
+.project
+.classpath
+*.iml
+docs/
+*.md
+Dockerfile
+.dockerignore
+docker-compose*.yml

@@ -119,6 +119,8 @@
     display: flex;
     align-items: center;
     gap: var(--esp-6);
+    /* Aire arriba y abajo cuando el bloque de usuario ocupa dos líneas. */
+    padding-block: var(--esp-2);
   }
 
   .navbar__menu,
@@ -141,6 +143,30 @@
     border-top: 0;
     border-left: 1px solid rgba(255, 255, 255, 0.12);
   }
+
+  /* Con sesión: correo arriba y "Cerrar sesión" debajo, alineados a la derecha. */
+  .navbar__usuario:has(.navbar__nombre) {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--esp-1);
+  }
+
+  /* Correos largos: una sola línea con elipsis (el texto completo queda en title). */
+  .navbar__nombre {
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Entre 1024 y 1279 px el menú del ADMIN (6 enlaces) no cabía: se compacta. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .navbar__contenido { gap: var(--esp-4); }
+
+  .navbar__enlace { padding: var(--esp-2); }
+
+  .navbar__nombre { max-width: 12rem; }
 }
 
 /* =================================================================== footer */
@@ -944,14 +970,53 @@ fieldset {
   font-family: var(--fuente);
 }
 
-.grafica__barra {
-  fill: var(--color-primario);
-  transition: fill var(--transicion);
+/* Barras horizontales en HTML: etiqueta arriba, barra y valor en la misma línea. */
+.grafica__barras {
+  display: grid;
+  gap: var(--esp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.grafica__barra:hover { fill: var(--color-primario-hover); }
+.grafica__fila {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
 
-.grafica__barra--secundaria { fill: var(--color-secundario); }
+.grafica__fila .grafica__texto {
+  font-size: var(--texto-xs);
+  color: var(--color-texto-suave);
+  overflow-wrap: anywhere;
+}
+
+.grafica__pista {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  min-width: 0;
+}
+
+.grafica__pista .grafica__barra {
+  flex: none;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--color-primario);
+  transition: background var(--transicion);
+}
+
+.grafica__pista .grafica__barra:hover { background: var(--color-primario-hover); }
+
+.grafica__pista .grafica__barra--secundaria { background: var(--color-secundario); }
+
+.grafica__pista .grafica__valor {
+  flex: none;
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  color: var(--color-texto);
+  white-space: nowrap;
+}
 
 .grafica__linea {
   fill: none;
@@ -1125,6 +1190,8 @@ fieldset {
 .galeria__principal {
   aspect-ratio: 4 / 3;
   width: 100%;
+  /* Sin esto gana el atributo height="600" del <img> y en móvil la imagen queda vertical. */
+  height: auto;
   object-fit: cover;
   border-radius: var(--radio-lg);
   background: var(--color-superficie-alt);
@@ -1206,7 +1273,11 @@ fieldset {
 
 .calendario__mes {
   font-weight: var(--peso-semi);
-  text-transform: capitalize;
+}
+
+/* Solo la primera letra ("Octubre de 2026"); capitalize también pondría "De". */
+.calendario__mes::first-letter {
+  text-transform: uppercase;
 }
 
 .calendario__rejilla {

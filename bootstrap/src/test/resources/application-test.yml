@@ -1,0 +1,20 @@
+# Perfil de las pruebas de integración. La base de datos la aporta Testcontainers
+# (@ServiceConnection), por eso aquí no hay spring.datasource. Sin datos semilla:
+# cada prueba crea los usuarios, categorías y herramientas que necesita.
+spring:
+  flyway:
+    locations: classpath:db/migration
+
+app:
+  jwt:
+    secret: secreto-solo-para-pruebas-de-integracion-0123456789abcdef
+  admin:
+    # Administrador inicial que usan las pruebas para crear categorías.
+    email: admin@pruebas.test
+    password: Admin123*
+  uploads:
+    dir: ${java.io.tmpdir}/rentaherramientas-pruebas-uploads
+
+logging:
+  level:
+    com.rentaherramientas: INFO

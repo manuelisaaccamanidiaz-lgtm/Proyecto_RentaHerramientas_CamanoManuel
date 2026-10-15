@@ -23,6 +23,16 @@ spring:
       max-file-size: 5MB
       max-request-size: 6MB
 
+# Actuator: solo /actuator/health (lo usa el HEALTHCHECK de Docker), sin detalles internos.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
 # Propiedades propias de la app. app.jwt.secret se define por perfil
 # (dev con valor por defecto, prod obligatorio desde JWT_SECRET).
 app:

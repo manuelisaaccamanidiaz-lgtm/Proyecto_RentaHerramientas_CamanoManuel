@@ -1,14 +1,20 @@
-# Base de datos de desarrollo. Las credenciales salen de .env (ver .env.example).
-# Las migraciones NO se montan aquí: las ejecuta Flyway al arrancar la app.
+# RentaHerramientas: PostgreSQL + aplicación (API + frontend) en http://localhost:8080
+#
+#   cp .env.example .env        # una sola vez; ajustar claves
+#   docker compose up --build   # perfil dev por defecto (con datos semilla)
+#
+# Las variables salen de .env. Perfil prod: SPRING_PROFILES_ACTIVE=prod en .env
+# (ver DESPLIEGUE.md). Las migraciones las ejecuta Flyway al arrancar la app.
 services:
   postgres:
     image: postgres:17
     container_name: rentaherramientas-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?Define POSTGRES_DB en .env (copia .env.example)}
+      POSTGRES_USER: ${POSTGRES_USER:?Define POSTGRES_USER en .env (copia .env.example)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env (copia .env.example)}
+    # Publicado también en el host para ejecutar la app sin Docker (mvn spring-boot:run).
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -19,5 +25,35 @@ services:
       timeout: 5s
       retries: 10
 
+  app:
+    build: .
+    image: rentaherramientas:latest
+    container_name: rentaherramientas-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # dev = datos semilla + logs SQL; prod = sin semilla, todo obligatorio.
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      # Dentro de la red de compose la base se llama "postgres" y escucha en 5432,
+      # sin importar los valores de host/puerto del .env (que son para ejecutar sin Docker).
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env (mínimo 32 bytes)}
+      JWT_EXPIRACION_MINUTOS: ${JWT_EXPIRACION_MINUTOS:-60}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      UPLOADS_DIR: /uploads
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - uploads_data:/uploads
+
 volumes:
   postgres_data:
+  uploads_data:

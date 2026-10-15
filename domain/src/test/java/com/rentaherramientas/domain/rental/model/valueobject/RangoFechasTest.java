@@ -11,6 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Pruebas del value object RangoFechas: solapamiento con extremos incluidos (la
+ * misma regla que aplica la restricción EXCLUDE de la base) y conteo de días.
+ */
 class RangoFechasTest {
 
     private static RangoFechas rango(int diaInicio, int diaFin) {

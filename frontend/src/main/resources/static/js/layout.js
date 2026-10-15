@@ -76,7 +76,7 @@ function navbar() {
       }
     });
     usuario = el('div', { class: 'navbar__usuario' },
-      el('span', { class: 'navbar__nombre' }, el('span', { class: 'sr-only', text: 'Sesión iniciada como ' }),
+      el('span', { class: 'navbar__nombre', title: `${actual.email} · ${textoEstado(actual.rol)}` }, el('span', { class: 'sr-only', text: 'Sesión iniciada como ' }),
         actual.email, ` · ${textoEstado(actual.rol)}`),
       salir);
   } else {

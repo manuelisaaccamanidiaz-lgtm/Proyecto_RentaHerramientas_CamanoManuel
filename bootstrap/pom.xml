@@ -24,6 +24,36 @@
             <groupId>com.rentaherramientas</groupId>
             <artifactId>frontend</artifactId>
         </dependency>
+        <!-- Solo para /actuator/health (healthcheck de Docker); el resto de endpoints no se expone. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- ===== Pruebas de integración (las ejecuta failsafe en mvn verify) ===== -->
+        <!-- Spring Boot 4.x: MockMvc y su autoconfiguración viven en el starter webmvc-test. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- @ServiceConnection: Spring Boot toma la URL/credenciales del contenedor. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Testcontainers 2.x (versión gestionada por Spring Boot): artefactos con prefijo testcontainers-. -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -31,6 +61,28 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--
+                Pruebas de integración (*IntegrationTest) con PostgreSQL real en Testcontainers.
+                Corren en la fase integration-test (mvn verify); surefire las excluye (POM padre),
+                así "mvn test" solo ejecuta las unitarias y no necesita Docker.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*IntegrationTest.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

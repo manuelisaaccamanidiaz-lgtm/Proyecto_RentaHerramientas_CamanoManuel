@@ -38,6 +38,8 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         // Spring Boot reenvía los errores a /error; sin esto un 400/404 llegaría como 401.
                         .requestMatchers("/error").permitAll()
+                        // Healthcheck de Docker / balanceadores (solo expone UP/DOWN, sin detalles).
+                        .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
                         // Frontend (módulo frontend, classpath:/static/): las páginas, estilos y scripts
                         // son públicos; los DATOS que muestran los protege la API con el JWT. /img
                         // incluye las ilustraciones de los datos semilla.

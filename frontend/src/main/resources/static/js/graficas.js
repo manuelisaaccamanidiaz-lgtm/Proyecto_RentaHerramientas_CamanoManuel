@@ -25,33 +25,28 @@ function sinDatos(texto = 'Aún no hay datos para esta gráfica.') {
 
 /**
  * Barras horizontales: cada fila tiene etiqueta encima, barra y valor al final.
- * Funciona en cualquier ancho porque el texto no compite con las barras.
+ * Se dibujan con HTML (no SVG) para que el texto conserve su tamaño real en
+ * cualquier ancho; un SVG escalado lo dejaba ilegible en móvil.
  * datos: [{ etiqueta, valor }], formato: valor → texto.
  */
 export function graficaBarras(datos, { formato = String, titulo = 'Gráfica de barras', secundaria = false } = {}) {
   if (!datos.length) {
     return sinDatos();
   }
-  const ancho = 600;
-  const altoFila = 46;
-  const alto = datos.length * altoFila;
   const maximo = Math.max(...datos.map((d) => Number(d.valor)), 1);
-  const anchoBarra = ancho - 110;
-
-  const svg = nodo('svg', { viewBox: `0 0 ${ancho} ${alto}`, role: 'img', 'aria-label': titulo });
-  datos.forEach((dato, i) => {
-    const y = i * altoFila;
-    const largo = Math.max(2, (Number(dato.valor) / maximo) * anchoBarra);
-    svg.append(nodo('text', { x: 0, y: y + 14, class: 'grafica__texto' }, recortar(dato.etiqueta, 70)));
-    const barra = nodo('rect', {
-      x: 0, y: y + 20, width: largo, height: 16, rx: 4,
+  const filas = datos.map((dato) => {
+    // Proporción sobre el ancho que queda tras reservar 7rem para el valor.
+    const proporcion = Math.max(0.01, Number(dato.valor) / maximo);
+    const barra = el('span', {
       class: `grafica__barra${secundaria ? ' grafica__barra--secundaria' : ''}`,
+      style: `width:calc((100% - 7rem) * ${proporcion.toFixed(4)})`,
+      title: `${dato.etiqueta}: ${formato(dato.valor)}`,
     });
-    barra.append(nodo('title', {}, `${dato.etiqueta}: ${formato(dato.valor)}`));
-    svg.append(barra);
-    svg.append(nodo('text', { x: largo + 8, y: y + 33, class: 'grafica__valor' }, formato(dato.valor)));
+    return el('li', { class: 'grafica__fila' },
+      el('span', { class: 'grafica__texto', text: recortar(dato.etiqueta, 70) }),
+      el('span', { class: 'grafica__pista' }, barra, el('span', { class: 'grafica__valor', text: formato(dato.valor) })));
   });
-  return el('div', { class: 'grafica' }, svg);
+  return el('div', { class: 'grafica' }, el('ul', { class: 'grafica__barras', role: 'list', 'aria-label': titulo }, filas));
 }
 
 /**
@@ -62,7 +57,9 @@ export function graficaLineas(datos, { formato = String, formatoEje = formato, t
   if (!datos.length) {
     return sinDatos();
   }
-  const ancho = 640;
+  // El viewBox sigue el ancho disponible (ventana menos márgenes de página y tarjeta)
+  // para que el texto del SVG no se encoja en pantallas angostas.
+  const ancho = Math.round(Math.min(640, Math.max(300, window.innerWidth - 72)));
   const alto = 280;
   const margen = { arriba: 20, derecha: 20, abajo: 36, izquierda: 72 };
   const anchoUtil = ancho - margen.izquierda - margen.derecha;
@@ -91,7 +88,7 @@ export function graficaLineas(datos, { formato = String, formatoEje = formato, t
   svg.append(nodo('polyline', { points: linea, class: 'grafica__linea' }));
 
   // Etiquetas del eje X: todas si caben, si no una de cada n.
-  const cada = Math.ceil(datos.length / 8);
+  const cada = Math.ceil(datos.length / (ancho < 480 ? 4 : 8));
   datos.forEach((dato, i) => {
     const [px, py] = puntos[i];
     const punto = nodo('circle', { cx: px, cy: py, r: 5, class: 'grafica__punto' });
