@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catálogo de herramientas · RentaHerramientas</title>
+  <meta name="description" content="Busca y filtra herramientas para alquilar por días.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script type="module" src="/js/paginas/catalogo.js"></script>
+</head>
+<body>
+  <a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
+  <header id="encabezado"></header>
+
+  <main id="contenido" class="pagina contenedor" tabindex="-1">
+    <div class="encabezado-pagina">
+      <div>
+        <h1>Catálogo de herramientas</h1>
+        <p>Encuentra el equipo que necesitas y reserva tus fechas en línea.</p>
+      </div>
+    </div>
+    <div class="con-lateral">
+      <aside class="tarjeta" aria-labelledby="titulo-filtros">
+        <h2 class="tarjeta__titulo" id="titulo-filtros">Filtrar</h2>
+        <form id="filtros" class="formulario" role="search" aria-label="Filtros del catálogo">
+      <div class="campo">
+        <label for="f-texto">Buscar</label>
+        <input id="f-texto" name="texto" type="search" class="input" placeholder="Nombre o descripción" autocomplete="off">
+      </div>
+      <div class="campo">
+        <label for="f-categoria">Categoría</label>
+        <select id="f-categoria" name="categoriaId" class="input"><option value="">Todas las categorías</option></select>
+      </div>
+      <div class="campo">
+        <label for="f-estado">Estado</label>
+        <select id="f-estado" name="estado" class="input"><option value="">Todas (excepto inactivas)</option><option value="DISPONIBLE">Disponible</option><option value="EN_MANTENIMIENTO">En mantenimiento</option><option value="DANADA">Dañada</option></select>
+      </div>
+          <div class="acciones">
+            <button class="btn btn--primario" type="submit">Buscar</button>
+            <button class="btn btn--fantasma" type="button" id="limpiar">Limpiar filtros</button>
+          </div>
+        </form>
+      </aside>
+      <section aria-labelledby="titulo-resultados">
+        <h2 class="sr-only" id="titulo-resultados">Resultados</h2>
+        <div id="resultados"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer id="pie"></footer>
+</body>
+</html>

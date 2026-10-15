@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión · RentaHerramientas</title>
+  <meta name="description" content="Ingresa para gestionar tus reservas, pagos y herramientas.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script type="module" src="/js/paginas/login.js"></script>
+</head>
+<body>
+  <a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
+  <header id="encabezado"></header>
+
+  <main id="contenido" class="contenedor auth" tabindex="-1">
+    <section class="tarjeta auth__tarjeta" aria-labelledby="titulo-login">
+      <div class="auth__cabecera">
+        <h1 id="titulo-login">Inicia sesión</h1>
+        <p>Gestiona tus reservas, pagos y herramientas.</p>
+      </div>
+      <p id="aviso-siguiente" class="aviso aviso--info" style="margin-bottom:1rem"></p>
+      <form id="form-login" class="formulario" novalidate>
+        <div class="aviso aviso--peligro" role="alert" data-aviso></div>
+    <div class="campo">
+      <label for="login-email">Correo electrónico<span class="requerido" aria-hidden="true"> *</span></label>
+      <input id="login-email" name="email" type="email" required aria-describedby="login-email-error" autocomplete="email" maxlength="150">
+      <p class="campo__error" id="login-email-error"></p>
+    </div>
+    <div class="campo">
+      <label for="login-password">Contraseña<span class="requerido" aria-hidden="true"> *</span></label>
+      <input id="login-password" name="password" type="password" required aria-describedby="login-password-error" autocomplete="current-password" maxlength="72">
+      <p class="campo__error" id="login-password-error"></p>
+    </div>
+        <button class="btn btn--primario btn--lg btn--bloque" type="submit"><span>Ingresar</span></button>
+      </form>
+      <p class="texto-centro texto-sm" style="margin-top:1.5rem">¿No tienes cuenta? <a href="/registro.html">Crea una gratis</a></p>
+    </section>
+  </main>
+
+  <footer id="pie"></footer>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Herramientas · RentaHerramientas</title>
+  <meta name="description" content="Supervisión del estado de las herramientas.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script type="module" src="/js/paginas/admin-herramientas.js"></script>
+</head>
+<body>
+  <a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
+  <header id="encabezado"></header>
+
+  <main id="contenido" class="pagina contenedor" tabindex="-1">
+    <div class="encabezado-pagina">
+      <div>
+        <h1>Herramientas</h1>
+        <p>Supervisa el catálogo y corrige el estado de cualquier herramienta.</p>
+      </div>
+    </div>
+
+    <form id="filtros" class="tarjeta filtros" role="search" aria-label="Filtros">
+      <div class="campo">
+        <label for="f-texto">Buscar</label>
+        <input id="f-texto" name="texto" type="search" class="input" placeholder="Nombre o descripción" autocomplete="off">
+      </div>
+      <div class="campo">
+        <label for="f-categoria">Categoría</label>
+        <select id="f-categoria" name="categoriaId" class="input"><option value="">Todas las categorías</option></select>
+      </div>
+      <div class="campo">
+        <label for="f-estado">Estado</label>
+        <select id="f-estado" name="estado" class="input"><option value="">Todas (excepto inactivas)</option><option value="DISPONIBLE">Disponible</option><option value="EN_MANTENIMIENTO">En mantenimiento</option><option value="DANADA">Dañada</option><option value="INACTIVA">Inactiva</option></select>
+      </div>
+      <div class="acciones"><button class="btn btn--secundario" type="submit">Buscar</button></div>
+    </form>
+    <section style="margin-top:1.5rem" aria-label="Listado de herramientas"><div id="lista"></div></section>
+  </main>
+
+  <footer id="pie"></footer>
+</body>
+</html>

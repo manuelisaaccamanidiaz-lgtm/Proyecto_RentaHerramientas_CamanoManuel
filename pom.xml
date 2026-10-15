@@ -21,6 +21,7 @@
         <module>domain</module>
         <module>application</module>
         <module>infrastructure</module>
+        <module>frontend</module>
         <module>bootstrap</module>
     </modules>
 
@@ -58,6 +59,11 @@
             <dependency>
                 <groupId>com.rentaherramientas</groupId>
                 <artifactId>infrastructure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rentaherramientas</groupId>
+                <artifactId>frontend</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

@@ -19,6 +19,11 @@
             <groupId>com.rentaherramientas</groupId>
             <artifactId>infrastructure</artifactId>
         </dependency>
+        <!-- Páginas, estilos y scripts del frontend (classpath:/static/), mismo origen que la API. -->
+        <dependency>
+            <groupId>com.rentaherramientas</groupId>
+            <artifactId>frontend</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

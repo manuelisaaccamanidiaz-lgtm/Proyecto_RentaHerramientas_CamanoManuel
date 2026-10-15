@@ -38,9 +38,13 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         // Spring Boot reenvía los errores a /error; sin esto un 400/404 llegaría como 401.
                         .requestMatchers("/error").permitAll()
-                        // Imágenes del catálogo, servidas como recursos estáticos: las subidas por los
-                        // proveedores (/uploads) y las ilustraciones de los datos semilla (/img).
-                        .requestMatchers(HttpMethod.GET, "/uploads/**", "/img/**").permitAll()
+                        // Frontend (módulo frontend, classpath:/static/): las páginas, estilos y scripts
+                        // son públicos; los DATOS que muestran los protege la API con el JWT. /img
+                        // incluye las ilustraciones de los datos semilla.
+                        .requestMatchers(HttpMethod.GET, "/", "/*.html", "/css/**", "/js/**", "/img/**",
+                                "/cliente/**", "/proveedor/**", "/admin/**").permitAll()
+                        // Imágenes subidas por los proveedores, servidas como recursos estáticos.
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         // Catálogo público de solo lectura. La disponibilidad (rental) va ANTES de la
                         // regla general /api/herramientas/**, que la dejaría solo para PROVEEDOR/ADMIN.
                         .requestMatchers(HttpMethod.GET, "/api/categorias", "/api/categorias/*").permitAll()
