@@ -2,9 +2,10 @@ package com.rentaherramientas.application.identity.usecase;
 
 import com.rentaherramientas.application.identity.dto.UsuarioResponse;
 import com.rentaherramientas.application.identity.exception.UsuarioNoEncontradoException;
+import com.rentaherramientas.application.shared.dto.PaginaResponse;
+import com.rentaherramientas.domain.identity.model.valueobject.Rol;
 import com.rentaherramientas.domain.identity.port.repository.UsuarioRepository;
-
-import java.util.List;
+import com.rentaherramientas.domain.shared.model.SolicitudPagina;
 
 /**
  * Consultas de solo lectura sobre usuarios; siempre devuelve DTOs, nunca el agregado.
@@ -25,9 +26,8 @@ public class ConsultarUsuarioService implements ConsultarUsuarioUseCase {
     }
 
     @Override
-    public List<UsuarioResponse> listarTodos() {
-        return usuarioRepository.buscarTodos().stream()
-                .map(UsuarioResponse::desde)
-                .toList();
+    public PaginaResponse<UsuarioResponse> listar(Rol rol, int pagina, int tamano) {
+        return PaginaResponse.desde(usuarioRepository.buscar(rol, new SolicitudPagina(pagina, tamano)),
+                UsuarioResponse::desde);
     }
 }

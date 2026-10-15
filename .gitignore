@@ -11,3 +11,6 @@ target/
 .settings/
 .project
 .classpath
+
+# Imágenes subidas en desarrollo (app.uploads.dir)
+uploads/

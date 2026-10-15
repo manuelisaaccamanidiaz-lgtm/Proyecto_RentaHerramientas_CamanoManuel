@@ -2,8 +2,10 @@ package com.rentaherramientas.domain.identity.port.repository;
 
 import com.rentaherramientas.domain.identity.model.aggregate.Usuario;
 import com.rentaherramientas.domain.identity.model.valueobject.Email;
+import com.rentaherramientas.domain.identity.model.valueobject.Rol;
+import com.rentaherramientas.domain.shared.model.Pagina;
+import com.rentaherramientas.domain.shared.model.SolicitudPagina;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -21,6 +23,6 @@ public interface UsuarioRepository {
 
     boolean existePorEmail(Email email);
 
-    /** Todos los usuarios ordenados por id. */
-    List<Usuario> buscarTodos();
+    /** Usuarios ordenados por id; si rol no es null, solo los de ese rol. */
+    Pagina<Usuario> buscar(Rol rol, SolicitudPagina pagina);
 }

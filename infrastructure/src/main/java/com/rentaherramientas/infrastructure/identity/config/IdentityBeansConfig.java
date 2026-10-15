@@ -2,8 +2,12 @@ package com.rentaherramientas.infrastructure.identity.config;
 
 import com.rentaherramientas.application.identity.port.CodificadorPassword;
 import com.rentaherramientas.application.identity.port.GeneradorToken;
+import com.rentaherramientas.application.identity.usecase.ActualizarUsuarioService;
+import com.rentaherramientas.application.identity.usecase.ActualizarUsuarioUseCase;
 import com.rentaherramientas.application.identity.usecase.AutenticarUsuarioService;
 import com.rentaherramientas.application.identity.usecase.AutenticarUsuarioUseCase;
+import com.rentaherramientas.application.identity.usecase.CambiarEstadoUsuarioService;
+import com.rentaherramientas.application.identity.usecase.CambiarEstadoUsuarioUseCase;
 import com.rentaherramientas.application.identity.usecase.ConsultarUsuarioService;
 import com.rentaherramientas.application.identity.usecase.ConsultarUsuarioUseCase;
 import com.rentaherramientas.application.identity.usecase.RegistrarUsuarioService;
@@ -38,5 +42,15 @@ public class IdentityBeansConfig {
     @Bean
     ConsultarUsuarioUseCase consultarUsuarioUseCase(UsuarioRepository usuarioRepository) {
         return new ConsultarUsuarioService(usuarioRepository);
+    }
+
+    @Bean
+    ActualizarUsuarioUseCase actualizarUsuarioUseCase(UsuarioRepository usuarioRepository) {
+        return new ActualizarUsuarioService(usuarioRepository);
+    }
+
+    @Bean
+    CambiarEstadoUsuarioUseCase cambiarEstadoUsuarioUseCase(UsuarioRepository usuarioRepository) {
+        return new CambiarEstadoUsuarioService(usuarioRepository);
     }
 }

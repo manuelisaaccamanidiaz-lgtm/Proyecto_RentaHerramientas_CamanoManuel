@@ -1,4 +1,4 @@
 /**
- * Adaptadores de entrada REST de catalog (controllers); se implementarán junto con los casos de uso.
+ * Adaptadores de entrada REST de catalog: categorías, herramientas e imágenes.
  */
 package com.rentaherramientas.infrastructure.catalog.adapters.in.rest;

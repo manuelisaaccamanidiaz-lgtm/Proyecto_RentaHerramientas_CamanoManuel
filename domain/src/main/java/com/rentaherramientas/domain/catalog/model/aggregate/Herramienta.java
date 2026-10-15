@@ -3,6 +3,7 @@ package com.rentaherramientas.domain.catalog.model.aggregate;
 import com.rentaherramientas.domain.catalog.event.HerramientaEstadoCambiado;
 import com.rentaherramientas.domain.catalog.exception.HerramientaSinCategoriaException;
 import com.rentaherramientas.domain.catalog.exception.ImagenDuplicadaException;
+import com.rentaherramientas.domain.catalog.exception.LimiteImagenesExcedidoException;
 import com.rentaherramientas.domain.catalog.exception.TarifaInvalidaException;
 import com.rentaherramientas.domain.catalog.exception.TransicionEstadoInvalidaException;
 import com.rentaherramientas.domain.catalog.model.valueobject.EstadoHerramienta;
@@ -21,13 +22,14 @@ import java.util.Set;
 /**
  * Raíz del agregado Herramienta. Cada instancia representa UNA unidad física
  * alquilable. Protege: tarifa positiva, al menos una categoría, orden de imágenes
- * único y la máquina de estados. El proveedor (BC identity) y las categorías
+ * único, un máximo de imágenes y la máquina de estados. El proveedor (BC identity) y las categorías
  * (otro agregado) se referencian solo por id para no acoplar agregados.
  */
 public final class Herramienta extends AggregateRoot {
 
     private static final int NOMBRE_MAX = 120;
     private static final int DESCRIPCION_MAX = 2000;
+    public static final int MAX_IMAGENES = 5;
 
     private final Long id;
     private final Long proveedorId;
@@ -83,8 +85,15 @@ public final class Herramienta extends AggregateRoot {
 
     /** Agrega la imagen al final de la galería (orden = mayor orden actual + 1). */
     public void agregarImagen(UrlImagen url) {
+        if (!admiteMasImagenes()) {
+            throw new LimiteImagenesExcedidoException(MAX_IMAGENES);
+        }
         int siguienteOrden = imagenes.stream().mapToInt(ImagenHerramienta::getOrden).max().orElse(0) + 1;
         anexarImagen(ImagenHerramienta.nueva(url, siguienteOrden));
+    }
+
+    public boolean admiteMasImagenes() {
+        return imagenes.size() < MAX_IMAGENES;
     }
 
     public void quitarImagen(int orden) {
@@ -153,6 +162,10 @@ public final class Herramienta extends AggregateRoot {
     }
 
     // -------------------------------------------------------------- lectura
+
+    public boolean perteneceA(Long usuarioId) {
+        return proveedorId.equals(usuarioId);
+    }
 
     public Long getId() {
         return id;

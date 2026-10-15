@@ -2,6 +2,7 @@ package com.rentaherramientas.domain.catalog.port.repository;
 
 import com.rentaherramientas.domain.catalog.model.aggregate.Herramienta;
 import com.rentaherramientas.domain.catalog.model.valueobject.EstadoHerramienta;
+import com.rentaherramientas.domain.shared.model.Pagina;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,4 +20,7 @@ public interface HerramientaRepository {
     List<Herramienta> buscarPorProveedorId(Long proveedorId);
 
     List<Herramienta> buscarPorEstado(EstadoHerramienta estado);
+
+    /** Búsqueda paginada con filtros opcionales, ordenada por id. */
+    Pagina<Herramienta> buscar(CriteriosBusquedaHerramienta criterios);
 }

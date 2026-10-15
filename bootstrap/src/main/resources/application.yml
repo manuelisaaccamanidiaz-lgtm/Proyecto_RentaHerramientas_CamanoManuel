@@ -17,6 +17,12 @@ spring:
     enabled: true
     locations: classpath:db/migration
 
+  servlet:
+    multipart:
+      # Imágenes de herramientas: 5 MB por archivo (más grande → 413).
+      max-file-size: 5MB
+      max-request-size: 6MB
+
 # Propiedades propias de la app. app.jwt.secret se define por perfil
 # (dev con valor por defecto, prod obligatorio desde JWT_SECRET).
 app:
@@ -29,3 +35,8 @@ app:
     # Opcionales: si alguno falta no se crea el administrador inicial.
     email: ${ADMIN_EMAIL:}
     password: ${ADMIN_PASSWORD:}
+  uploads:
+    # Directorio donde se guardan las imágenes subidas (relativo al directorio de arranque).
+    dir: ${UPLOADS_DIR:./uploads}
+  # URL pública de la API: las imágenes se publican como <public-base-url>/uploads/<archivo>.
+  public-base-url: ${PUBLIC_BASE_URL:http://localhost:8080}

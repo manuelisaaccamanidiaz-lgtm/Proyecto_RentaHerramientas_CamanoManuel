@@ -2,12 +2,16 @@ package com.rentaherramientas.infrastructure.identity.adapters.out.persistence;
 
 import com.rentaherramientas.domain.identity.model.aggregate.Usuario;
 import com.rentaherramientas.domain.identity.model.valueobject.Email;
+import com.rentaherramientas.domain.identity.model.valueobject.Rol;
 import com.rentaherramientas.domain.identity.port.repository.UsuarioRepository;
+import com.rentaherramientas.domain.shared.model.Pagina;
+import com.rentaherramientas.domain.shared.model.SolicitudPagina;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -53,7 +57,12 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Usuario> buscarTodos() {
-        return jpaRepository.findAll(Sort.by("id")).stream().map(mapper::toDomain).toList();
+    public Pagina<Usuario> buscar(Rol rol, SolicitudPagina pagina) {
+        PageRequest pageRequest = PageRequest.of(pagina.numero(), pagina.tamano(), Sort.by("id"));
+        Page<UsuarioEntity> resultado = rol == null
+                ? jpaRepository.buscarTodos(pageRequest)
+                : jpaRepository.buscarPorRol(rol, pageRequest);
+        return new Pagina<>(resultado.getContent().stream().map(mapper::toDomain).toList(),
+                pagina.numero(), pagina.tamano(), resultado.getTotalElements());
     }
 }
