@@ -1,4 +1,4 @@
 /**
- * Adaptadores de entrada REST de rental (controllers); se implementarán junto con los casos de uso.
+ * Adaptadores de entrada REST de rental: reservas y disponibilidad pública de herramientas.
  */
 package com.rentaherramientas.infrastructure.rental.adapters.in.rest;

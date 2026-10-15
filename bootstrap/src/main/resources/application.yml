@@ -40,3 +40,6 @@ app:
     dir: ${UPLOADS_DIR:./uploads}
   # URL pública de la API: las imágenes se publican como <public-base-url>/uploads/<archivo>.
   public-base-url: ${PUBLIC_BASE_URL:http://localhost:8080}
+  reservas:
+    # Cron de Spring (seg min hora día mes día-semana), hora de Bogotá. Por defecto 00:05 cada día.
+    cron-vencimiento: ${RESERVAS_CRON_VENCIMIENTO:0 5 0 * * *}

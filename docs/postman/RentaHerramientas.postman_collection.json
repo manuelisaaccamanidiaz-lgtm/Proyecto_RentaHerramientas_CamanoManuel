@@ -16,7 +16,23 @@
     { "key": "tokenCliente", "value": "" },
     { "key": "categoriaId", "value": "1" },
     { "key": "herramientaId", "value": "1" },
-    { "key": "usuarioId", "value": "1" }
+    { "key": "usuarioId", "value": "1" },
+    { "key": "reservaId", "value": "1" },
+    { "key": "fechaInicio", "value": "" },
+    { "key": "fechaFin", "value": "" }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Fechas de reserva por defecto: mañana y pasado mañana (formato ISO yyyy-MM-dd).",
+          "const iso = (dias) => { const d = new Date(); d.setDate(d.getDate() + dias); return d.toISOString().slice(0, 10); };",
+          "if (!pm.collectionVariables.get('fechaInicio')) { pm.collectionVariables.set('fechaInicio', iso(1)); }",
+          "if (!pm.collectionVariables.get('fechaFin')) { pm.collectionVariables.set('fechaFin', iso(2)); }"
+        ]
+      }
+    }
   ],
   "item": [
     {
@@ -285,6 +301,148 @@
         {
           "name": "Activar",
           "request": { "method": "PATCH", "url": "{{baseUrl}}/api/admin/usuarios/{{usuarioId}}/activar" }
+        }
+      ]
+    },
+    {
+      "name": "7. Reservas",
+      "description": "Flujo sugerido: Crear (CLIENTE) → Aceptar → Entregar → Devolver → Reportar daño (PROVEEDOR dueño). fechaInicio/fechaFin se rellenan solas (mañana y pasado mañana); cámbialas en las variables para otras fechas.",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenCliente}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Disponibilidad de una herramienta (público)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/herramientas/{{herramientaId}}/disponibilidad?desde={{fechaInicio}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herramientas", "{{herramientaId}}", "disponibilidad"],
+              "query": [
+                { "key": "desde", "value": "{{fechaInicio}}" },
+                { "key": "hasta", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear reserva (CLIENTE)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('201 Created', () => pm.response.to.have.status(201));",
+            "if (pm.response.code === 201) { pm.collectionVariables.set('reservaId', pm.response.json().id); }"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/reservas",
+            "body": { "mode": "raw", "raw": "{\n  \"herramientaId\": {{herramientaId}},\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\"\n}" }
+          }
+        },
+        {
+          "name": "Crear reserva con fechas cruzadas (409)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('409 Conflict', () => pm.response.to.have.status(409));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/reservas",
+            "body": { "mode": "raw", "raw": "{\n  \"herramientaId\": {{herramientaId}},\n  \"fechaInicio\": \"{{fechaFin}}\",\n  \"fechaFin\": \"{{fechaFin}}\"\n}" }
+          }
+        },
+        {
+          "name": "Crear reserva con fecha pasada (400)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/reservas",
+            "body": { "mode": "raw", "raw": "{\n  \"herramientaId\": {{herramientaId}},\n  \"fechaInicio\": \"2020-01-01\",\n  \"fechaFin\": \"2020-01-02\"\n}" }
+          }
+        },
+        {
+          "name": "Mis reservas (CLIENTE)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/reservas/mias?page=0&size=20" }
+        },
+        {
+          "name": "Detalle de reserva (cliente, proveedor dueño o ADMIN)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/reservas/{{reservaId}}" }
+        },
+        {
+          "name": "Reservas de mis herramientas (PROVEEDOR)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenProveedor}}", "type": "string" }] },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/proveedor/reservas?estado=PENDIENTE&page=0&size=20"
+          }
+        },
+        {
+          "name": "Aceptar (PROVEEDOR dueño o ADMIN)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenProveedor}}", "type": "string" }] },
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/reservas/{{reservaId}}/aceptar"
+          }
+        },
+        {
+          "name": "Rechazar (PROVEEDOR dueño o ADMIN)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenProveedor}}", "type": "string" }] },
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/reservas/{{reservaId}}/rechazar"
+          }
+        },
+        {
+          "name": "Entregar (PROVEEDOR dueño o ADMIN)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenProveedor}}", "type": "string" }] },
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/reservas/{{reservaId}}/entregar"
+          }
+        },
+        {
+          "name": "Devolver (PROVEEDOR dueño o ADMIN; 409 si no fue entregada)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenProveedor}}", "type": "string" }] },
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/reservas/{{reservaId}}/devolver"
+          }
+        },
+        {
+          "name": "Reportar daño (solo en DEVUELTA; marca la herramienta DANADA)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('201 Created', () => pm.response.to.have.status(201));"
+          ] } }],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenProveedor}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/reservas/{{reservaId}}/danios",
+            "body": { "mode": "raw", "raw": "{\n  \"descripcion\": \"Broca partida y carcasa rayada\",\n  \"costoEstimado\": 15000\n}" }
+          }
+        },
+        {
+          "name": "Historial con filtros (ADMIN)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}", "type": "string" }] },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reservas?estado=DEVUELTA&page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "reservas"],
+              "query": [
+                { "key": "estado", "value": "DEVUELTA" },
+                { "key": "clienteId", "value": "", "disabled": true },
+                { "key": "herramientaId", "value": "{{herramientaId}}", "disabled": true },
+                { "key": "desde", "value": "{{fechaInicio}}", "disabled": true },
+                { "key": "hasta", "value": "{{fechaFin}}", "disabled": true },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
         }
       ]
     }
