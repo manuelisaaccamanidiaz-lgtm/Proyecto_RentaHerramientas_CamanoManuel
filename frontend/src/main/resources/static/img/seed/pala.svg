@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Pala">
-  <title>Pala</title>
-  <rect width="200" height="200" rx="24" fill="#F9FBE7"/>
-  <rect x="94" y="30" width="12" height="100" rx="4" fill="#A1887F"/>
-  <rect x="80" y="25" width="40" height="12" rx="6" fill="#5D4037"/>
-  <path d="M70 125 L130 125 L125 165 Q100 185 75 165 Z" fill="#9E9E9E"/>
-</svg>

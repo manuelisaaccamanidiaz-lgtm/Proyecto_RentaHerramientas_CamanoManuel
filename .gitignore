@@ -14,3 +14,7 @@ target/
 
 # Imágenes subidas en desarrollo (app.uploads.dir)
 uploads/
+
+# Archivos de sistema de Windows / OneDrive
+desktop.ini
+Thumbs.db

@@ -568,7 +568,7 @@ Response **201**: igual a I3.
   "moneda": "COP",
   "estado": "DISPONIBLE",
   "categoriaIds": [1, 13],
-  "imagenes": [ { "orden": 1, "url": "/img/seed/taladro.svg" } ]
+  "imagenes": [ { "orden": 1, "url": "/img/seed/taladro.webp" } ]
 }
 ```
 

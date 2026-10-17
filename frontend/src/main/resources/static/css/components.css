@@ -337,6 +337,8 @@
 .herramienta__imagen {
   aspect-ratio: 4 / 3;
   width: 100%;
+  /* Igual que en .galeria__principal: sin esto gana height="300" y la foto pierde el 4:3. */
+  height: auto;
   object-fit: cover;
   background: var(--color-superficie-alt);
 }

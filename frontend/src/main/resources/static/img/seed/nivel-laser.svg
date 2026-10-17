@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Nivel láser">
-  <title>Nivel láser</title>
-  <rect width="200" height="200" rx="24" fill="#FFEBEE"/>
-  <rect x="60" y="80" width="80" height="50" rx="10" fill="#C62828"/>
-  <circle cx="100" cy="105" r="14" fill="#212121"/>
-  <circle cx="100" cy="105" r="6" fill="#FF5252"/>
-  <path d="M20 105 H86 M114 105 H180" stroke="#FF5252" stroke-width="3"/>
-  <path d="M85 130 L70 175 M115 130 L130 175 M100 130 L100 175" stroke="#424242" stroke-width="5"/>
-</svg>

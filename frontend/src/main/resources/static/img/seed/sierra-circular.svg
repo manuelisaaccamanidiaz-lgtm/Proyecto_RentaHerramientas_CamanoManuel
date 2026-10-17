@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Sierra circular">
-  <title>Sierra circular</title>
-  <rect width="200" height="200" rx="24" fill="#FFEBEE"/>
-  <circle cx="95" cy="110" r="50" fill="#CFD8DC"/>
-  <circle cx="95" cy="110" r="44" fill="none" stroke="#78909C" stroke-width="6" stroke-dasharray="8 6"/>
-  <circle cx="95" cy="110" r="10" fill="#455A64"/>
-  <path d="M60 60 L150 60 L160 85 L50 85 Z" fill="#E53935"/>
-  <rect x="120" y="40" width="40" height="22" rx="8" fill="#B71C1C"/>
-</svg>

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Martillo">
-  <title>Martillo</title>
-  <rect width="200" height="200" rx="24" fill="#FBE9E7"/>
-  <rect x="92" y="70" width="16" height="100" rx="6" fill="#8D6E63" transform="rotate(-20 100 120)"/>
-  <rect x="55" y="45" width="90" height="30" rx="6" fill="#546E7A" transform="rotate(-20 100 60)"/>
-  <rect x="135" y="40" width="20" height="16" rx="3" fill="#37474F" transform="rotate(-20 100 60)"/>
-</svg>

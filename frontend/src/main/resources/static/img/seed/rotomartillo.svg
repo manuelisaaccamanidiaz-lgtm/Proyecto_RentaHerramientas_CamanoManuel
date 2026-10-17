@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Rotomartillo">
-  <title>Rotomartillo</title>
-  <rect width="200" height="200" rx="24" fill="#E8EAF6"/>
-  <rect x="30" y="72" width="110" height="44" rx="12" fill="#3949AB"/>
-  <rect x="140" y="86" width="44" height="16" rx="3" fill="#9E9E9E"/>
-  <rect x="45" y="116" width="26" height="50" rx="8" fill="#283593"/>
-  <rect x="100" y="52" width="30" height="20" rx="6" fill="#283593"/>
-  <circle cx="60" cy="94" r="8" fill="#C5CAE9"/>
-</svg>

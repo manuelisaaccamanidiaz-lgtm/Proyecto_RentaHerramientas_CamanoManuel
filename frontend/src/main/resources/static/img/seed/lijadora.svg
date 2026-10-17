@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Lijadora">
-  <title>Lijadora</title>
-  <rect width="200" height="200" rx="24" fill="#F1F8E9"/>
-  <path d="M40 130 L160 130 L150 105 L50 105 Z" fill="#7CB342"/>
-  <rect x="35" y="130" width="130" height="14" rx="3" fill="#A1887F"/>
-  <rect x="80" y="70" width="60" height="35" rx="14" fill="#558B2F"/>
-  <circle cx="110" cy="88" r="7" fill="#DCEDC8"/>
-</svg>

@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Andamio">
-  <title>Andamio</title>
-  <rect width="200" height="200" rx="24" fill="#EFEBE9"/>
-  <rect x="45" y="30" width="10" height="150" fill="#6D4C41"/>
-  <rect x="145" y="30" width="10" height="150" fill="#6D4C41"/>
-  <rect x="45" y="70" width="110" height="10" fill="#8D6E63"/>
-  <rect x="45" y="130" width="110" height="10" fill="#8D6E63"/>
-  <path d="M55 80 L145 130 M145 80 L55 130" stroke="#A1887F" stroke-width="6"/>
-</svg>

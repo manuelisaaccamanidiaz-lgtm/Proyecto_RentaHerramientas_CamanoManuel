@@ -258,7 +258,7 @@ nuevas AS (
 ),
 imagenes AS (
     INSERT INTO herramienta_imagenes (herramienta_id, url, orden)
-    SELECT n.id, '/img/seed/' || d.imagen || '.svg', 1
+    SELECT n.id, '/img/seed/' || d.imagen || '.webp', 1
     FROM nuevas n
     JOIN datos d ON d.nombre = n.nombre
 )

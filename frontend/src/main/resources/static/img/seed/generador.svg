@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Generador eléctrico">
-  <title>Generador eléctrico</title>
-  <rect width="200" height="200" rx="24" fill="#FFFDE7"/>
-  <rect x="35" y="65" width="130" height="85" rx="10" fill="#F9A825"/>
-  <rect x="50" y="80" width="60" height="40" rx="6" fill="#424242"/>
-  <path d="M135 82 L120 108 L132 108 L124 132 L148 100 L136 100 L144 82 Z" fill="#FFFFFF"/>
-  <rect x="35" y="150" width="130" height="10" fill="#5D4037"/>
-</svg>
