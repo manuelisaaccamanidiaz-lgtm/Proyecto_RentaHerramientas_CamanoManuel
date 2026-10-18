@@ -15,10 +15,12 @@ public class CambiarEstadoUsuarioService implements CambiarEstadoUsuarioUseCase 
 
     private final UsuarioRepository usuarioRepository;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea IdentityBeansConfig. */
     public CambiarEstadoUsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
+    /** Desactiva un usuario; un administrador no puede desactivarse a sí mismo. */
     @Override
     public UsuarioResponse desactivar(Long usuarioId, Solicitante solicitante) {
         if (usuarioId.equals(solicitante.id())) {
@@ -29,6 +31,7 @@ public class CambiarEstadoUsuarioService implements CambiarEstadoUsuarioUseCase 
         return UsuarioResponse.desde(usuarioRepository.guardar(usuario));
     }
 
+    /** Reactiva un usuario. */
     @Override
     public UsuarioResponse activar(Long usuarioId) {
         Usuario usuario = buscar(usuarioId);
@@ -36,6 +39,7 @@ public class CambiarEstadoUsuarioService implements CambiarEstadoUsuarioUseCase 
         return UsuarioResponse.desde(usuarioRepository.guardar(usuario));
     }
 
+    /** Carga el usuario o lanza UsuarioNoEncontradoException (404). */
     private Usuario buscar(Long usuarioId) {
         return usuarioRepository.buscarPorId(usuarioId)
                 .orElseThrow(() -> new UsuarioNoEncontradoException(usuarioId));

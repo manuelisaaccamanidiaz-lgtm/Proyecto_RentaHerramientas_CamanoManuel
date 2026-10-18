@@ -12,6 +12,13 @@ public record TokenResponse(String token, String tipo, Instant expiraEn, Rol rol
 
     public static final String TIPO_BEARER = "Bearer";
 
+    /**
+     * Constructor adicional que fija el tipo de token a "Bearer".
+     *
+     * TÉCNICA AVANZADA (Java): constructor secundario de record
+     *   Qué hace: debe delegar en el constructor canónico con `this(...)`; sirve para ofrecer valores por
+     *     defecto.
+     */
     public TokenResponse(String token, Instant expiraEn, Rol rol) {
         this(token, TIPO_BEARER, expiraEn, rol);
     }

@@ -10,17 +10,23 @@ import java.nio.file.Path;
 /**
  * Sirve como recursos estáticos las imágenes que guarda AlmacenamientoLocalImagenes.
  * SecurityConfig deja /uploads/** público porque el catálogo es público.
+ *
+ * TÉCNICA AVANZADA (Spring MVC): `WebMvcConfigurer`
+ *   Qué hace: interfaz para personalizar Spring MVC sin reemplazar la configuración automática de Spring
+ *     Boot. Aquí se usa `addResourceHandlers` para publicar una carpeta del disco como archivos estáticos.
  */
 @Configuration
 public class UploadsWebConfig implements WebMvcConfigurer {
 
     private final String ubicacion;
 
+    /** Convierte el directorio configurado en una URI "file:/.../" terminada en barra. */
     public UploadsWebConfig(@Value("${app.uploads.dir:./uploads}") String directorio) {
         // La barra final es obligatoria: sin ella Spring trata la ubicación como un archivo.
         this.ubicacion = Path.of(directorio).toAbsolutePath().normalize().toUri().toString().replaceAll("/?$", "/");
     }
 
+    /** Publica los archivos del directorio de imágenes bajo /uploads/**. */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/uploads/**").addResourceLocations(ubicacion);

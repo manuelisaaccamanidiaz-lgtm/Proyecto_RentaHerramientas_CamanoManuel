@@ -8,6 +8,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class PagoInvalidoException extends DomainException {
 
+    /** Crea la excepción con el motivo por el que el pago no es válido. */
     public PagoInvalidoException(String mensaje) {
         super(mensaje);
     }

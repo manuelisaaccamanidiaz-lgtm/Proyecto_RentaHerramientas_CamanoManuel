@@ -36,6 +36,7 @@ public class CategoriaController {
     private final EliminarCategoriaUseCase eliminarCategoria;
     private final ConsultarCategoriaUseCase consultarCategoria;
 
+    /** Recibe los casos de uso por constructor (inyección de dependencias de Spring). */
     public CategoriaController(CrearCategoriaUseCase crearCategoria, ActualizarCategoriaUseCase actualizarCategoria,
                                EliminarCategoriaUseCase eliminarCategoria,
                                ConsultarCategoriaUseCase consultarCategoria) {
@@ -45,6 +46,7 @@ public class CategoriaController {
         this.consultarCategoria = consultarCategoria;
     }
 
+    /** GET /api/categorias : todas las categorías, ordenadas por nombre. */
     @GetMapping
     @SecurityRequirements
     @Operation(summary = "Lista todas las categorías (público)")
@@ -52,6 +54,7 @@ public class CategoriaController {
         return consultarCategoria.listar();
     }
 
+    /** GET /api/categorias/{id} : detalle de una categoría. */
     @GetMapping("/{id}")
     @SecurityRequirements
     @Operation(summary = "Detalle de una categoría (público)")
@@ -59,6 +62,7 @@ public class CategoriaController {
         return consultarCategoria.buscarPorId(id);
     }
 
+    /** POST /api/categorias : crea una categoría y responde 201 Created. */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Crea una categoría (solo ADMIN)")
@@ -66,12 +70,14 @@ public class CategoriaController {
         return crearCategoria.crear(request.toCommand());
     }
 
+    /** PUT /api/categorias/{id} : actualiza nombre y descripción. */
     @PutMapping("/{id}")
     @Operation(summary = "Actualiza una categoría (solo ADMIN)")
     public CategoriaResponse actualizar(@PathVariable Long id, @Valid @RequestBody CategoriaRequest request) {
         return actualizarCategoria.actualizar(id, request.toCommand());
     }
 
+    /** DELETE /api/categorias/{id} : elimina la categoría y responde 204 No Content. */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Elimina una categoría sin herramientas (solo ADMIN); si está en uso responde 409")

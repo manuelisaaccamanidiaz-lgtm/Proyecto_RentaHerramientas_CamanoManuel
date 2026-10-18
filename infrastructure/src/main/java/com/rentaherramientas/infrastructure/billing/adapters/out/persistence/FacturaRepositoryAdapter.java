@@ -25,41 +25,48 @@ public class FacturaRepositoryAdapter implements FacturaRepository {
     private final FacturaJpaRepository jpaRepository;
     private final FacturaPersistenceMapper mapper;
 
+    /** Recibe el repositorio de Spring Data y el mapper por constructor. */
     public FacturaRepositoryAdapter(FacturaJpaRepository jpaRepository, FacturaPersistenceMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
     }
 
+    /** Guarda la factura con sus líneas; `saveAndFlush` hace que un número o pago repetido falle aquí mismo. */
     @Override
     @Transactional
     public Factura guardar(Factura factura) {
         return mapper.toDomain(jpaRepository.saveAndFlush(mapper.toEntity(factura)));
     }
 
+    /** Busca por id y convierte la entidad en agregado. */
     @Override
     @Transactional(readOnly = true)
     public Optional<Factura> buscarPorId(Long id) {
         return jpaRepository.findById(id).map(mapper::toDomain);
     }
 
+    /** Busca por número de factura. */
     @Override
     @Transactional(readOnly = true)
     public Optional<Factura> buscarPorNumero(NumeroFactura numero) {
         return jpaRepository.findByNumero(numero.valor()).map(mapper::toDomain);
     }
 
+    /** Indica si el pago ya tiene factura. */
     @Override
     @Transactional(readOnly = true)
     public boolean existePorPagoId(Long pagoId) {
         return jpaRepository.existsByPagoId(pagoId);
     }
 
+    /** Busca la factura de un pago. */
     @Override
     @Transactional(readOnly = true)
     public Optional<Factura> buscarPorPagoId(Long pagoId) {
         return jpaRepository.findByPagoId(pagoId).map(mapper::toDomain);
     }
 
+    /** Facturas de varios pagos con sus líneas; lista vacía si no se pasan ids. */
     @Override
     @Transactional(readOnly = true)
     public List<Factura> buscarPorPagoIds(Collection<Long> pagoIds) {

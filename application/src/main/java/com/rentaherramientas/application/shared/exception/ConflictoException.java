@@ -7,6 +7,7 @@ package com.rentaherramientas.application.shared.exception;
  */
 public abstract class ConflictoException extends RuntimeException {
 
+    /** Constructor protegido: solo lo usan las subclases concretas (se traducen a HTTP 409). */
     protected ConflictoException(String mensaje) {
         super(mensaje);
     }

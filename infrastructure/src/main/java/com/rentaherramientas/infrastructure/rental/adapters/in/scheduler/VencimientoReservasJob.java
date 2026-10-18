@@ -20,10 +20,22 @@ public class VencimientoReservasJob {
 
     private final VencerReservasUseCase vencerReservas;
 
+    /** Recibe el caso de uso por constructor (inyección de dependencias de Spring). */
     public VencimientoReservasJob(VencerReservasUseCase vencerReservas) {
         this.vencerReservas = vencerReservas;
     }
 
+    /**
+     * Ejecuta el vencimiento y registra cuántas reservas pasaron a VENCIDA.
+     *
+     * TÉCNICA AVANZADA (Spring): `@Scheduled(cron = ...)`
+     *   Qué hace: Spring llama a este método automáticamente según la expresión cron (segundo, minuto, hora,
+     *     día, mes, día de la semana): `"0 5 0 * * *"` es todos los días a las 00:05. `zone` fija la zona
+     *     horaria y `${clave:valor}` permite cambiar el horario desde la configuración. Requiere
+     *     `@EnableScheduling` (está en RentalBeansConfig).
+     *   Cómo usarlo: anota un método `void` sin parámetros de un bean con `@Scheduled(cron = "...")` o
+     *     `@Scheduled(fixedRate = 60000)`.
+     */
     @Scheduled(cron = "${app.reservas.cron-vencimiento:0 5 0 * * *}", zone = RelojConfig.ZONA_NEGOCIO)
     public void vencerReservas() {
         try {

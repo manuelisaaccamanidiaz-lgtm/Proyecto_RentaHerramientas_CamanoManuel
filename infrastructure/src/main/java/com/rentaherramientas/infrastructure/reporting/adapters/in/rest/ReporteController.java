@@ -33,16 +33,19 @@ public class ReporteController {
 
     private final ConsultarReportesUseCase consultarReportes;
 
+    /** Recibe el caso de uso por constructor (inyección de dependencias de Spring). */
     public ReporteController(ConsultarReportesUseCase consultarReportes) {
         this.consultarReportes = consultarReportes;
     }
 
+    /** GET /api/admin/reportes/resumen : totales generales de la plataforma. */
     @GetMapping("/api/admin/reportes/resumen")
     @Operation(summary = "Totales: ingresos, reservas por estado, usuarios por rol y herramientas por estado (ADMIN)")
     public ResumenGeneralResponse resumen() {
         return consultarReportes.resumenGeneral();
     }
 
+    /** GET /api/admin/reportes/ingresos?desde=&hasta= : ingresos por mes. */
     @GetMapping("/api/admin/reportes/ingresos")
     @Operation(summary = "Ingresos (pagos aprobados) por mes (ADMIN)",
             description = "Por defecto los últimos 12 meses; periodo máximo 5 años.")
@@ -52,6 +55,7 @@ public class ReporteController {
         return consultarReportes.ingresosPorMes(desde, hasta);
     }
 
+    /** GET /api/admin/reportes/herramientas-mas-alquiladas?limite= : ranking de herramientas. */
     @GetMapping("/api/admin/reportes/herramientas-mas-alquiladas")
     @Operation(summary = "Ranking de herramientas por número de alquileres (ADMIN; limite 1-50)")
     public List<HerramientaAlquiladaResponse> herramientasMasAlquiladas(
@@ -59,6 +63,7 @@ public class ReporteController {
         return consultarReportes.herramientasMasAlquiladas(limite);
     }
 
+    /** GET /api/admin/reportes/clientes-frecuentes?limite= : ranking de clientes. */
     @GetMapping("/api/admin/reportes/clientes-frecuentes")
     @Operation(summary = "Ranking de clientes por número de alquileres (ADMIN; limite 1-50)")
     public List<ClienteFrecuenteResponse> clientesFrecuentes(
@@ -66,18 +71,21 @@ public class ReporteController {
         return consultarReportes.clientesFrecuentes(limite);
     }
 
+    /** GET /api/admin/reportes/inventario : herramientas por estado y por categoría. */
     @GetMapping("/api/admin/reportes/inventario")
     @Operation(summary = "Herramientas por estado y por categoría (ADMIN)")
     public InventarioResponse inventario() {
         return consultarReportes.inventario();
     }
 
+    /** GET /api/admin/reportes/rentabilidad?limite= : ingresos por herramienta y por proveedor. */
     @GetMapping("/api/admin/reportes/rentabilidad")
     @Operation(summary = "Ingresos por herramienta y por proveedor (ADMIN; limite 1-50)")
     public RentabilidadResponse rentabilidad(@RequestParam(defaultValue = LIMITE_POR_DEFECTO) int limite) {
         return consultarReportes.rentabilidad(limite);
     }
 
+    /** GET /api/proveedor/reportes/resumen : resumen de las herramientas del proveedor autenticado. */
     @GetMapping("/api/proveedor/reportes/resumen")
     @Operation(summary = "Ingresos, reservas por estado y herramientas por estado de SUS herramientas (PROVEEDOR)")
     public ResumenProveedorResponse resumenProveedor(@AuthenticationPrincipal Jwt jwt) {

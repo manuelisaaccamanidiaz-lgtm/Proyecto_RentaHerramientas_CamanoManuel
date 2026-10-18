@@ -8,5 +8,6 @@ import com.rentaherramientas.application.shared.command.Solicitante;
  */
 public interface RegistrarDevolucionUseCase {
 
+    /** Registra la devolución de la reserva indicada. */
     ReservaResponse devolver(Long reservaId, Solicitante solicitante);
 }

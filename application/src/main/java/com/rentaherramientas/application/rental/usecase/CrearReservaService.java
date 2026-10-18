@@ -34,6 +34,7 @@ public class CrearReservaService implements CrearReservaUseCase {
     private final CatalogoHerramientas catalogoHerramientas;
     private final Clock clock;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea RentalBeansConfig. */
     public CrearReservaService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas,
                                Clock clock) {
         this.reservaRepository = reservaRepository;
@@ -41,6 +42,14 @@ public class CrearReservaService implements CrearReservaUseCase {
         this.clock = clock;
     }
 
+    /**
+     * Crea una reserva PENDIENTE: solo un CLIENTE, herramienta disponible, fechas desde hoy,
+     * duración máxima y sin solaparse con otras reservas.
+     *
+     * Nota: La comprobación `existeSolapamiento` da un error claro en el caso normal, pero dos peticiones
+     *   simultáneas podrían pasarla a la vez. La garantía definitiva es la restricción EXCLUDE de PostgreSQL
+     *   (migración V5), que el adaptador traduce a la misma excepción.
+     */
     @Override
     public ReservaResponse crear(CrearReservaCommand command) {
         if (command.solicitante().rol() != Rol.CLIENTE) {

@@ -6,6 +6,7 @@ package com.rentaherramientas.application.shared.exception;
  */
 public abstract class RecursoNoEncontradoException extends RuntimeException {
 
+    /** Constructor protegido: solo lo usan las subclases concretas (se traducen a HTTP 404). */
     protected RecursoNoEncontradoException(String mensaje) {
         super(mensaje);
     }

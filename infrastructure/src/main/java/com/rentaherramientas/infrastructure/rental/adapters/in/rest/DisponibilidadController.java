@@ -23,10 +23,18 @@ public class DisponibilidadController {
 
     private final ConsultarReservasUseCase consultarReservas;
 
+    /** Recibe el caso de uso por constructor (inyección de dependencias de Spring). */
     public DisponibilidadController(ConsultarReservasUseCase consultarReservas) {
         this.consultarReservas = consultarReservas;
     }
 
+    /**
+     * GET /api/herramientas/{id}/disponibilidad?desde=&hasta= : rangos de fechas ocupados.
+     *
+     * TÉCNICA AVANZADA (Spring MVC): `@DateTimeFormat(iso = ISO.DATE)`
+     *   Qué hace: convierte el texto "2026-10-17" del query string en un `LocalDate`; si el formato no es
+     *     válido, Spring responde 400 sin entrar al método.
+     */
     @GetMapping("/api/herramientas/{id}/disponibilidad")
     @SecurityRequirements
     @Operation(summary = "Rangos de fechas ocupados de una herramienta (público)",

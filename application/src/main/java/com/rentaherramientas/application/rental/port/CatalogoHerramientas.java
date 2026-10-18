@@ -10,6 +10,7 @@ import java.util.Optional;
  */
 public interface CatalogoHerramientas {
 
+    /** Devuelve los datos de la herramienta que necesita rental (dueño, tarifa, disponibilidad). */
     Optional<HerramientaReservable> buscar(Long herramientaId);
 
     /** Ids de todas las herramientas del proveedor (incluidas las inactivas, que pueden tener historial). */

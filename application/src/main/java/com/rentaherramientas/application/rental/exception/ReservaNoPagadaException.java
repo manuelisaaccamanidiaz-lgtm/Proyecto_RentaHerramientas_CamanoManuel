@@ -8,6 +8,7 @@ import com.rentaherramientas.application.shared.exception.ConflictoException;
  */
 public class ReservaNoPagadaException extends ConflictoException {
 
+    /** Crea la excepción para una reserva que se intenta entregar sin pago aprobado. */
     public ReservaNoPagadaException(Long reservaId) {
         super("La reserva " + reservaId + " no tiene un pago aprobado; no se puede entregar la herramienta");
     }

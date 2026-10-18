@@ -9,7 +9,9 @@ import java.util.List;
  */
 public interface ConsultarCategoriaUseCase {
 
+    /** Devuelve la categoría con ese id. */
     CategoriaResponse buscarPorId(Long id);
 
+    /** Devuelve todas las categorías. */
     List<CategoriaResponse> listar();
 }

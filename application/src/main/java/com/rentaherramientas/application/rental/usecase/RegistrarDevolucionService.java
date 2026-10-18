@@ -21,6 +21,7 @@ public class RegistrarDevolucionService implements RegistrarDevolucionUseCase {
     private final ConsultaPagos consultaPagos;
     private final Clock clock;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea RentalBeansConfig. */
     public RegistrarDevolucionService(ReservaRepository reservaRepository,
                                       CatalogoHerramientas catalogoHerramientas, ConsultaPagos consultaPagos,
                                       Clock clock) {
@@ -30,6 +31,7 @@ public class RegistrarDevolucionService implements RegistrarDevolucionUseCase {
         this.clock = clock;
     }
 
+    /** Registra que el cliente devolvió la herramienta, con la hora actual del reloj inyectado. */
     @Override
     public ReservaResponse devolver(Long reservaId, Solicitante solicitante) {
         Reserva reserva = PropiedadReserva.cargarParaGestionar(reservaRepository, catalogoHerramientas,

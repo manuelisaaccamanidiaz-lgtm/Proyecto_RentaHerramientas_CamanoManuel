@@ -9,5 +9,6 @@ import com.rentaherramientas.domain.billing.model.valueobject.NumeroFactura;
  */
 public interface GeneradorNumeroFactura {
 
+    /** Devuelve el siguiente número de factura del año indicado, sin repetirse nunca. */
     NumeroFactura siguiente(int anio);
 }

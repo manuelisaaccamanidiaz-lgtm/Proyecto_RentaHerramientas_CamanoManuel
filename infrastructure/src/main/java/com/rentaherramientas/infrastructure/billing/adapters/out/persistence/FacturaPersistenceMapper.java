@@ -16,6 +16,7 @@ import java.util.List;
 @Component
 public class FacturaPersistenceMapper {
 
+    /** Convierte la entidad (con sus líneas) en el agregado Factura. */
     public Factura toDomain(FacturaEntity entity) {
         List<LineaFactura> lineas = entity.getLineas().stream()
                 .map(linea -> LineaFactura.reconstruir(
@@ -32,6 +33,7 @@ public class FacturaPersistenceMapper {
                 lineas);
     }
 
+    /** Convierte el agregado en entidad y añade sus líneas. */
     public FacturaEntity toEntity(Factura factura) {
         FacturaEntity entity = new FacturaEntity(
                 factura.getId(),

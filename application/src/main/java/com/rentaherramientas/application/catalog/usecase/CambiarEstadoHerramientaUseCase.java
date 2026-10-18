@@ -9,6 +9,7 @@ import com.rentaherramientas.application.shared.command.Solicitante;
  */
 public interface CambiarEstadoHerramientaUseCase {
 
+    /** Cambia el estado de la herramienta y devuelve el resultado. */
     HerramientaResponse cambiarEstado(CambiarEstadoHerramientaCommand command);
 
     /** "Eliminar" = inactivar: reservas e historiales siguen referenciando la herramienta. */

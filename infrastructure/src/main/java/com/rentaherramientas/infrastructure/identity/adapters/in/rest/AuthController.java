@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Adaptador de entrada público: registro y login. Solo traduce HTTP ↔ command/DTO;
  * las reglas viven en los casos de uso.
+ *
+ * Nota: `@SecurityRequirements` sin valores anula, solo en Swagger, el requisito global de token definido en
+ *   OpenApiConfig: estos endpoints son públicos.
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -28,11 +31,18 @@ public class AuthController {
     private final RegistrarUsuarioUseCase registrarUsuario;
     private final AutenticarUsuarioUseCase autenticarUsuario;
 
+    /** Recibe los casos de uso por constructor (inyección de dependencias de Spring). */
     public AuthController(RegistrarUsuarioUseCase registrarUsuario, AutenticarUsuarioUseCase autenticarUsuario) {
         this.registrarUsuario = registrarUsuario;
         this.autenticarUsuario = autenticarUsuario;
     }
 
+    /**
+     * POST /api/auth/registro : crea un CLIENTE o un PROVEEDOR y responde 201 Created.
+     *
+     * Nota: `@Valid @RequestBody`: Spring convierte el JSON en el record y valida sus anotaciones antes de
+     *   entrar al método; si falla, responde 400 (ver GlobalExceptionHandler).
+     */
     @PostMapping("/registro")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Registra un CLIENTE o un PROVEEDOR")
@@ -40,6 +50,7 @@ public class AuthController {
         return registrarUsuario.registrar(request.toCommand());
     }
 
+    /** POST /api/auth/login : valida credenciales y devuelve el token JWT. */
     @PostMapping("/login")
     @Operation(summary = "Inicia sesión y devuelve un JWT Bearer")
     public TokenResponse login(@Valid @RequestBody LoginRequest request) {

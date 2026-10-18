@@ -8,5 +8,6 @@ import com.rentaherramientas.application.catalog.dto.CategoriaResponse;
  */
 public interface ActualizarCategoriaUseCase {
 
+    /** Actualiza la categoría indicada y devuelve el resultado. */
     CategoriaResponse actualizar(Long id, GuardarCategoriaCommand command);
 }

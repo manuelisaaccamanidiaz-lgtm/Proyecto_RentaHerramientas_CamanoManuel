@@ -7,6 +7,7 @@ import com.rentaherramientas.application.shared.exception.RecursoNoEncontradoExc
  */
 public class PagoNoEncontradoException extends RecursoNoEncontradoException {
 
+    /** Crea la excepción indicando el id que no existe. */
     public PagoNoEncontradoException(Long id) {
         super("No existe el pago " + id);
     }

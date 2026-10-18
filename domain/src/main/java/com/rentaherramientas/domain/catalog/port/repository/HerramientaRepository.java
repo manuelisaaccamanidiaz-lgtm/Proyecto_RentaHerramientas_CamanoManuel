@@ -13,15 +13,19 @@ import java.util.Optional;
  */
 public interface HerramientaRepository {
 
+    /** Inserta o actualiza la herramienta (con sus imágenes y categorías) y la devuelve con id. */
     Herramienta guardar(Herramienta herramienta);
 
+    /** Busca una herramienta por id; vacío si no existe. */
     Optional<Herramienta> buscarPorId(Long id);
 
+    /** Devuelve todas las herramientas de un proveedor. */
     List<Herramienta> buscarPorProveedorId(Long proveedorId);
 
     /** Solo los ids de las herramientas del proveedor (sin cargar imágenes ni categorías). */
     List<Long> idsPorProveedor(Long proveedorId);
 
+    /** Devuelve todas las herramientas que están en el estado indicado. */
     List<Herramienta> buscarPorEstado(EstadoHerramienta estado);
 
     /** Búsqueda paginada con filtros opcionales, ordenada por id. */

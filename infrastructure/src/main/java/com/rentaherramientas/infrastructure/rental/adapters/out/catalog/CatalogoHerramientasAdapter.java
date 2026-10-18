@@ -19,10 +19,12 @@ public class CatalogoHerramientasAdapter implements CatalogoHerramientas {
 
     private final HerramientaRepository herramientaRepository;
 
+    /** Recibe el repositorio de herramientas de catalog por constructor. */
     public CatalogoHerramientasAdapter(HerramientaRepository herramientaRepository) {
         this.herramientaRepository = herramientaRepository;
     }
 
+    /** Traduce la herramienta de catalog a los datos mínimos que necesita rental. */
     @Override
     public Optional<HerramientaReservable> buscar(Long herramientaId) {
         return herramientaRepository.buscarPorId(herramientaId)
@@ -33,6 +35,7 @@ public class CatalogoHerramientasAdapter implements CatalogoHerramientas {
                         herramienta.estaDisponible()));
     }
 
+    /** Ids de las herramientas del proveedor. */
     @Override
     public List<Long> idsDelProveedor(Long proveedorId) {
         return herramientaRepository.idsPorProveedor(proveedorId);

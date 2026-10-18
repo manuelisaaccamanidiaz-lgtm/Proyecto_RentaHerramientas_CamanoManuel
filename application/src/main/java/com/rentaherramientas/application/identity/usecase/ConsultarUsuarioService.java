@@ -14,10 +14,12 @@ public class ConsultarUsuarioService implements ConsultarUsuarioUseCase {
 
     private final UsuarioRepository usuarioRepository;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea IdentityBeansConfig. */
     public ConsultarUsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
+    /** Devuelve el usuario o lanza UsuarioNoEncontradoException (404). */
     @Override
     public UsuarioResponse buscarPorId(Long id) {
         return usuarioRepository.buscarPorId(id)
@@ -25,6 +27,7 @@ public class ConsultarUsuarioService implements ConsultarUsuarioUseCase {
                 .orElseThrow(() -> new UsuarioNoEncontradoException(id));
     }
 
+    /** Lista usuarios paginados, opcionalmente filtrados por rol. */
     @Override
     public PaginaResponse<UsuarioResponse> listar(Rol rol, int pagina, int tamano) {
         return PaginaResponse.desde(usuarioRepository.buscar(rol, new SolicitudPagina(pagina, tamano)),

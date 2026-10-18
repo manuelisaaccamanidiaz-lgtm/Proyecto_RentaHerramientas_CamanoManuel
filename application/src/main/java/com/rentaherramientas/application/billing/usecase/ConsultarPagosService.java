@@ -30,6 +30,7 @@ public class ConsultarPagosService implements ConsultarPagosUseCase {
     private final FacturaRepository facturaRepository;
     private final ConsultaReservas consultaReservas;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea BillingBeansConfig. */
     public ConsultarPagosService(PagoRepository pagoRepository, FacturaRepository facturaRepository,
                                  ConsultaReservas consultaReservas) {
         this.pagoRepository = pagoRepository;
@@ -37,6 +38,7 @@ public class ConsultarPagosService implements ConsultarPagosUseCase {
         this.consultaReservas = consultaReservas;
     }
 
+    /** Devuelve un pago (con su factura, si tiene) si el solicitante tiene acceso a su reserva. */
     @Override
     public PagoResponse porId(Long pagoId, Solicitante solicitante) {
         Pago pago = pagoRepository.buscarPorId(pagoId).orElseThrow(() -> new PagoNoEncontradoException(pagoId));
@@ -45,21 +47,32 @@ public class ConsultarPagosService implements ConsultarPagosUseCase {
         return PagoResponse.desde(pago, facturaRepository.buscarPorPagoId(pagoId).orElse(null));
     }
 
+    /** Pagos de las reservas del cliente. */
     @Override
     public PaginaResponse<PagoResponse> misPagos(Long clienteId, int pagina, int tamano) {
         return buscar(consultaReservas.reservaIdsDelCliente(clienteId), null, pagina, tamano);
     }
 
+    /** Pagos de las reservas de herramientas del proveedor. */
     @Override
     public PaginaResponse<PagoResponse> delProveedor(Long proveedorId, int pagina, int tamano) {
         return buscar(consultaReservas.reservaIdsDelProveedor(proveedorId), null, pagina, tamano);
     }
 
+    /** Historial de todos los pagos con filtros de estado, método y fechas. */
     @Override
     public PaginaResponse<PagoResponse> historial(FiltroHistorialPagos filtro) {
         return buscar(null, filtro, filtro.pagina(), filtro.tamano());
     }
 
+    /**
+     * Busca la página de pagos y carga sus facturas con una sola consulta.
+     *
+     * TÉCNICA AVANZADA (Java): `Collectors.toMap` + `Function.identity()`
+     *   Qué hace: convierte la lista de facturas en un `Map<pagoId, Factura>`; la clave sale de
+     *     `Factura::getPagoId` y el valor es la propia factura. Después cada pago busca su factura en el mapa
+     *     en tiempo constante, evitando N consultas (problema N+1).
+     */
     private PaginaResponse<PagoResponse> buscar(Collection<Long> reservaIds, FiltroHistorialPagos filtro,
                                                 int pagina, int tamano) {
         CriteriosBusquedaPago criterios = new CriteriosBusquedaPago(

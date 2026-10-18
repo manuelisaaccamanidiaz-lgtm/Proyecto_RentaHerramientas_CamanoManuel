@@ -15,11 +15,13 @@ public class RechazarReservaService implements RechazarReservaUseCase {
     private final ReservaRepository reservaRepository;
     private final CatalogoHerramientas catalogoHerramientas;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea RentalBeansConfig. */
     public RechazarReservaService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas) {
         this.reservaRepository = reservaRepository;
         this.catalogoHerramientas = catalogoHerramientas;
     }
 
+    /** El proveedor de la herramienta (o un ADMIN) rechaza una reserva PENDIENTE. */
     @Override
     public ReservaResponse rechazar(Long reservaId, Solicitante solicitante) {
         Reserva reserva = PropiedadReserva.cargarParaGestionar(reservaRepository, catalogoHerramientas,

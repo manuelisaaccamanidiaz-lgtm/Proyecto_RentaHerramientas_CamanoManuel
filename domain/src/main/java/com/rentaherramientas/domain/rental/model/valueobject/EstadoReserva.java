@@ -13,6 +13,13 @@ public enum EstadoReserva {
     DEVUELTA,
     VENCIDA;
 
+    /**
+     * Indica si se permite pasar del estado actual al estado destino.
+     *
+     * TÉCNICA AVANZADA (Java): varias constantes en un mismo `case`
+     *   Qué hace: `case RECHAZADA, DEVUELTA, VENCIDA -> false;` agrupa los estados finales, de los que ya no
+     *     se puede salir.
+     */
     public boolean puedeCambiarA(EstadoReserva destino) {
         return switch (this) {
             case PENDIENTE -> destino == ACEPTADA || destino == RECHAZADA || destino == VENCIDA;

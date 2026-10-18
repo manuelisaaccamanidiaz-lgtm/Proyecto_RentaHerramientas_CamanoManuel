@@ -7,6 +7,7 @@ import com.rentaherramientas.application.shared.exception.RecursoNoEncontradoExc
  */
 public class ImagenNoEncontradaException extends RecursoNoEncontradoException {
 
+    /** Crea la excepción indicando la herramienta y la posición de imagen que no existe. */
     public ImagenNoEncontradaException(Long herramientaId, int orden) {
         super("La herramienta " + herramientaId + " no tiene imagen en la posición " + orden);
     }

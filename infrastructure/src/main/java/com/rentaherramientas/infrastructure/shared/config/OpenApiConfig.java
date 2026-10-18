@@ -18,6 +18,7 @@ public class OpenApiConfig {
 
     public static final String SECURITY_SCHEME = "bearer-jwt";
 
+    /** Metadatos de la API y esquema de seguridad Bearer JWT que muestra Swagger UI (/swagger-ui.html). */
     @Bean
     OpenAPI rentaHerramientasOpenApi() {
         return new OpenAPI()

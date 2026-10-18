@@ -8,6 +8,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class ImagenDuplicadaException extends DomainException {
 
+    /** Crea la excepción indicando la posición que ya está ocupada. */
     public ImagenDuplicadaException(int orden) {
         super("Ya existe una imagen en la posición " + orden);
     }

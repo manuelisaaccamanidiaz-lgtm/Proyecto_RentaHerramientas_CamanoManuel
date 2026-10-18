@@ -25,36 +25,42 @@ public class HerramientaRepositoryAdapter implements HerramientaRepository {
     private final HerramientaJpaRepository jpaRepository;
     private final HerramientaPersistenceMapper mapper;
 
+    /** Recibe el repositorio de Spring Data y el mapper por constructor. */
     public HerramientaRepositoryAdapter(HerramientaJpaRepository jpaRepository,
                                         HerramientaPersistenceMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
     }
 
+    /** Guarda la herramienta con sus imágenes y categorías y devuelve el agregado actualizado. */
     @Override
     @Transactional
     public Herramienta guardar(Herramienta herramienta) {
         return mapper.toDomain(jpaRepository.save(mapper.toEntity(herramienta)));
     }
 
+    /** Busca por id y convierte la entidad en agregado. */
     @Override
     @Transactional(readOnly = true)
     public Optional<Herramienta> buscarPorId(Long id) {
         return jpaRepository.findById(id).map(mapper::toDomain);
     }
 
+    /** Todas las herramientas de un proveedor. */
     @Override
     @Transactional(readOnly = true)
     public List<Herramienta> buscarPorProveedorId(Long proveedorId) {
         return jpaRepository.findByProveedorId(proveedorId).stream().map(mapper::toDomain).toList();
     }
 
+    /** Ids de las herramientas de un proveedor. */
     @Override
     @Transactional(readOnly = true)
     public List<Long> idsPorProveedor(Long proveedorId) {
         return jpaRepository.idsPorProveedor(proveedorId);
     }
 
+    /** Todas las herramientas en un estado. */
     @Override
     @Transactional(readOnly = true)
     public List<Herramienta> buscarPorEstado(EstadoHerramienta estado) {

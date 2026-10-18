@@ -10,8 +10,10 @@ import java.util.Optional;
  */
 public interface ConsultaReservas {
 
+    /** Devuelve los datos de la reserva que necesita billing (cliente, proveedor, estado, precio). */
     Optional<ReservaFacturable> buscar(Long reservaId);
 
+    /** Ids de todas las reservas de un cliente; sirve para filtrar sus pagos y facturas. */
     List<Long> reservaIdsDelCliente(Long clienteId);
 
     /** Reservas de todas las herramientas del proveedor. */

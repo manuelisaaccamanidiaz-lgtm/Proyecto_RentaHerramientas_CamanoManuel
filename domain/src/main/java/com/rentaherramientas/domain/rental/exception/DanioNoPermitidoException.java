@@ -9,6 +9,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class DanioNoPermitidoException extends DomainException {
 
+    /** Crea la excepción indicando el estado en que está la reserva. */
     public DanioNoPermitidoException(EstadoReserva estadoActual) {
         super("Solo se pueden reportar daños en reservas DEVUELTA; la reserva está " + estadoActual);
     }

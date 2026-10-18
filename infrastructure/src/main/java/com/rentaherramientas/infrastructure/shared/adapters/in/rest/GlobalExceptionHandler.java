@@ -35,13 +35,29 @@ import java.util.Map;
  * método no soportado...) también respondan 4xx con ProblemDetail en vez de
  * caer en el 500 genérico. Spring elige el handler de la excepción más
  * específica, por eso las subclases de DomainException tienen el suyo.
+ *
+ * TÉCNICA AVANZADA (Spring): `@RestControllerAdvice` + `@ExceptionHandler`
+ *   Qué hace: un único bean intercepta las excepciones que lanzan TODOS los controllers y las convierte en
+ *     respuestas HTTP. Así ningún controller necesita try/catch.
+ *   Cómo usarlo: añade un método `@ExceptionHandler(MiExcepcion.class)` que devuelva un `ProblemDetail` (o
+ *     `ResponseEntity`); Spring elige el más específico.
+ *
+ * TÉCNICA AVANZADA (Spring 6): `ProblemDetail` (RFC 9457)
+ *   Qué hace: formato estándar de error JSON con `type`, `title`, `status`, `detail` y propiedades extra con
+ *     `setProperty`. El frontend puede leer siempre los errores de la misma forma.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    /** 400 con el detalle por campo en la propiedad "errores". */
+    /**
+     * 400 con el detalle por campo en la propiedad "errores".
+     *
+     * TÉCNICA AVANZADA (Spring): sobrescribir un handler de Spring MVC
+     *   Qué hace: este método se ejecuta cuando falla `@Valid` en un `@RequestBody`. `putIfAbsent` conserva
+     *     solo el primer error de cada campo.
+     */
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers, HttpStatusCode status,
@@ -68,26 +84,31 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problema, headers, HttpStatus.CONTENT_TOO_LARGE, request);
     }
 
+    /** 400: un value object o atributo del dominio recibió un valor con formato o rango inválido. */
     @ExceptionHandler(ValorInvalidoException.class)
     ProblemDetail valorInvalido(ValorInvalidoException ex) {
         return problema(HttpStatus.BAD_REQUEST, "Valor inválido", ex.getMessage());
     }
 
+    /** 400: el registro público pidió un rol distinto de CLIENTE o PROVEEDOR. */
     @ExceptionHandler(RolNoPermitidoException.class)
     ProblemDetail rolNoPermitido(RolNoPermitidoException ex) {
         return problema(HttpStatus.BAD_REQUEST, "Rol no permitido", ex.getMessage());
     }
 
+    /** 401: email o contraseña incorrectos en el login. */
     @ExceptionHandler(CredencialesInvalidasException.class)
     ProblemDetail credencialesInvalidas(CredencialesInvalidasException ex) {
         return problema(HttpStatus.UNAUTHORIZED, "No autenticado", ex.getMessage());
     }
 
+    /** 403: el usuario está desactivado. */
     @ExceptionHandler(UsuarioInactivoException.class)
     ProblemDetail usuarioInactivo(UsuarioInactivoException ex) {
         return problema(HttpStatus.FORBIDDEN, "Usuario inactivo", ex.getMessage());
     }
 
+    /** 403: el usuario está autenticado pero no puede actuar sobre ese recurso (no es su dueño). */
     @ExceptionHandler(AccesoDenegadoException.class)
     ProblemDetail accesoDenegado(AccesoDenegadoException ex) {
         return problema(HttpStatus.FORBIDDEN, "Acceso denegado", ex.getMessage());
@@ -99,6 +120,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problema(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
     }
 
+    /** 409: ya existe un usuario con ese email. */
     @ExceptionHandler(EmailYaRegistradoException.class)
     ProblemDetail emailYaRegistrado(EmailYaRegistradoException ex) {
         return problema(HttpStatus.CONFLICT, "Email ya registrado", ex.getMessage());
@@ -110,7 +132,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problema(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
     }
 
-    /** Restricción de la BD violada (UNIQUE, FK). El mensaje real revelaría el esquema: se registra y no se expone. */
+    /**
+     * Restricción de la BD violada (UNIQUE, FK). El mensaje real revelaría el esquema: se registra y no se expone.
+     *
+     * Nota: `getMostSpecificCause()` recorre la cadena de causas y devuelve la excepción original del driver
+     *   de PostgreSQL, que contiene el nombre de la restricción violada.
+     */
     @ExceptionHandler(DataIntegrityViolationException.class)
     ProblemDetail integridadDatos(DataIntegrityViolationException ex) {
         log.warn("Violación de integridad de datos: {}", ex.getMostSpecificCause().getMessage());
@@ -124,6 +151,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problema(HttpStatus.CONFLICT, "Regla de negocio incumplida", ex.getMessage());
     }
 
+    /**
+     * 500: red de seguridad para cualquier otra excepción. Registra la traza completa en el log y
+     * responde un mensaje genérico, sin filtrar detalles internos al cliente.
+     */
     @ExceptionHandler(Exception.class)
     ProblemDetail inesperado(Exception ex) {
         log.error("Error no controlado", ex);
@@ -131,6 +162,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "Ocurrió un error inesperado. Inténtalo de nuevo más tarde.");
     }
 
+    /** Construye un ProblemDetail con estado, título y detalle. */
     private static ProblemDetail problema(HttpStatus status, String titulo, String detalle) {
         ProblemDetail problema = ProblemDetail.forStatusAndDetail(status, detalle);
         problema.setTitle(titulo);

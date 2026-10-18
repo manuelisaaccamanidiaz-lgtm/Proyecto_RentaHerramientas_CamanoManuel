@@ -7,6 +7,7 @@ import com.rentaherramientas.application.shared.exception.ConflictoException;
  */
 public class CategoriaDuplicadaException extends ConflictoException {
 
+    /** Crea la excepción indicando el nombre repetido. */
     public CategoriaDuplicadaException(String nombre) {
         super("Ya existe una categoría llamada " + nombre);
     }

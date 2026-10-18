@@ -18,15 +18,24 @@ public class ConsultaTercerosAdapter implements ConsultaTerceros {
 
     private final UsuarioRepository usuarioRepository;
 
+    /** Recibe el repositorio de usuarios de identity por constructor. */
     public ConsultaTercerosAdapter(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
+    /** Busca el usuario y lo traduce a los datos que se imprimen en la factura. */
     @Override
     public Optional<Tercero> buscar(Long usuarioId) {
         return usuarioRepository.buscarPorId(usuarioId).map(ConsultaTercerosAdapter::tercero);
     }
 
+    /**
+     * Proveedor: razón social y NIT. Cliente: nombre, cédula, teléfono y dirección. Otro: solo nombre y email.
+     *
+     * TÉCNICA AVANZADA (Java 9+): `Optional.or(...)`
+     *   Qué hace: si el primer Optional está vacío, prueba con otro Optional alternativo (aquí, los datos de
+     *     cliente); al final `orElse` da un valor por defecto. Encadena alternativas sin `if/else`.
+     */
     private static Tercero tercero(Usuario usuario) {
         String email = usuario.getEmail().valor();
         return usuario.getDatosProveedor()

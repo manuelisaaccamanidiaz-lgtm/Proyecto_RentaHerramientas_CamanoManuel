@@ -7,6 +7,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class LimiteImagenesExcedidoException extends DomainException {
 
+    /** Crea la excepción indicando el número máximo de imágenes permitido. */
     public LimiteImagenesExcedidoException(int maximo) {
         super("Una herramienta admite como máximo " + maximo + " imágenes");
     }

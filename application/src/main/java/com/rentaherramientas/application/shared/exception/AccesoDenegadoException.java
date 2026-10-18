@@ -7,6 +7,7 @@ package com.rentaherramientas.application.shared.exception;
  */
 public class AccesoDenegadoException extends RuntimeException {
 
+    /** Crea la excepción con el motivo del rechazo (se traduce a HTTP 403). */
     public AccesoDenegadoException(String mensaje) {
         super(mensaje);
     }

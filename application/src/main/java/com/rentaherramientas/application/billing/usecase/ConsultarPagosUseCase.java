@@ -14,9 +14,12 @@ public interface ConsultarPagosUseCase {
     /** Visible para el cliente de la reserva, el proveedor de la herramienta o un ADMIN. */
     PagoResponse porId(Long pagoId, Solicitante solicitante);
 
+    /** Pagos del cliente indicado. */
     PaginaResponse<PagoResponse> misPagos(Long clienteId, int pagina, int tamano);
 
+    /** Pagos de las herramientas del proveedor indicado. */
     PaginaResponse<PagoResponse> delProveedor(Long proveedorId, int pagina, int tamano);
 
+    /** Historial de pagos con filtros. */
     PaginaResponse<PagoResponse> historial(FiltroHistorialPagos filtro);
 }

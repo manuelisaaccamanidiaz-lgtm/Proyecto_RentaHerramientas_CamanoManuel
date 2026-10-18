@@ -8,6 +8,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class HerramientaSinCategoriaException extends DomainException {
 
+    /** Crea la excepción con un mensaje fijo, porque la regla no depende de datos concretos. */
     public HerramientaSinCategoriaException() {
         super("La herramienta debe pertenecer al menos a una categoría");
     }

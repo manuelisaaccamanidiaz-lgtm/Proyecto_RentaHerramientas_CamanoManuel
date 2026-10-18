@@ -17,6 +17,7 @@ public record DatosProveedor(String razonSocial, String nit) {
     /** NIT colombiano: 6 a 10 dígitos con dígito de verificación opcional (900123456-7). */
     private static final Pattern FORMATO_NIT = Pattern.compile("^[0-9]{6,10}(-[0-9])?$");
 
+    /** Constructor compacto: recorta y valida razón social y el formato del NIT. */
     public DatosProveedor {
         razonSocial = Validaciones.textoRequerido(razonSocial, "razonSocial", RAZON_SOCIAL_MAX);
         nit = Validaciones.textoRequerido(nit, "nit", NIT_MAX);

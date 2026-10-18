@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
  */
 public record PagarReservaRequest(@NotNull Long reservaId, @NotNull MetodoPago metodo) {
 
+    /** Convierte el cuerpo HTTP en el command de aplicación, con el cliente tomado del JWT. */
     public PagarReservaCommand toCommand(Solicitante solicitante) {
         return new PagarReservaCommand(solicitante, reservaId, metodo);
     }

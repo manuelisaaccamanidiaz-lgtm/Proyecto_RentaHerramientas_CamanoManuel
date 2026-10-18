@@ -18,6 +18,14 @@ import java.util.List;
 @EnableConfigurationProperties(CorsProperties.class)
 public class CorsConfig {
 
+    /**
+     * Define qué orígenes, métodos y cabeceras puede usar el navegador al llamar a la API desde
+     * otro dominio. `setMaxAge(3600)` permite al navegador cachear el preflight una hora.
+     *
+     * TÉCNICA AVANZADA (Spring): `@EnableConfigurationProperties`
+     *   Qué hace: registra el record `CorsProperties` como bean, rellenado desde `application.yml`, y Spring
+     *     lo inyecta como parámetro de este método `@Bean`.
+     */
     @Bean
     CorsConfigurationSource corsConfigurationSource(CorsProperties properties) {
         CorsConfiguration config = new CorsConfiguration();

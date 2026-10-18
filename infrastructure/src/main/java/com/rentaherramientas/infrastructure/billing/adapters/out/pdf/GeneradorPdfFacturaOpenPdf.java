@@ -32,6 +32,10 @@ import java.util.Locale;
  * total en formato COP ("$ 1.234.567") y la referencia del pago. Usa las fuentes
  * estándar de PDF (Helvetica, codificación WinAnsi), que cubren tildes y ñ sin
  * incrustar archivos de fuentes.
+ *
+ * Técnica avanzada — generar PDF con OpenPDF: se crea un `Document`, se asocia a un `PdfWriter` que escribe
+ *   en un `ByteArrayOutputStream` (en memoria), se abre, se añaden elementos (`Paragraph`, `PdfPTable`,
+ *   `PdfPCell`) y se cierra. Las tablas sin borde se usan para maquetar columnas.
  */
 @Component
 public class GeneradorPdfFacturaOpenPdf implements GeneradorPdfFactura {
@@ -51,6 +55,12 @@ public class GeneradorPdfFacturaOpenPdf implements GeneradorPdfFactura {
     private static final Font TOTAL = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, Font.NORMAL, AZUL);
     private static final Font PIE = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8, Font.NORMAL, Color.GRAY);
 
+    /**
+     * Construye el PDF completo de la factura y devuelve sus bytes.
+     *
+     * Nota: El bloque `finally` garantiza que el documento se cierre aunque ocurra un error; cerrar el
+     *   documento es lo que termina de escribir el PDF en el stream.
+     */
     @Override
     public byte[] generar(DocumentoFactura documento) {
         ByteArrayOutputStream salida = new ByteArrayOutputStream();
@@ -83,6 +93,12 @@ public class GeneradorPdfFacturaOpenPdf implements GeneradorPdfFactura {
         return salida.toByteArray();
     }
 
+    /**
+     * Encabezado en dos columnas: nombre de la plataforma a la izquierda y datos de la factura a la derecha.
+     *
+     * Nota: `new PdfPTable(new float[]{3, 2})` crea una tabla de dos columnas con anchos relativos 3:2 (60% y
+     *   40%).
+     */
     private static PdfPTable encabezado(FacturaResponse factura) throws DocumentException {
         PdfPTable tabla = new PdfPTable(new float[]{3, 2});
         tabla.setWidthPercentage(100);
@@ -102,6 +118,7 @@ public class GeneradorPdfFacturaOpenPdf implements GeneradorPdfFactura {
         return tabla;
     }
 
+    /** Dos recuadros del mismo ancho con los datos del proveedor y del cliente. */
     private static PdfPTable terceros(Tercero cliente, Tercero proveedor) throws DocumentException {
         PdfPTable tabla = new PdfPTable(new float[]{1, 1});
         tabla.setWidthPercentage(100);
@@ -111,6 +128,7 @@ public class GeneradorPdfFacturaOpenPdf implements GeneradorPdfFactura {
         return tabla;
     }
 
+    /** Celda con borde que lista los datos disponibles del tercero (omite los que son null). */
     private static PdfPCell recuadroTercero(String titulo, Tercero tercero) {
         PdfPCell celda = new PdfPCell();
         celda.setBorderColor(GRIS_BORDE);
@@ -132,6 +150,11 @@ public class GeneradorPdfFacturaOpenPdf implements GeneradorPdfFactura {
         return celda;
     }
 
+    /**
+     * Tabla de líneas con cabecera azul y filas de fondo alterno.
+     *
+     * Nota: `setHeaderRows(1)` repite la cabecera si la tabla continúa en otra página.
+     */
     private static PdfPTable lineas(FacturaResponse factura) throws DocumentException {
         PdfPTable tabla = new PdfPTable(new float[]{6, 1.2f, 2, 2});
         tabla.setWidthPercentage(100);
@@ -156,6 +179,7 @@ public class GeneradorPdfFacturaOpenPdf implements GeneradorPdfFactura {
         return tabla;
     }
 
+    /** Fila final con el total a pagar alineado a la derecha. */
     private static PdfPTable totales(FacturaResponse factura) throws DocumentException {
         PdfPTable tabla = new PdfPTable(new float[]{8, 3});
         tabla.setWidthPercentage(100);
@@ -170,6 +194,7 @@ public class GeneradorPdfFacturaOpenPdf implements GeneradorPdfFactura {
         return tabla;
     }
 
+    /** Celda de una línea de detalle con alineación y color de fondo dados. */
     private static PdfPCell celdaLinea(String texto, int alineacion, Color fondo) {
         PdfPCell celda = new PdfPCell(new Phrase(texto, NORMAL));
         celda.setHorizontalAlignment(alineacion);
@@ -179,18 +204,26 @@ public class GeneradorPdfFacturaOpenPdf implements GeneradorPdfFactura {
         return celda;
     }
 
+    /** Celda sin borde, usada para maquetar; acepta contenido null para añadir elementos después. */
     private static PdfPCell celdaSinBorde(Phrase contenido) {
         PdfPCell celda = contenido == null ? new PdfPCell() : new PdfPCell(contenido);
         celda.setBorder(Rectangle.NO_BORDER);
         return celda;
     }
 
+    /** Alinea el párrafo a la derecha y lo devuelve para poder encadenar. */
     private static Paragraph alineado(Paragraph parrafo) {
         parrafo.setAlignment(Element.ALIGN_RIGHT);
         return parrafo;
     }
 
-    /** Pesos colombianos: "$ 1.234.567" (sin decimales si son cero; con ",50" si los hay). */
+    /**
+     * Pesos colombianos: "$ 1.234.567" (sin decimales si son cero; con ",50" si los hay).
+     *
+     * TÉCNICA AVANZADA (Java): `DecimalFormat` con símbolos propios
+     *   Qué hace: el patrón `"#,##0.##"` agrupa miles y muestra hasta 2 decimales; `DecimalFormatSymbols`
+     *     cambia los separadores al formato colombiano (punto para miles y coma para decimales).
+     */
     static String formatoCop(BigDecimal valor) {
         DecimalFormatSymbols simbolos = DecimalFormatSymbols.getInstance(COLOMBIA);
         simbolos.setGroupingSeparator('.');

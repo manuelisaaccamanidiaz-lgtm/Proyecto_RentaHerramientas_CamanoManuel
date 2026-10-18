@@ -14,15 +14,18 @@ public class BCryptCodificadorPassword implements CodificadorPassword {
 
     private final PasswordEncoder passwordEncoder;
 
+    /** Recibe el PasswordEncoder BCrypt definido en SecurityConfig. */
     public BCryptCodificadorPassword(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /** Calcula el hash BCrypt de la contraseña. */
     @Override
     public PasswordHash codificar(String plano) {
         return new PasswordHash(passwordEncoder.encode(plano));
     }
 
+    /** Verifica la contraseña contra el hash; BCrypt extrae la sal del propio hash. */
     @Override
     public boolean coincide(String plano, PasswordHash hash) {
         return passwordEncoder.matches(plano, hash.valor());

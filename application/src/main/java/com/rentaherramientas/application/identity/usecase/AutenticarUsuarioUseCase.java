@@ -8,5 +8,6 @@ import com.rentaherramientas.application.identity.dto.TokenResponse;
  */
 public interface AutenticarUsuarioUseCase {
 
+    /** Autentica con email y contraseña y devuelve el token de acceso. */
     TokenResponse autenticar(LoginCommand command);
 }

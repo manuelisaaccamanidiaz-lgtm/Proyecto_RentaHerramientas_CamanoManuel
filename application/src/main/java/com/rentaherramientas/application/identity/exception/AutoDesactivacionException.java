@@ -8,6 +8,7 @@ import com.rentaherramientas.application.shared.exception.ConflictoException;
  */
 public class AutoDesactivacionException extends ConflictoException {
 
+    /** Crea la excepción con un mensaje fijo. */
     public AutoDesactivacionException() {
         super("Un administrador no puede desactivarse a sí mismo");
     }

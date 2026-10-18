@@ -13,6 +13,7 @@ public record NumeroFactura(String valor) {
 
     private static final Pattern FORMATO = Pattern.compile("^[A-Z0-9-]{1,30}$");
 
+    /** Constructor compacto: recorta, pasa a mayúsculas y valida el formato del número. */
     public NumeroFactura {
         if (valor == null || valor.isBlank()) {
             throw new ValorInvalidoException("El número de factura es obligatorio");

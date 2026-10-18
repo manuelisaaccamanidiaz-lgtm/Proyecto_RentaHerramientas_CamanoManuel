@@ -17,9 +17,11 @@ import com.rentaherramientas.domain.rental.port.repository.ReservaRepository;
  */
 final class PropiedadReserva {
 
+    /** Constructor privado: clase de utilidades estáticas. */
     private PropiedadReserva() {
     }
 
+    /** Carga la reserva para modificarla: solo el proveedor de la herramienta o un ADMIN. */
     static Reserva cargarParaGestionar(ReservaRepository reservaRepository, CatalogoHerramientas catalogo,
                                        Long reservaId, Solicitante solicitante) {
         Reserva reserva = cargar(reservaRepository, reservaId);
@@ -29,6 +31,7 @@ final class PropiedadReserva {
         return reserva;
     }
 
+    /** Carga la reserva para leerla: su cliente, el proveedor de la herramienta o un ADMIN. */
     static Reserva cargarParaVer(ReservaRepository reservaRepository, CatalogoHerramientas catalogo,
                                  Long reservaId, Solicitante solicitante) {
         Reserva reserva = cargar(reservaRepository, reservaId);
@@ -39,11 +42,13 @@ final class PropiedadReserva {
         return reserva;
     }
 
+    /** Carga la reserva o lanza ReservaNoEncontradaException (404). */
     private static Reserva cargar(ReservaRepository reservaRepository, Long reservaId) {
         return reservaRepository.buscarPorId(reservaId)
                 .orElseThrow(() -> new ReservaNoEncontradaException(reservaId));
     }
 
+    /** Indica si el solicitante es el PROVEEDOR dueño de la herramienta reservada. */
     private static boolean esProveedorDeLaHerramienta(CatalogoHerramientas catalogo, Reserva reserva,
                                                       Solicitante solicitante) {
         if (solicitante.rol() != Rol.PROVEEDOR) {

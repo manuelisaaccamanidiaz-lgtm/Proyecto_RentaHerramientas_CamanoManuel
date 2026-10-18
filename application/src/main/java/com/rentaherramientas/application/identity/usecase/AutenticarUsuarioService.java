@@ -23,6 +23,7 @@ public class AutenticarUsuarioService implements AutenticarUsuarioUseCase {
     private final CodificadorPassword codificadorPassword;
     private final GeneradorToken generadorToken;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea IdentityBeansConfig. */
     public AutenticarUsuarioService(UsuarioRepository usuarioRepository, CodificadorPassword codificadorPassword,
                                     GeneradorToken generadorToken) {
         this.usuarioRepository = usuarioRepository;
@@ -30,6 +31,13 @@ public class AutenticarUsuarioService implements AutenticarUsuarioUseCase {
         this.generadorToken = generadorToken;
     }
 
+    /**
+     * Valida email y contraseña, exige que el usuario esté activo y emite un token JWT.
+     *
+     * TÉCNICA AVANZADA (Java): referencia a constructor
+     *   Qué hace: `orElseThrow(CredencialesInvalidasException::new)` equivale a
+     *     `orElseThrow(() -> new CredencialesInvalidasException())`.
+     */
     @Override
     public TokenResponse autenticar(LoginCommand command) {
         Usuario usuario = usuarioRepository.buscarPorEmail(emailOCredencialesInvalidas(command.email()))

@@ -22,17 +22,20 @@ public record RegistroUsuarioRequest(
         @Valid DatosProveedorRequest datosProveedor,
         @Valid DatosClienteRequest datosCliente) {
 
+    /** Datos obligatorios cuando el rol es PROVEEDOR. */
     public record DatosProveedorRequest(
             @NotBlank @Size(max = 150) String razonSocial,
             @NotBlank @Size(max = 20) String nit) {
     }
 
+    /** Datos obligatorios cuando el rol es CLIENTE. */
     public record DatosClienteRequest(
             @NotBlank @Size(max = 20) String documento,
             @NotBlank @Size(max = 20) String telefono,
             @NotBlank @Size(max = 200) String direccion) {
     }
 
+    /** Convierte el cuerpo HTTP en el command de aplicación. */
     public RegistrarUsuarioCommand toCommand() {
         return new RegistrarUsuarioCommand(nombre, email, password, rol,
                 datosProveedor == null ? null
@@ -42,6 +45,7 @@ public record RegistroUsuarioRequest(
                                 datosCliente.direccion()));
     }
 
+    /** Oculta la contraseña para que no aparezca en logs. */
     @Override
     public String toString() {
         return "RegistroUsuarioRequest[nombre=" + nombre + ", email=" + email + ", password=****, rol=" + rol + "]";

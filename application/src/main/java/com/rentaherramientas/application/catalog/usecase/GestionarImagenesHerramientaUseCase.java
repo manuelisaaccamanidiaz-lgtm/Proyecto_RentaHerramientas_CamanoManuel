@@ -9,7 +9,9 @@ import com.rentaherramientas.application.shared.command.Solicitante;
  */
 public interface GestionarImagenesHerramientaUseCase {
 
+    /** Sube una imagen nueva a la herramienta. */
     HerramientaResponse agregar(AgregarImagenCommand command);
 
+    /** Quita la imagen que ocupa la posición indicada. */
     HerramientaResponse quitar(Long herramientaId, int orden, Solicitante solicitante);
 }

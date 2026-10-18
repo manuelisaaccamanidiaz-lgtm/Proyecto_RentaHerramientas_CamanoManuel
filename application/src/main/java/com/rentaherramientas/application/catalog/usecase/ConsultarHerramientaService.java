@@ -16,10 +16,12 @@ public class ConsultarHerramientaService implements ConsultarHerramientaUseCase 
 
     private final HerramientaRepository herramientaRepository;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea CatalogBeansConfig. */
     public ConsultarHerramientaService(HerramientaRepository herramientaRepository) {
         this.herramientaRepository = herramientaRepository;
     }
 
+    /** Devuelve la herramienta o lanza HerramientaNoEncontradaException (404). */
     @Override
     public HerramientaResponse buscarPorId(Long id) {
         return herramientaRepository.buscarPorId(id)
@@ -27,6 +29,7 @@ public class ConsultarHerramientaService implements ConsultarHerramientaUseCase 
                 .orElseThrow(() -> new HerramientaNoEncontradaException(id));
     }
 
+    /** Traduce el filtro de la API a criterios del dominio y devuelve la página de resultados. */
     @Override
     public PaginaResponse<HerramientaResponse> buscar(FiltroHerramientas filtro) {
         CriteriosBusquedaHerramienta criterios = new CriteriosBusquedaHerramienta(

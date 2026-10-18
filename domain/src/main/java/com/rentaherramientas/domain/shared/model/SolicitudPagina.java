@@ -11,6 +11,7 @@ public record SolicitudPagina(int numero, int tamano) {
     public static final int TAMANO_MAXIMO = 50;
     public static final int TAMANO_POR_DEFECTO = 20;
 
+    /** Constructor compacto: rechaza números de página negativos y tamaños fuera de 1..TAMANO_MAXIMO. */
     public SolicitudPagina {
         if (numero < 0) {
             throw new ValorInvalidoException("El número de página no puede ser negativo");

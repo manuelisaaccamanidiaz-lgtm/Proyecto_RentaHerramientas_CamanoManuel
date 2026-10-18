@@ -15,10 +15,18 @@ public class ActualizarCategoriaService implements ActualizarCategoriaUseCase {
 
     private final CategoriaRepository categoriaRepository;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea CatalogBeansConfig. */
     public ActualizarCategoriaService(CategoriaRepository categoriaRepository) {
         this.categoriaRepository = categoriaRepository;
     }
 
+    /**
+     * Renombra y cambia la descripción; falla si otra categoría ya usa el nuevo nombre.
+     *
+     * TÉCNICA AVANZADA (Java): encadenar `Optional`
+     *   Qué hace: `buscarPorNombre(...).filter(...).ifPresent(...)` solo lanza la excepción si existe una
+     *     categoría con ese nombre y además no es la misma que se edita, sin ningún `if`.
+     */
     @Override
     public CategoriaResponse actualizar(Long id, GuardarCategoriaCommand command) {
         Categoria categoria = categoriaRepository.buscarPorId(id)

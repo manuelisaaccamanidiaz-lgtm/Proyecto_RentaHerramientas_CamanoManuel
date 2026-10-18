@@ -20,12 +20,14 @@ public class RegistrarHerramientaService implements RegistrarHerramientaUseCase 
     private final HerramientaRepository herramientaRepository;
     private final CategoriaRepository categoriaRepository;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea CatalogBeansConfig. */
     public RegistrarHerramientaService(HerramientaRepository herramientaRepository,
                                        CategoriaRepository categoriaRepository) {
         this.herramientaRepository = herramientaRepository;
         this.categoriaRepository = categoriaRepository;
     }
 
+    /** Solo un PROVEEDOR puede registrar herramientas; valida que existan todas las categorías. */
     @Override
     public HerramientaResponse registrar(RegistrarHerramientaCommand command) {
         if (command.solicitante().rol() != Rol.PROVEEDOR) {

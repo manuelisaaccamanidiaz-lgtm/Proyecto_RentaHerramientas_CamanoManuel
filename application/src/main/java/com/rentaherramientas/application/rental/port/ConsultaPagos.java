@@ -9,6 +9,7 @@ import java.util.Set;
  */
 public interface ConsultaPagos {
 
+    /** Indica si la reserva tiene un pago APROBADO en billing. */
     boolean tienePagoAprobado(Long reservaId);
 
     /** De las reservas dadas, las que tienen un pago APROBADO (una sola consulta para toda una página). */

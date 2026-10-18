@@ -32,10 +32,19 @@ public class ImagenHerramientaController {
 
     private final GestionarImagenesHerramientaUseCase gestionarImagenes;
 
+    /** Recibe el caso de uso por constructor (inyección de dependencias de Spring). */
     public ImagenHerramientaController(GestionarImagenesHerramientaUseCase gestionarImagenes) {
         this.gestionarImagenes = gestionarImagenes;
     }
 
+    /**
+     * POST /api/herramientas/{id}/imagenes : sube una imagen (multipart) y responde 201.
+     *
+     * TÉCNICA AVANZADA (Spring MVC): subida de archivos
+     *   Qué hace: `consumes = MULTIPART_FORM_DATA_VALUE` acepta formularios `multipart/form-data` y
+     *     `@RequestPart("archivo") MultipartFile` recibe el archivo del campo "archivo". El tamaño máximo lo
+     *     fija `spring.servlet.multipart.max-file-size`.
+     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Sube una imagen en el campo \"archivo\" (dueño o ADMIN)")
@@ -45,6 +54,7 @@ public class ImagenHerramientaController {
                 archivo.getBytes(), archivo.getContentType()));
     }
 
+    /** DELETE /api/herramientas/{id}/imagenes/{orden} : quita la imagen de esa posición. */
     @DeleteMapping("/{orden}")
     @Operation(summary = "Quita la imagen de esa posición y borra su archivo (dueño o ADMIN)")
     public HerramientaResponse quitar(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id,

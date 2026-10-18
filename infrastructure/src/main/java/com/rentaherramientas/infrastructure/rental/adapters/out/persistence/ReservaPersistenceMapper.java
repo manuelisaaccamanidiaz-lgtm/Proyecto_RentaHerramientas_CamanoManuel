@@ -16,6 +16,7 @@ import java.util.List;
 @Component
 public class ReservaPersistenceMapper {
 
+    /** Convierte la entidad (con sus reportes) en el agregado Reserva. */
     public Reserva toDomain(ReservaEntity entity) {
         List<ReporteDanio> reportes = entity.getReportes().stream()
                 .map(reporte -> ReporteDanio.reconstruir(
@@ -39,6 +40,7 @@ public class ReservaPersistenceMapper {
                 reportes);
     }
 
+    /** Convierte el agregado en entidad y añade sus reportes de daño. */
     public ReservaEntity toEntity(Reserva reserva) {
         ReservaEntity entity = new ReservaEntity(
                 reserva.getId(),

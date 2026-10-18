@@ -21,6 +21,10 @@ import java.nio.charset.StandardCharsets;
  * JWT firmados con HS256 usando el soporte oficial de Spring Security (Nimbus).
  * La misma clave simétrica firma (JwtEncoder) y verifica (JwtDecoder), porque
  * esta API es a la vez emisora y consumidora de sus tokens.
+ *
+ * TÉCNICA AVANZADA (Spring Security): OAuth2 Resource Server con clave simétrica
+ *   Qué hace: basta con exponer un bean `JwtDecoder`; Spring Security lo usa para validar automáticamente el
+ *     header `Authorization: Bearer ...` de cada petición.
  */
 @Configuration
 @EnableConfigurationProperties(JwtProperties.class)
@@ -30,11 +34,17 @@ public class JwtConfig {
     public static final String CLAIM_EMAIL = "email";
     public static final String CLAIM_ROL = "rol";
 
+    /** Convierte el secreto de configuración en una clave HMAC-SHA256 para firmar y verificar. */
     @Bean
     SecretKey jwtSecretKey(JwtProperties properties) {
         return new SecretKeySpec(properties.secret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
     }
 
+    /**
+     * Codificador que firma los tokens emitidos en el login.
+     *
+     * Nota: `ImmutableSecret` es la fuente de claves de Nimbus para una clave secreta fija.
+     */
     @Bean
     JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
         return new NimbusJwtEncoder(new ImmutableSecret<>(jwtSecretKey));

@@ -8,5 +8,6 @@ import com.rentaherramientas.application.shared.command.Solicitante;
  */
 public interface RegistrarEntregaUseCase {
 
+    /** Registra la entrega de la reserva indicada. */
     ReservaResponse entregar(Long reservaId, Solicitante solicitante);
 }

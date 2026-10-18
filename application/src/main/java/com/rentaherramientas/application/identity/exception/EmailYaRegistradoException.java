@@ -7,6 +7,7 @@ import com.rentaherramientas.application.shared.exception.ConflictoException;
  */
 public class EmailYaRegistradoException extends ConflictoException {
 
+    /** Crea la excepción indicando el email que ya está en uso. */
     public EmailYaRegistradoException(String email) {
         super("El email " + email + " ya está registrado");
     }

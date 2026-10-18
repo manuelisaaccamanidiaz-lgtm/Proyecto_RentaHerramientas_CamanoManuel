@@ -9,6 +9,7 @@ import com.rentaherramientas.domain.identity.model.valueobject.Rol;
  */
 public interface ConsultarUsuarioUseCase {
 
+    /** Devuelve el usuario con ese id. */
     UsuarioResponse buscarPorId(Long id);
 
     /** rol null = todos los roles. */

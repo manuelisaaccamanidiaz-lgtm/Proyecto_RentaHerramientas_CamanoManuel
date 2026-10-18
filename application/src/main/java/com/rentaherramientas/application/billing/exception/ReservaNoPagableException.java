@@ -8,6 +8,7 @@ import com.rentaherramientas.application.shared.exception.ConflictoException;
  */
 public class ReservaNoPagableException extends ConflictoException {
 
+    /** Crea la excepción indicando la reserva y el estado que impide pagarla. */
     public ReservaNoPagableException(Long reservaId, String estado) {
         super("Solo se pueden pagar reservas ACEPTADAS; la reserva " + reservaId + " está " + estado);
     }

@@ -7,6 +7,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class UsuarioInactivoException extends DomainException {
 
+    /** Crea la excepción para el usuario inactivo indicado. */
     public UsuarioInactivoException(Long usuarioId) {
         super("El usuario " + usuarioId + " está inactivo");
     }

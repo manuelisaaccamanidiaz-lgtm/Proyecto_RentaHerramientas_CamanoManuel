@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PagoPersistenceMapper {
 
+    /** Convierte la entidad en el agregado Pago. */
     public Pago toDomain(PagoEntity entity) {
         return Pago.reconstruir(
                 entity.getId(),
@@ -22,6 +23,7 @@ public class PagoPersistenceMapper {
                 entity.getFecha());
     }
 
+    /** Convierte el agregado en entidad JPA. */
     public PagoEntity toEntity(Pago pago) {
         return new PagoEntity(
                 pago.getId(),

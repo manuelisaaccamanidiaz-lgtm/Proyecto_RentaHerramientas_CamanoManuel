@@ -32,6 +32,9 @@ import org.springframework.web.bind.annotation.RestController;
  * Adaptador de entrada de herramientas: catálogo público, alta y gestión por el
  * proveedor (o un ADMIN) y el panel de inventario del proveedor. El proveedor y
  * el rol salen del JWT; la regla de propiedad la aplica cada caso de uso.
+ *
+ * Nota: No tiene `@RequestMapping` en la clase porque mezcla rutas de /api/herramientas y /api/proveedor;
+ *   cada método declara su ruta completa.
  */
 @RestController
 @Tag(name = "Herramientas", description = "Catálogo de herramientas e inventario del proveedor")
@@ -44,6 +47,7 @@ public class HerramientaController {
     private final CambiarEstadoHerramientaUseCase cambiarEstadoHerramienta;
     private final ConsultarHerramientaUseCase consultarHerramienta;
 
+    /** Recibe los casos de uso por constructor (inyección de dependencias de Spring). */
     public HerramientaController(RegistrarHerramientaUseCase registrarHerramienta,
                                  ActualizarHerramientaUseCase actualizarHerramienta,
                                  CambiarEstadoHerramientaUseCase cambiarEstadoHerramienta,
@@ -54,6 +58,9 @@ public class HerramientaController {
         this.consultarHerramienta = consultarHerramienta;
     }
 
+    /**
+     * GET /api/herramientas : catálogo público con filtros opcionales; oculta las INACTIVAS si no se filtra por estado.
+     */
     @GetMapping("/api/herramientas")
     @SecurityRequirements
     @Operation(summary = "Catálogo público con filtros opcionales y paginación (size máx. 50)",
@@ -69,6 +76,7 @@ public class HerramientaController {
                 new FiltroHerramientas(categoriaId, estado, texto, proveedorId, true, page, size));
     }
 
+    /** GET /api/herramientas/{id} : detalle público de una herramienta. */
     @GetMapping("/api/herramientas/{id}")
     @SecurityRequirements
     @Operation(summary = "Detalle de una herramienta (público)")
@@ -76,6 +84,7 @@ public class HerramientaController {
         return consultarHerramienta.buscarPorId(id);
     }
 
+    /** GET /api/proveedor/herramientas : inventario del proveedor autenticado, incluidas las inactivas. */
     @GetMapping("/api/proveedor/herramientas")
     @Operation(summary = "Inventario del proveedor autenticado, incluidas las inactivas (solo PROVEEDOR)")
     public PaginaResponse<HerramientaResponse> inventario(
@@ -90,6 +99,7 @@ public class HerramientaController {
                 new FiltroHerramientas(categoriaId, estado, texto, proveedorId, false, page, size));
     }
 
+    /** POST /api/herramientas : registra una herramienta del proveedor autenticado (201 Created). */
     @PostMapping("/api/herramientas")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Registra una herramienta a nombre del proveedor autenticado (solo PROVEEDOR)")
@@ -98,6 +108,7 @@ public class HerramientaController {
         return registrarHerramienta.registrar(request.toRegistrarCommand(SolicitanteJwt.desde(jwt)));
     }
 
+    /** PUT /api/herramientas/{id} : actualiza datos, tarifa y categorías. */
     @PutMapping("/api/herramientas/{id}")
     @Operation(summary = "Actualiza datos, tarifa y categorías (dueño o ADMIN)")
     public HerramientaResponse actualizar(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id,
@@ -105,6 +116,7 @@ public class HerramientaController {
         return actualizarHerramienta.actualizar(request.toActualizarCommand(id, SolicitanteJwt.desde(jwt)));
     }
 
+    /** PATCH /api/herramientas/{id}/estado : cambia el estado operativo. */
     @PatchMapping("/api/herramientas/{id}/estado")
     @Operation(summary = "Cambia el estado operativo (dueño o ADMIN)")
     public HerramientaResponse cambiarEstado(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id,
@@ -113,6 +125,7 @@ public class HerramientaController {
                 new CambiarEstadoHerramientaCommand(id, SolicitanteJwt.desde(jwt), request.estado()));
     }
 
+    /** DELETE /api/herramientas/{id} : borrado lógico (inactiva la herramienta), responde 204. */
     @DeleteMapping("/api/herramientas/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Da de baja (inactiva) una herramienta (dueño o ADMIN)")

@@ -9,9 +9,18 @@ import com.rentaherramientas.domain.shared.exception.ValorInvalidoException;
  */
 public final class Validaciones {
 
+    /** Constructor privado: es una clase de utilidades estáticas y no debe instanciarse. */
     private Validaciones() {
     }
 
+    /**
+     * Exige que el valor no sea null y lo devuelve para poder asignarlo en la misma línea.
+     *
+     * TÉCNICA AVANZADA (Java): método genérico
+     *   Qué hace: `<T>` antes del tipo de retorno declara un tipo propio del método; el compilador lo infiere
+     *     en cada llamada, así `Email e = requerido(email, "email")` devuelve un `Email` sin casts.
+     *   Cómo usarlo: `this.campo = Validaciones.requerido(valor, "campo");`
+     */
     public static <T> T requerido(T valor, String campo) {
         if (valor == null) {
             throw new ValorInvalidoException("El campo '" + campo + "' es obligatorio");

@@ -31,48 +31,57 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CatalogBeansConfig {
 
+    /** Bean del caso de uso de crear categorías. */
     @Bean
     CrearCategoriaUseCase crearCategoriaUseCase(CategoriaRepository categoriaRepository) {
         return new CrearCategoriaService(categoriaRepository);
     }
 
+    /** Bean del caso de uso de actualizar categorías. */
     @Bean
     ActualizarCategoriaUseCase actualizarCategoriaUseCase(CategoriaRepository categoriaRepository) {
         return new ActualizarCategoriaService(categoriaRepository);
     }
 
+    /** Bean del caso de uso de eliminar categorías. */
     @Bean
     EliminarCategoriaUseCase eliminarCategoriaUseCase(CategoriaRepository categoriaRepository) {
         return new EliminarCategoriaService(categoriaRepository);
     }
 
+    /** Bean del caso de uso de consultar categorías. */
     @Bean
     ConsultarCategoriaUseCase consultarCategoriaUseCase(CategoriaRepository categoriaRepository) {
         return new ConsultarCategoriaService(categoriaRepository);
     }
 
+    /** Bean del caso de uso de registrar herramientas. */
     @Bean
     RegistrarHerramientaUseCase registrarHerramientaUseCase(HerramientaRepository herramientaRepository,
                                                             CategoriaRepository categoriaRepository) {
         return new RegistrarHerramientaService(herramientaRepository, categoriaRepository);
     }
 
+    /** Bean del caso de uso de actualizar herramientas. */
     @Bean
     ActualizarHerramientaUseCase actualizarHerramientaUseCase(HerramientaRepository herramientaRepository,
                                                               CategoriaRepository categoriaRepository) {
         return new ActualizarHerramientaService(herramientaRepository, categoriaRepository);
     }
 
+    /** Bean del caso de uso de cambiar el estado o dar de baja herramientas. */
     @Bean
     CambiarEstadoHerramientaUseCase cambiarEstadoHerramientaUseCase(HerramientaRepository herramientaRepository) {
         return new CambiarEstadoHerramientaService(herramientaRepository);
     }
 
+    /** Bean del caso de uso de consultar herramientas. */
     @Bean
     ConsultarHerramientaUseCase consultarHerramientaUseCase(HerramientaRepository herramientaRepository) {
         return new ConsultarHerramientaService(herramientaRepository);
     }
 
+    /** Bean del caso de uso de gestionar la galería de imágenes. */
     @Bean
     GestionarImagenesHerramientaUseCase gestionarImagenesHerramientaUseCase(
             HerramientaRepository herramientaRepository, AlmacenamientoImagenes almacenamientoImagenes) {

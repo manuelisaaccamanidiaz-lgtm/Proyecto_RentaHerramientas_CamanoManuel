@@ -10,10 +10,12 @@ import java.util.Collection;
  */
 public class CategoriaNoEncontradaException extends RecursoNoEncontradoException {
 
+    /** Crea la excepción para una categoría concreta que no existe. */
     public CategoriaNoEncontradaException(Long id) {
         super("No existe la categoría " + id);
     }
 
+    /** Crea la excepción cuando alguna de varias categorías pedidas no existe. */
     public CategoriaNoEncontradaException(Collection<Long> ids) {
         super("Alguna de las categorías indicadas no existe: " + ids);
     }

@@ -12,14 +12,24 @@ import java.util.Locale;
  * Traduce los criterios de búsqueda del dominio a Specifications de Spring Data.
  * Cada filtro solo se añade si viene informado. Solo filtran: ninguna hace fetch
  * de colecciones, porque un fetch join con paginación obliga a paginar en memoria.
+ *
+ * TÉCNICA AVANZADA (Spring Data JPA): Specifications (Criteria API)
+ *   Qué hace: una `Specification` es una lambda `(root, query, cb) -> Predicate` que describe una condición
+ *     WHERE. `root` es la entidad, `cb` (CriteriaBuilder) crea condiciones (`equal`, `like`, `or`...). Se
+ *     combinan con `Specification.allOf(...)` (AND) o `Specification.not(...)`, lo que permite armar filtros
+ *     opcionales sin concatenar SQL a mano.
+ *   Cómo usarlo: `jpaRepository.findAll(spec, pageable)` en un repositorio que extienda
+ *     `JpaSpecificationExecutor`.
  */
 final class HerramientaSpecifications {
 
     private static final char ESCAPE = '\\';
 
+    /** Constructor privado: clase de utilidades estáticas. */
     private HerramientaSpecifications() {
     }
 
+    /** Combina con AND solo los filtros informados; sin estado, excluye las INACTIVAS si se pide. */
     static Specification<HerramientaEntity> segun(CriteriosBusquedaHerramienta criterios) {
         List<Specification<HerramientaEntity>> filtros = new ArrayList<>();
         if (criterios.categoriaId() != null) {
@@ -44,15 +54,21 @@ final class HerramientaSpecifications {
         return (root, query, cb) -> cb.equal(root.join("categoriaIds"), categoriaId);
     }
 
+    /** Filtro: herramientas en el estado indicado. */
     private static Specification<HerramientaEntity> conEstado(EstadoHerramienta estado) {
         return (root, query, cb) -> cb.equal(root.get("estado"), estado);
     }
 
+    /** Filtro: herramientas del proveedor indicado. */
     private static Specification<HerramientaEntity> deProveedor(Long proveedorId) {
         return (root, query, cb) -> cb.equal(root.get("proveedorId"), proveedorId);
     }
 
-    /** Nombre o descripción contienen el texto, sin distinguir mayúsculas; % y _ se buscan literalmente. */
+    /**
+     * Nombre o descripción contienen el texto, sin distinguir mayúsculas; % y _ se buscan literalmente.
+     *
+     * Nota: `cb.like(campo, patron, ESCAPE)` indica qué carácter escapa los comodines de LIKE.
+     */
     private static Specification<HerramientaEntity> contieneTexto(String texto) {
         String patron = "%" + escaparLike(texto.toLowerCase(Locale.ROOT)) + "%";
         return (root, query, cb) -> cb.or(
@@ -60,6 +76,7 @@ final class HerramientaSpecifications {
                 cb.like(cb.lower(root.get("descripcion")), patron, ESCAPE));
     }
 
+    /** Escapa los comodines de LIKE (% y _) y la propia barra invertida. */
     private static String escaparLike(String texto) {
         return texto.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }

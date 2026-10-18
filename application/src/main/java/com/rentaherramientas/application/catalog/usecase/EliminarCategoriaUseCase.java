@@ -5,5 +5,6 @@ package com.rentaherramientas.application.catalog.usecase;
  */
 public interface EliminarCategoriaUseCase {
 
+    /** Elimina la categoría indicada. */
     void eliminar(Long id);
 }

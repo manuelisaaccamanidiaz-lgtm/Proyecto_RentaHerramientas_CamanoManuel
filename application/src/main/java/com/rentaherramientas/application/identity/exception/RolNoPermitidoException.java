@@ -8,6 +8,7 @@ import com.rentaherramientas.domain.identity.model.valueobject.Rol;
  */
 public class RolNoPermitidoException extends RuntimeException {
 
+    /** Crea la excepción indicando el rol rechazado. */
     public RolNoPermitidoException(Rol rol) {
         super("El registro público no permite el rol " + rol);
     }

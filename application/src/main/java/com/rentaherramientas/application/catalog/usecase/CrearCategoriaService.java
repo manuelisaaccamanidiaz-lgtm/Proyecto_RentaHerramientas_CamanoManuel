@@ -15,10 +15,12 @@ public class CrearCategoriaService implements CrearCategoriaUseCase {
 
     private final CategoriaRepository categoriaRepository;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea CatalogBeansConfig. */
     public CrearCategoriaService(CategoriaRepository categoriaRepository) {
         this.categoriaRepository = categoriaRepository;
     }
 
+    /** Crea una categoría nueva si su nombre no está en uso. */
     @Override
     public CategoriaResponse crear(GuardarCategoriaCommand command) {
         Categoria categoria = Categoria.crear(command.nombre(), command.descripcion());

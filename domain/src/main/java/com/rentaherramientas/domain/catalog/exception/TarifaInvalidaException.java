@@ -8,6 +8,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class TarifaInvalidaException extends DomainException {
 
+    /** Crea la excepción para una tarifa diaria igual o menor que cero. */
     public TarifaInvalidaException() {
         super("La tarifa diaria debe ser mayor que cero");
     }

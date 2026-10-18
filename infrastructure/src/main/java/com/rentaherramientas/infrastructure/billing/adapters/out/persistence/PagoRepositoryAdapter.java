@@ -27,13 +27,21 @@ import java.util.Set;
 @Repository
 public class PagoRepositoryAdapter implements PagoRepository {
 
-    /** Índice único parcial de V6: un solo pago PENDIENTE o APROBADO por reserva. */
+    /**
+     * Índice único parcial de V6: un solo pago PENDIENTE o APROBADO por reserva.
+     *
+     * TÉCNICA AVANZADA (PostgreSQL): índice único parcial
+     *   Qué hace: `CREATE UNIQUE INDEX ... ON pagos (reserva_id) WHERE estado IN ('PENDIENTE','APROBADO')`
+     *     exige unicidad solo entre las filas que cumplen el WHERE: una reserva puede tener muchos pagos
+     *     RECHAZADOS, pero solo uno vigente.
+     */
     static final String INDICE_PAGO_VIGENTE = "uq_pagos_reserva_vigente";
     private static final List<EstadoPago> ESTADOS_VIGENTES = List.of(EstadoPago.PENDIENTE, EstadoPago.APROBADO);
 
     private final PagoJpaRepository jpaRepository;
     private final PagoPersistenceMapper mapper;
 
+    /** Recibe el repositorio de Spring Data y el mapper por constructor. */
     public PagoRepositoryAdapter(PagoJpaRepository jpaRepository, PagoPersistenceMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
@@ -57,36 +65,42 @@ public class PagoRepositoryAdapter implements PagoRepository {
         }
     }
 
+    /** Busca por id y convierte la entidad en agregado. */
     @Override
     @Transactional(readOnly = true)
     public Optional<Pago> buscarPorId(Long id) {
         return jpaRepository.findById(id).map(mapper::toDomain);
     }
 
+    /** Busca por referencia de transacción. */
     @Override
     @Transactional(readOnly = true)
     public Optional<Pago> buscarPorReferencia(ReferenciaPago referencia) {
         return jpaRepository.findByReferencia(referencia.valor()).map(mapper::toDomain);
     }
 
+    /** Pagos de una reserva ordenados por fecha. */
     @Override
     @Transactional(readOnly = true)
     public List<Pago> buscarPorReservaId(Long reservaId) {
         return jpaRepository.findByReservaIdOrderByFechaAsc(reservaId).stream().map(mapper::toDomain).toList();
     }
 
+    /** Indica si la reserva ya tiene un pago PENDIENTE o APROBADO. */
     @Override
     @Transactional(readOnly = true)
     public boolean existePagoVigente(Long reservaId) {
         return jpaRepository.existsByReservaIdAndEstadoIn(reservaId, ESTADOS_VIGENTES);
     }
 
+    /** Indica si la reserva tiene un pago APROBADO. */
     @Override
     @Transactional(readOnly = true)
     public boolean existePagoAprobado(Long reservaId) {
         return jpaRepository.existsByReservaIdAndEstadoIn(reservaId, List.of(EstadoPago.APROBADO));
     }
 
+    /** De las reservas indicadas, las que tienen pago APROBADO; vacío si no se pasan ids. */
     @Override
     @Transactional(readOnly = true)
     public Set<Long> reservasConPagoAprobado(Collection<Long> reservaIds) {
@@ -96,6 +110,7 @@ public class PagoRepositoryAdapter implements PagoRepository {
         return new HashSet<>(jpaRepository.reservasConEstado(reservaIds, EstadoPago.APROBADO));
     }
 
+    /** Página de pagos filtrada, del más reciente al más antiguo. */
     @Override
     @Transactional(readOnly = true)
     public Pagina<Pago> buscar(CriteriosBusquedaPago criterios) {
@@ -107,6 +122,13 @@ public class PagoRepositoryAdapter implements PagoRepository {
                 pagina.getTotalElements());
     }
 
+    /**
+     * Indica si la causa del error es la violación de la restricción o índice con ese nombre.
+     *
+     * Nota: `ConstraintViolationException` de Hibernate expone `getConstraintName()`: el nombre de la
+     *   restricción que falló en PostgreSQL. Comparar ese nombre permite distinguir qué regla se incumplió
+     *   sin analizar el texto del mensaje.
+     */
     private static boolean violaIndice(Throwable error, String indice) {
         for (Throwable causa = error; causa != null; causa = causa.getCause()) {
             if (causa instanceof ConstraintViolationException violacion

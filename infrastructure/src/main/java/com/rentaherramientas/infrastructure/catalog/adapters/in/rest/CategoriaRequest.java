@@ -11,6 +11,7 @@ public record CategoriaRequest(
         @NotBlank @Size(max = 80) String nombre,
         @Size(max = 1000) String descripcion) {
 
+    /** Convierte el cuerpo HTTP en el command de aplicación. */
     public GuardarCategoriaCommand toCommand() {
         return new GuardarCategoriaCommand(nombre, descripcion);
     }

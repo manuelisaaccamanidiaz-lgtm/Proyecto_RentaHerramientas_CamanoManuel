@@ -19,10 +19,13 @@ public interface ConsultarReservasUseCase {
     /** Visible para el cliente que la hizo, el proveedor de la herramienta o un ADMIN. */
     ReservaResponse porId(Long reservaId, Solicitante solicitante);
 
+    /** Reservas del cliente indicado, opcionalmente filtradas por estado. */
     PaginaResponse<ReservaResponse> misReservas(Long clienteId, EstadoReserva estado, int pagina, int tamano);
 
+    /** Reservas de las herramientas del proveedor indicado, opcionalmente filtradas por estado. */
     PaginaResponse<ReservaResponse> delProveedor(Long proveedorId, EstadoReserva estado, int pagina, int tamano);
 
+    /** Historial de reservas con filtros combinables. */
     PaginaResponse<ReservaResponse> historial(FiltroHistorialReservas filtro);
 
     /** desde null = hoy; hasta null = desde + 89 días. */

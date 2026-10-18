@@ -8,5 +8,6 @@ import com.rentaherramientas.application.catalog.dto.CategoriaResponse;
  */
 public interface CrearCategoriaUseCase {
 
+    /** Crea una categoría y devuelve sus datos con el id asignado. */
     CategoriaResponse crear(GuardarCategoriaCommand command);
 }

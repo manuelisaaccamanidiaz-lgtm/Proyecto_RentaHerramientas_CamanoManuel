@@ -10,11 +10,13 @@ import com.rentaherramientas.domain.shared.model.Validaciones;
  */
 public record Solicitante(Long id, Rol rol) {
 
+    /** Constructor compacto: el id y el rol de quien hace la petición son obligatorios. */
     public Solicitante {
         Validaciones.requerido(id, "solicitante.id");
         Validaciones.requerido(rol, "solicitante.rol");
     }
 
+    /** Indica si quien hace la petición es administrador (puede ver y gestionar todo). */
     public boolean esAdmin() {
         return rol == Rol.ADMIN;
     }

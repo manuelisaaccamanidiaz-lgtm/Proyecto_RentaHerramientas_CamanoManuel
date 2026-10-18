@@ -40,10 +40,12 @@ public class ReporteDanioEntity {
     @Column(name = "reportado_en", nullable = false)
     private LocalDateTime reportadoEn;
 
+    /** Constructor sin argumentos exigido por JPA. */
     protected ReporteDanioEntity() {
         // requerido por JPA
     }
 
+    /** Crea la entidad; la reserva padre se enlaza después con setReserva. */
     public ReporteDanioEntity(Long id, String descripcion, BigDecimal costoEstimado, LocalDateTime reportadoEn) {
         this.id = id;
         this.descripcion = descripcion;
@@ -51,22 +53,27 @@ public class ReporteDanioEntity {
         this.reportadoEn = reportadoEn;
     }
 
+    /** Enlaza el reporte con su reserva; lo llama ReservaEntity.agregarReporte. */
     void setReserva(ReservaEntity reserva) {
         this.reserva = reserva;
     }
 
+    /** Id del reporte. */
     public Long getId() {
         return id;
     }
 
+    /** Descripción del daño. */
     public String getDescripcion() {
         return descripcion;
     }
 
+    /** Costo estimado; puede ser null. */
     public BigDecimal getCostoEstimado() {
         return costoEstimado;
     }
 
+    /** Momento del reporte. */
     public LocalDateTime getReportadoEn() {
         return reportadoEn;
     }

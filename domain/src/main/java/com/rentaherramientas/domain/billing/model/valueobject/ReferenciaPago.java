@@ -13,6 +13,7 @@ public record ReferenciaPago(String valor) {
 
     private static final Pattern FORMATO = Pattern.compile("^[A-Za-z0-9-]{4,60}$");
 
+    /** Constructor compacto: valida longitud y caracteres permitidos y recorta espacios. */
     public ReferenciaPago {
         if (valor == null || !FORMATO.matcher(valor.strip()).matches()) {
             throw new ValorInvalidoException(

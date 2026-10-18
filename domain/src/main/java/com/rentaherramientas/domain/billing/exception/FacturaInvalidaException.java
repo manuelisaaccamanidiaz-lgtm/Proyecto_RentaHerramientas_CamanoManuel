@@ -8,6 +8,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class FacturaInvalidaException extends DomainException {
 
+    /** Crea la excepción con el motivo por el que la factura no es válida. */
     public FacturaInvalidaException(String mensaje) {
         super(mensaje);
     }

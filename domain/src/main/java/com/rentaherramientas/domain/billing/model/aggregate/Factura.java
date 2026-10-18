@@ -25,6 +25,7 @@ public final class Factura extends AggregateRoot {
     private final LocalDateTime fechaEmision;
     private final List<LineaFactura> lineas;
 
+    /** Constructor privado: guarda una copia inmutable de las líneas y las valida. */
     private Factura(Long id, NumeroFactura numero, Long pagoId,
                     LocalDateTime fechaEmision, List<LineaFactura> lineas) {
         this.id = id;
@@ -35,6 +36,7 @@ public final class Factura extends AggregateRoot {
         validarLineas(this.lineas);
     }
 
+    /** Emite una factura nueva para un pago y registra el evento FacturaEmitida. */
     public static Factura emitir(NumeroFactura numero, Long pagoId,
                                  LocalDateTime fechaEmision, List<LineaFactura> lineas) {
         Factura factura = new Factura(null, numero, pagoId, fechaEmision, lineas);
@@ -42,11 +44,19 @@ public final class Factura extends AggregateRoot {
         return factura;
     }
 
+    /** Reconstruye una factura leída de la base de datos; no emite eventos. */
     public static Factura reconstruir(Long id, NumeroFactura numero, Long pagoId,
                                       LocalDateTime fechaEmision, List<LineaFactura> lineas) {
         return new Factura(Validaciones.requerido(id, "id"), numero, pagoId, fechaEmision, lineas);
     }
 
+    /**
+     * Exige al menos una línea y que todas estén en la misma moneda.
+     *
+     * TÉCNICA AVANZADA (Java 21): `List.getFirst()`
+     *   Qué hace: método de las "sequenced collections" que reemplaza a `lista.get(0)`. `stream().anyMatch`
+     *     recorre la lista y se detiene en el primer elemento que cumple la condición.
+     */
     private static void validarLineas(List<LineaFactura> lineas) {
         if (lineas.isEmpty()) {
             throw new FacturaInvalidaException("La factura debe tener al menos una línea");
@@ -71,22 +81,27 @@ public final class Factura extends AggregateRoot {
                 .reduce(Dinero.cero(getMoneda()), Dinero::sumar);
     }
 
+    /** Identificador de la factura; null si aún no se ha guardado. */
     public Long getId() {
         return id;
     }
 
+    /** Número legal y único de la factura. */
     public NumeroFactura getNumero() {
         return numero;
     }
 
+    /** Id del pago aprobado que originó la factura. */
     public Long getPagoId() {
         return pagoId;
     }
 
+    /** Momento de emisión de la factura. */
     public LocalDateTime getFechaEmision() {
         return fechaEmision;
     }
 
+    /** Líneas de la factura; la lista es inmutable. */
     public List<LineaFactura> getLineas() {
         return lineas;
     }

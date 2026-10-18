@@ -14,6 +14,12 @@ public record JwtProperties(String secret, long expiracionMinutos) {
 
     private static final int SECRETO_MINIMO_BYTES = 32;
 
+    /**
+     * Constructor compacto: valida al arrancar la longitud del secreto y la expiración.
+     *
+     * Técnica avanzada — fallar rápido ("fail fast"): lanzar la excepción en el constructor impide que la
+     *   aplicación arranque con una configuración insegura.
+     */
     public JwtProperties {
         if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < SECRETO_MINIMO_BYTES) {
             throw new IllegalStateException(
@@ -24,6 +30,7 @@ public record JwtProperties(String secret, long expiracionMinutos) {
         }
     }
 
+    /** Oculta el secreto para que no aparezca en logs. */
     @Override
     public String toString() {
         return "JwtProperties[secret=****, expiracionMinutos=" + expiracionMinutos + "]";

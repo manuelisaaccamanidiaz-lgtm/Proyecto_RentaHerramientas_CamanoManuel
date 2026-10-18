@@ -29,6 +29,7 @@ import java.time.Clock;
 @Configuration
 public class BillingBeansConfig {
 
+    /** Bean del caso de uso de pagar reservas. */
     @Bean
     PagarReservaUseCase pagarReservaUseCase(PagoRepository pagoRepository, FacturaRepository facturaRepository,
                                             ConsultaReservas consultaReservas,
@@ -38,6 +39,7 @@ public class BillingBeansConfig {
                 unidadDeTrabajo, relojNegocio);
     }
 
+    /** Bean del caso de uso de confirmar pagos. */
     @Bean
     ConfirmarPagoUseCase confirmarPagoUseCase(PagoRepository pagoRepository, FacturaRepository facturaRepository,
                                               ConsultaReservas consultaReservas,
@@ -47,17 +49,20 @@ public class BillingBeansConfig {
                 unidadDeTrabajo, relojNegocio);
     }
 
+    /** Bean del caso de uso de rechazar pagos. */
     @Bean
     RechazarPagoUseCase rechazarPagoUseCase(PagoRepository pagoRepository, ConsultaReservas consultaReservas) {
         return new RechazarPagoService(pagoRepository, consultaReservas);
     }
 
+    /** Bean del caso de uso de consultar pagos. */
     @Bean
     ConsultarPagosUseCase consultarPagosUseCase(PagoRepository pagoRepository, FacturaRepository facturaRepository,
                                                 ConsultaReservas consultaReservas) {
         return new ConsultarPagosService(pagoRepository, facturaRepository, consultaReservas);
     }
 
+    /** Bean del caso de uso de consultar facturas y generar su PDF. */
     @Bean
     ConsultarFacturasUseCase consultarFacturasUseCase(FacturaRepository facturaRepository,
                                                       PagoRepository pagoRepository,

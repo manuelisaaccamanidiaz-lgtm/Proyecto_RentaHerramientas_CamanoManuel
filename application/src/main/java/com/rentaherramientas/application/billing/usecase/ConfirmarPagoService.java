@@ -27,6 +27,7 @@ public class ConfirmarPagoService implements ConfirmarPagoUseCase {
     private final UnidadDeTrabajo unidadDeTrabajo;
     private final EmisorFactura emisorFactura;
 
+    /** Recibe sus dependencias por constructor (el bean lo crea BillingBeansConfig) y arma su EmisorFactura. */
     public ConfirmarPagoService(PagoRepository pagoRepository, FacturaRepository facturaRepository,
                                 ConsultaReservas consultaReservas, GeneradorNumeroFactura generadorNumeroFactura,
                                 UnidadDeTrabajo unidadDeTrabajo, Clock clock) {
@@ -36,6 +37,14 @@ public class ConfirmarPagoService implements ConfirmarPagoUseCase {
         this.emisorFactura = new EmisorFactura(facturaRepository, generadorNumeroFactura, clock);
     }
 
+    /**
+     * Aprueba un pago pendiente y emite su factura en la misma transacción.
+     *
+     * Técnica avanzada — transacción programática con lambda: todo lo que va dentro de
+     *   `unidadDeTrabajo.ejecutar(() -> { ... })` se confirma junto o se deshace junto: no puede quedar un
+     *   pago aprobado sin factura. Las validaciones de lectura se hacen antes, fuera de la transacción, para
+     *   mantenerla corta.
+     */
     @Override
     public PagoResponse confirmar(Long pagoId, Solicitante solicitante) {
         Pago pago = pagoRepository.buscarPorId(pagoId).orElseThrow(() -> new PagoNoEncontradoException(pagoId));

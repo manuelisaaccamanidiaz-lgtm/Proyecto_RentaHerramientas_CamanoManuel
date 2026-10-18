@@ -24,11 +24,16 @@ public class RegistrarUsuarioService implements RegistrarUsuarioUseCase {
     private final UsuarioRepository usuarioRepository;
     private final CodificadorPassword codificadorPassword;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea IdentityBeansConfig. */
     public RegistrarUsuarioService(UsuarioRepository usuarioRepository, CodificadorPassword codificadorPassword) {
         this.usuarioRepository = usuarioRepository;
         this.codificadorPassword = codificadorPassword;
     }
 
+    /**
+     * Registro público: solo admite CLIENTE o PROVEEDOR, impide emails repetidos, cifra la
+     * contraseña y guarda el nuevo usuario.
+     */
     @Override
     public UsuarioResponse registrar(RegistrarUsuarioCommand command) {
         if (command.rol() != Rol.CLIENTE && command.rol() != Rol.PROVEEDOR) {

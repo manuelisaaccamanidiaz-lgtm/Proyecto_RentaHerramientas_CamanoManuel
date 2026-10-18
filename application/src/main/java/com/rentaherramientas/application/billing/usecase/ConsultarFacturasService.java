@@ -32,6 +32,7 @@ public class ConsultarFacturasService implements ConsultarFacturasUseCase {
     private final ConsultaTerceros consultaTerceros;
     private final GeneradorPdfFactura generadorPdfFactura;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea BillingBeansConfig. */
     public ConsultarFacturasService(FacturaRepository facturaRepository, PagoRepository pagoRepository,
                                     ConsultaReservas consultaReservas, ConsultaTerceros consultaTerceros,
                                     GeneradorPdfFactura generadorPdfFactura) {
@@ -42,26 +43,31 @@ public class ConsultarFacturasService implements ConsultarFacturasUseCase {
         this.generadorPdfFactura = generadorPdfFactura;
     }
 
+    /** Devuelve una factura si el solicitante tiene acceso a su reserva. */
     @Override
     public FacturaResponse porId(Long facturaId, Solicitante solicitante) {
         return FacturaResponse.desde(cargarConAcceso(facturaId, solicitante).factura());
     }
 
+    /** Facturas de las reservas del cliente. */
     @Override
     public PaginaResponse<FacturaResponse> misFacturas(Long clienteId, int pagina, int tamano) {
         return buscar(consultaReservas.reservaIdsDelCliente(clienteId), pagina, tamano);
     }
 
+    /** Facturas de las reservas de herramientas del proveedor. */
     @Override
     public PaginaResponse<FacturaResponse> delProveedor(Long proveedorId, int pagina, int tamano) {
         return buscar(consultaReservas.reservaIdsDelProveedor(proveedorId), pagina, tamano);
     }
 
+    /** Todas las facturas sin filtrar (null significa "sin filtro de reservas"). */
     @Override
     public PaginaResponse<FacturaResponse> todas(int pagina, int tamano) {
         return buscar(null, pagina, tamano);
     }
 
+    /** Reúne los datos de la factura, del cliente y del proveedor y genera el PDF descargable. */
     @Override
     public ArchivoPdf pdf(Long facturaId, Solicitante solicitante) {
         FacturaConContexto contexto = cargarConAcceso(facturaId, solicitante);
@@ -76,6 +82,7 @@ public class ConsultarFacturasService implements ConsultarFacturasUseCase {
                 generadorPdfFactura.generar(documento));
     }
 
+    /** Carga factura, pago y reserva y comprueba que el solicitante pueda verlos. */
     private FacturaConContexto cargarConAcceso(Long facturaId, Solicitante solicitante) {
         Factura factura = facturaRepository.buscarPorId(facturaId)
                 .orElseThrow(() -> new FacturaNoEncontradaException(facturaId));
@@ -92,11 +99,19 @@ public class ConsultarFacturasService implements ConsultarFacturasUseCase {
                 .orElse(new Tercero(usuarioId, "Usuario " + usuarioId, null, null, null, null, null));
     }
 
+    /** Busca facturas paginadas de las reservas indicadas (o de todas si es null). */
     private PaginaResponse<FacturaResponse> buscar(Collection<Long> reservaIds, int pagina, int tamano) {
         return PaginaResponse.desde(facturaRepository.buscar(reservaIds, new SolicitudPagina(pagina, tamano)),
                 FacturaResponse::desde);
     }
 
+    /**
+     * Agrupa factura, pago y reserva para devolver los tres desde un mismo método.
+     *
+     * TÉCNICA AVANZADA (Java): record anidado privado
+     *   Qué hace: un record local de la clase es la forma más corta de devolver varios valores juntos sin
+     *     crear un archivo nuevo.
+     */
     private record FacturaConContexto(Factura factura, Pago pago, ReservaFacturable reserva) {
     }
 }

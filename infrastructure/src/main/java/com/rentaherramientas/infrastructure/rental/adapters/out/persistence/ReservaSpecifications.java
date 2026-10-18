@@ -15,9 +15,11 @@ import java.util.List;
  */
 final class ReservaSpecifications {
 
+    /** Constructor privado: clase de utilidades estáticas. */
     private ReservaSpecifications() {
     }
 
+    /** Combina con AND solo los filtros informados en los criterios. */
     static Specification<ReservaEntity> segun(CriteriosBusquedaReserva criterios) {
         List<Specification<ReservaEntity>> filtros = new ArrayList<>();
         if (criterios.estado() != null) {
@@ -41,15 +43,21 @@ final class ReservaSpecifications {
         return Specification.allOf(filtros);
     }
 
+    /** Filtro: reservas en el estado indicado. */
     private static Specification<ReservaEntity> conEstado(EstadoReserva estado) {
         return (root, query, cb) -> cb.equal(root.get("estado"), estado);
     }
 
+    /** Filtro genérico: el atributo indicado es igual al valor. */
     private static Specification<ReservaEntity> igual(String atributo, Long valor) {
         return (root, query, cb) -> cb.equal(root.get(atributo), valor);
     }
 
-    /** Un IN vacío no es SQL válido: sin herramientas, la condición es siempre falsa. */
+    /**
+     * Un IN vacío no es SQL válido: sin herramientas, la condición es siempre falsa.
+     *
+     * Nota: `cb.disjunction()` es un "OR vacío", es decir, una condición siempre falsa.
+     */
     private static Specification<ReservaEntity> deHerramientas(Collection<Long> ids) {
         return (root, query, cb) -> ids.isEmpty() ? cb.disjunction() : root.get("herramientaId").in(ids);
     }
@@ -59,6 +67,7 @@ final class ReservaSpecifications {
         return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("fechaFin"), desde);
     }
 
+    /** Filtro: la reserva empieza como muy tarde en la fecha indicada. */
     private static Specification<ReservaEntity> empiezaHasta(LocalDate hasta) {
         return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("fechaInicio"), hasta);
     }

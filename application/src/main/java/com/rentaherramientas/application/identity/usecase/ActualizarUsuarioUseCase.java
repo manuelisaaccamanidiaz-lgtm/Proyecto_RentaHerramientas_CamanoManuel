@@ -9,5 +9,6 @@ import com.rentaherramientas.application.identity.dto.UsuarioResponse;
  */
 public interface ActualizarUsuarioUseCase {
 
+    /** Actualiza los datos del usuario indicado en el comando y devuelve el resultado. */
     UsuarioResponse actualizar(ActualizarUsuarioCommand command);
 }

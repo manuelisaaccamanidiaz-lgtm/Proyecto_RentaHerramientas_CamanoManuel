@@ -8,5 +8,6 @@ import com.rentaherramientas.application.identity.dto.UsuarioResponse;
  */
 public interface RegistrarUsuarioUseCase {
 
+    /** Registra un usuario nuevo y devuelve sus datos (sin la contraseña). */
     UsuarioResponse registrar(RegistrarUsuarioCommand command);
 }

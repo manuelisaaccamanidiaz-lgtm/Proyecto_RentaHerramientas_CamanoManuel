@@ -12,9 +12,17 @@ import org.springframework.security.oauth2.jwt.Jwt;
  */
 public final class SolicitanteJwt {
 
+    /** Constructor privado: clase de utilidades estáticas. */
     private SolicitanteJwt() {
     }
 
+    /**
+     * Extrae el id (claim "sub") y el rol (claim "rol") del token validado.
+     *
+     * Cómo usarlo (Spring Security): en un controller, declara el parámetro
+     *   `@AuthenticationPrincipal Jwt jwt` y Spring inyecta el token ya verificado de la petición; luego
+     *   llama a `SolicitanteJwt.desde(jwt)`.
+     */
     public static Solicitante desde(Jwt jwt) {
         return new Solicitante(Long.valueOf(jwt.getSubject()), Rol.valueOf(jwt.getClaimAsString(JwtConfig.CLAIM_ROL)));
     }

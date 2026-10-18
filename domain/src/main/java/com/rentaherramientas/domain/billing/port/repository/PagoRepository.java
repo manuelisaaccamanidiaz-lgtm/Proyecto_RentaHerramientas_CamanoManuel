@@ -20,15 +20,19 @@ public interface PagoRepository {
      */
     Pago guardar(Pago pago);
 
+    /** Busca un pago por id; vacío si no existe. */
     Optional<Pago> buscarPorId(Long id);
 
+    /** Busca un pago por su referencia única de transacción. */
     Optional<Pago> buscarPorReferencia(ReferenciaPago referencia);
 
+    /** Devuelve todos los pagos (de cualquier estado) de una reserva. */
     List<Pago> buscarPorReservaId(Long reservaId);
 
     /** true si la reserva tiene un pago PENDIENTE o APROBADO (un pago RECHAZADO no cuenta). */
     boolean existePagoVigente(Long reservaId);
 
+    /** Indica si la reserva ya tiene un pago APROBADO. */
     boolean existePagoAprobado(Long reservaId);
 
     /** De las reservas dadas, las que tienen un pago APROBADO. */

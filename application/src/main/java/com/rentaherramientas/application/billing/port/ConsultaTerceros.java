@@ -8,5 +8,6 @@ import java.util.Optional;
  */
 public interface ConsultaTerceros {
 
+    /** Devuelve los datos de facturación (nombre, documento, contacto) de un usuario. */
     Optional<Tercero> buscar(Long usuarioId);
 }

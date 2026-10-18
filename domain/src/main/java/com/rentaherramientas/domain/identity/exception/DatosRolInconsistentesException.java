@@ -10,6 +10,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class DatosRolInconsistentesException extends DomainException {
 
+    /** Crea la excepción indicando qué dato de rol sobra o falta. */
     public DatosRolInconsistentesException(String mensaje) {
         super(mensaje);
     }

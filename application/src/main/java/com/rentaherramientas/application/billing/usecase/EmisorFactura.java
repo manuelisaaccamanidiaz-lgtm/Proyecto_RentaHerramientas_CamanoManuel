@@ -28,6 +28,7 @@ final class EmisorFactura {
     private final GeneradorNumeroFactura generadorNumeroFactura;
     private final Clock clock;
 
+    /** Constructor de paquete: solo lo crean los servicios de billing que emiten facturas. */
     EmisorFactura(FacturaRepository facturaRepository, GeneradorNumeroFactura generadorNumeroFactura, Clock clock) {
         this.facturaRepository = facturaRepository;
         this.generadorNumeroFactura = generadorNumeroFactura;

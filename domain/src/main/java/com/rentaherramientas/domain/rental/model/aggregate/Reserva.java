@@ -40,6 +40,7 @@ public final class Reserva extends AggregateRoot {
     private final LocalDateTime creadoEn;
     private final List<ReporteDanio> reportes;
 
+    /** Constructor privado: valida datos obligatorios y que el precio total sea positivo. */
     private Reserva(Long id, Long herramientaId, Long clienteId, RangoFechas rango, EstadoReserva estado,
                     Dinero precioTotal, LocalDateTime fechaEntrega, LocalDateTime fechaDevolucion,
                     LocalDateTime creadoEn, List<ReporteDanio> reportes) {
@@ -70,6 +71,7 @@ public final class Reserva extends AggregateRoot {
         return reserva;
     }
 
+    /** Reconstruye una reserva leída de la base de datos; no emite eventos. */
     public static Reserva reconstruir(Long id, Long herramientaId, Long clienteId, RangoFechas rango,
                                       EstadoReserva estado, Dinero precioTotal, LocalDateTime fechaEntrega,
                                       LocalDateTime fechaDevolucion, LocalDateTime creadoEn,
@@ -80,24 +82,32 @@ public final class Reserva extends AggregateRoot {
 
     // -------------------------------------------------------------- estados
 
+    /** El proveedor acepta la solicitud: PENDIENTE → ACEPTADA. */
     public void aceptar() {
         cambiarEstado(EstadoReserva.ACEPTADA);
     }
 
+    /** El proveedor rechaza la solicitud: PENDIENTE → RECHAZADA. */
     public void rechazar() {
         cambiarEstado(EstadoReserva.RECHAZADA);
     }
 
+    /** Marca la reserva como VENCIDA cuando pasó su fecha sin entregarse (lo hace la tarea programada). */
     public void vencer() {
         cambiarEstado(EstadoReserva.VENCIDA);
     }
 
+    /** Registra que la herramienta se entregó al cliente: ACEPTADA → ENTREGADA. */
     public void registrarEntrega(LocalDateTime fechaEntrega) {
         Validaciones.requerido(fechaEntrega, "fechaEntrega");
         cambiarEstado(EstadoReserva.ENTREGADA);
         this.fechaEntrega = fechaEntrega;
     }
 
+    /**
+     * Registra la devolución (ENTREGADA → DEVUELTA), valida que no sea anterior a la entrega
+     * y emite el evento ReservaDevuelta.
+     */
     public void registrarDevolucion(LocalDateTime fechaDevolucion) {
         Validaciones.requerido(fechaDevolucion, "fechaDevolucion");
         if (fechaEntrega != null && fechaDevolucion.isBefore(fechaEntrega)) {
@@ -108,6 +118,7 @@ public final class Reserva extends AggregateRoot {
         registrarEvento(new ReservaDevuelta(id, herramientaId, LocalDateTime.now()));
     }
 
+    /** Punto único de cambio de estado: rechaza transiciones no permitidas por EstadoReserva. */
     private void cambiarEstado(EstadoReserva destino) {
         if (!estado.puedeCambiarA(destino)) {
             throw new TransicionDeEstadoInvalidaException(estado, destino);
@@ -133,42 +144,52 @@ public final class Reserva extends AggregateRoot {
 
     // -------------------------------------------------------------- lectura
 
+    /** Indica si las fechas de esta reserva se solapan con el rango dado. */
     public boolean seCruzaCon(RangoFechas otro) {
         return rango.seSolapaCon(otro);
     }
 
+    /** Identificador de la reserva; null si aún no se ha guardado. */
     public Long getId() {
         return id;
     }
 
+    /** Id de la herramienta reservada. */
     public Long getHerramientaId() {
         return herramientaId;
     }
 
+    /** Id del usuario CLIENTE que hizo la reserva. */
     public Long getClienteId() {
         return clienteId;
     }
 
+    /** Fechas de inicio y fin (ambas incluidas) de la reserva. */
     public RangoFechas getRango() {
         return rango;
     }
 
+    /** Estado actual de la reserva. */
     public EstadoReserva getEstado() {
         return estado;
     }
 
+    /** Precio total calculado al crearla (días × tarifa diaria). */
     public Dinero getPrecioTotal() {
         return precioTotal;
     }
 
+    /** Momento de la entrega real; null si aún no se entregó. */
     public LocalDateTime getFechaEntrega() {
         return fechaEntrega;
     }
 
+    /** Momento de la devolución real; null si aún no se devolvió. */
     public LocalDateTime getFechaDevolucion() {
         return fechaDevolucion;
     }
 
+    /** Momento en que se creó la solicitud de reserva. */
     public LocalDateTime getCreadoEn() {
         return creadoEn;
     }

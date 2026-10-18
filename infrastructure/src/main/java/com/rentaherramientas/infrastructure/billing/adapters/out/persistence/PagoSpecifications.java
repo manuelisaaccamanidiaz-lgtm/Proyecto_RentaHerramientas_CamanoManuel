@@ -14,9 +14,16 @@ import java.util.List;
  */
 final class PagoSpecifications {
 
+    /** Constructor privado: clase de utilidades estáticas. */
     private PagoSpecifications() {
     }
 
+    /**
+     * Combina con AND solo los filtros informados (estado, método, reservas y rango de fechas).
+     *
+     * Nota: Las lambdas capturan variables locales (`inicio`, `finExclusivo`); Java exige que sean
+     *   "efectivamente finales", es decir, que no se reasignen.
+     */
     static Specification<PagoEntity> segun(CriteriosBusquedaPago criterios) {
         List<Specification<PagoEntity>> filtros = new ArrayList<>();
         if (criterios.estado() != null) {

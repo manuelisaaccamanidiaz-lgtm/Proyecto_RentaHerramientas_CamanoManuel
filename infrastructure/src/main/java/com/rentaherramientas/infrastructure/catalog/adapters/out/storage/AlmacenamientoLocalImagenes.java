@@ -34,6 +34,13 @@ public class AlmacenamientoLocalImagenes implements AlmacenamientoImagenes {
 
     private final Path directorio;
 
+    /**
+     * Crea el directorio de imágenes si no existe.
+     *
+     * TÉCNICA AVANZADA (Spring): `@Value("${clave:valorPorDefecto}")`
+     *   Qué hace: inyecta una propiedad de configuración; lo que va después de los dos puntos se usa si la
+     *     propiedad no está definida. `toAbsolutePath().normalize()` resuelve rutas como "./" y "../".
+     */
     public AlmacenamientoLocalImagenes(@Value("${app.uploads.dir:./uploads}") String directorio) {
         this.directorio = Path.of(directorio).toAbsolutePath().normalize();
         try {
@@ -44,6 +51,13 @@ public class AlmacenamientoLocalImagenes implements AlmacenamientoImagenes {
         log.info("Imágenes en {} publicadas como {}*", this.directorio, RUTA_PUBLICA);
     }
 
+    /**
+     * Escribe el archivo con un nombre UUID y devuelve su ruta pública relativa.
+     *
+     * Nota: `StandardOpenOption.CREATE_NEW` falla si el archivo ya existe, así nunca se sobrescribe una
+     *   imagen. `UncheckedIOException` envuelve la `IOException` comprobada para no obligar a declararla en
+     *   la interfaz.
+     */
     @Override
     public String guardar(byte[] contenido, String contentType) {
         String nombre = UUID.randomUUID() + extension(contentType);
@@ -55,7 +69,13 @@ public class AlmacenamientoLocalImagenes implements AlmacenamientoImagenes {
         return RUTA_PUBLICA + nombre;
     }
 
-    /** Acepta la ruta relativa y, por compatibilidad, URLs absolutas antiguas (http://host/uploads/...). */
+    /**
+     * Acepta la ruta relativa y, por compatibilidad, URLs absolutas antiguas (http://host/uploads/...).
+     *
+     * TÉCNICA AVANZADA (seguridad): prevención de path traversal
+     *   Qué hace: solo se borran nombres que cumplen el patrón de UUID, así una URL manipulada como
+     *     "/uploads/../config" no puede borrar archivos fuera del directorio.
+     */
     @Override
     public void eliminar(String url) {
         String ruta = rutaDe(url);
@@ -74,6 +94,7 @@ public class AlmacenamientoLocalImagenes implements AlmacenamientoImagenes {
         }
     }
 
+    /** Devuelve la parte de ruta de la URL (o la URL si ya es relativa); null si no es válida. */
     private static String rutaDe(String url) {
         if (url == null) {
             return null;
@@ -88,6 +109,7 @@ public class AlmacenamientoLocalImagenes implements AlmacenamientoImagenes {
         }
     }
 
+    /** Devuelve la extensión de archivo correspondiente al tipo MIME. */
     private static String extension(String contentType) {
         return switch (contentType) {
             case "image/jpeg" -> ".jpg";

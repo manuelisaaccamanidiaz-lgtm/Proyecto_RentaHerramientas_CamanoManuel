@@ -9,10 +9,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class CategoriaPersistenceMapper {
 
+    /** Convierte la entidad en el agregado Categoria. */
     public Categoria toDomain(CategoriaEntity entity) {
         return Categoria.reconstruir(entity.getId(), entity.getNombre(), entity.getDescripcion());
     }
 
+    /** Convierte el agregado en entidad JPA. */
     public CategoriaEntity toEntity(Categoria categoria) {
         return new CategoriaEntity(categoria.getId(), categoria.getNombre(), categoria.getDescripcion());
     }

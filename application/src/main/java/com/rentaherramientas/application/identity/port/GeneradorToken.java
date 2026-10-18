@@ -8,5 +8,6 @@ import com.rentaherramientas.domain.identity.model.aggregate.Usuario;
  */
 public interface GeneradorToken {
 
+    /** Genera un token de acceso firmado para el usuario autenticado. */
     TokenEmitido generar(Usuario usuario);
 }

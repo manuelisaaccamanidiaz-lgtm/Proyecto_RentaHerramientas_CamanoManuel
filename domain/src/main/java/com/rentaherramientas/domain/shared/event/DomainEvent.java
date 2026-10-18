@@ -8,5 +8,6 @@ import java.time.LocalDateTime;
  */
 public interface DomainEvent {
 
+    /** Momento en que ocurrió el hecho; lo implementan los records como componente. */
     LocalDateTime ocurridoEn();
 }

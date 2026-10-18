@@ -37,6 +37,14 @@ public class ConsultarReservasService implements ConsultarReservasUseCase {
     private final ConsultaPagos consultaPagos;
     private final Clock clock;
 
+    /**
+     * Recibe sus dependencias por constructor; el bean lo crea RentalBeansConfig.
+     *
+     * TÉCNICA AVANZADA (Java): inyectar `java.time.Clock`
+     *   Qué hace: en lugar de llamar a `LocalDate.now()` directamente, se usa `LocalDate.now(clock)`. En
+     *     producción el reloj es el real; en las pruebas se pasa `Clock.fixed(...)` para fijar "hoy" y que
+     *     los resultados no dependan del día en que se ejecutan.
+     */
     public ConsultarReservasService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas,
                                     ConsultaPagos consultaPagos, Clock clock) {
         this.reservaRepository = reservaRepository;
@@ -45,6 +53,7 @@ public class ConsultarReservasService implements ConsultarReservasUseCase {
         this.clock = clock;
     }
 
+    /** Devuelve una reserva si el solicitante es su cliente, el proveedor de la herramienta o un ADMIN. */
     @Override
     public ReservaResponse porId(Long reservaId, Solicitante solicitante) {
         Reserva reserva = PropiedadReserva.cargarParaVer(reservaRepository, catalogoHerramientas, reservaId,
@@ -52,6 +61,7 @@ public class ConsultarReservasService implements ConsultarReservasUseCase {
         return ReservaResponse.desde(reserva, consultaPagos.tienePagoAprobado(reservaId));
     }
 
+    /** Reservas del cliente, opcionalmente filtradas por estado. */
     @Override
     public PaginaResponse<ReservaResponse> misReservas(Long clienteId, EstadoReserva estado, int pagina, int tamano) {
         return buscar(new CriteriosBusquedaReserva(estado, clienteId, null, null, null, null,
@@ -67,12 +77,17 @@ public class ConsultarReservasService implements ConsultarReservasUseCase {
                 new SolicitudPagina(pagina, tamano)));
     }
 
+    /** Historial completo con filtros (estado, cliente, herramienta y fechas). */
     @Override
     public PaginaResponse<ReservaResponse> historial(FiltroHistorialReservas filtro) {
         return buscar(new CriteriosBusquedaReserva(filtro.estado(), filtro.clienteId(), filtro.herramientaId(),
                 null, filtro.desde(), filtro.hasta(), new SolicitudPagina(filtro.pagina(), filtro.tamano())));
     }
 
+    /**
+     * Devuelve los rangos ocupados de una herramienta en un periodo (por defecto desde hoy) para
+     * pintar el calendario; limita el periodo a DISPONIBILIDAD_MAX_DIAS.
+     */
     @Override
     public DisponibilidadResponse disponibilidad(Long herramientaId, LocalDate desde, LocalDate hasta) {
         if (catalogoHerramientas.buscar(herramientaId).isEmpty()) {
@@ -92,6 +107,13 @@ public class ConsultarReservasService implements ConsultarReservasUseCase {
         return new DisponibilidadResponse(herramientaId, inicio, fin, ocupados);
     }
 
+    /**
+     * Busca la página y consulta en un solo viaje qué reservas de la página están pagadas.
+     *
+     * Técnica avanzada — evitar el problema N+1: en vez de preguntar a billing una vez por cada reserva (N
+     *   consultas), se envían todos los ids juntos (`reservasPagadas`) y se usa un `Set` para comprobar cada
+     *   una en tiempo constante.
+     */
     private PaginaResponse<ReservaResponse> buscar(CriteriosBusquedaReserva criterios) {
         Pagina<Reserva> pagina = reservaRepository.buscar(criterios);
         Set<Long> pagadas = pagina.contenido().isEmpty() ? Set.of()

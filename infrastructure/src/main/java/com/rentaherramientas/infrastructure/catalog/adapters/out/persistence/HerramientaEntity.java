@@ -33,6 +33,11 @@ import java.util.Set;
  * - Las categorías son otro agregado: se mapea solo la tabla puente
  *   herramienta_categorias como colección de ids (@ElementCollection), cuya PK
  *   compuesta (herramienta_id, categoria_id) coincide con la de Flyway.
+ *
+ * TÉCNICA AVANZADA (JPA): `@ElementCollection`
+ *   Qué hace: mapea una colección de valores simples (`Set<Long>`) a una tabla aparte (`@CollectionTable`)
+ *     sin crear una entidad para ella. `@OrderBy("orden ASC")` hace que Hibernate cargue las imágenes ya
+ *     ordenadas.
  */
 @Entity
 @Table(name = "herramientas")
@@ -74,10 +79,12 @@ public class HerramientaEntity {
     @Column(name = "categoria_id", nullable = false)
     private Set<Long> categoriaIds = new HashSet<>();
 
+    /** Constructor sin argumentos exigido por JPA. */
     protected HerramientaEntity() {
         // requerido por JPA
     }
 
+    /** Crea la entidad a partir del agregado; un id null indica INSERT. */
     public HerramientaEntity(Long id, Long proveedorId, String nombre, String descripcion,
                              BigDecimal tarifaDiaria, String moneda, EstadoHerramienta estado,
                              Set<Long> categoriaIds) {
@@ -97,38 +104,47 @@ public class HerramientaEntity {
         imagenes.add(imagen);
     }
 
+    /** Id de la herramienta. */
     public Long getId() {
         return id;
     }
 
+    /** Id del proveedor dueño. */
     public Long getProveedorId() {
         return proveedorId;
     }
 
+    /** Nombre de la herramienta. */
     public String getNombre() {
         return nombre;
     }
 
+    /** Descripción; puede ser null. */
     public String getDescripcion() {
         return descripcion;
     }
 
+    /** Monto de la tarifa diaria. */
     public BigDecimal getTarifaDiaria() {
         return tarifaDiaria;
     }
 
+    /** Moneda de la tarifa (ISO 4217). */
     public String getMoneda() {
         return moneda;
     }
 
+    /** Estado de la herramienta. */
     public EstadoHerramienta getEstado() {
         return estado;
     }
 
+    /** Imágenes ordenadas por posición. */
     public List<HerramientaImagenEntity> getImagenes() {
         return imagenes;
     }
 
+    /** Ids de las categorías asociadas. */
     public Set<Long> getCategoriaIds() {
         return categoriaIds;
     }

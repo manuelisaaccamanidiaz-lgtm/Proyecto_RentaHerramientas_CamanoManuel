@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UsuarioPersistenceMapper {
 
+    /** Convierte la entidad (y sus tablas 1:1) en el agregado Usuario, validando de nuevo los value objects. */
     public Usuario toDomain(UsuarioEntity entity) {
         ProveedorEntity proveedor = entity.getProveedor();
         DatosProveedor datosProveedor = proveedor == null
@@ -36,6 +37,7 @@ public class UsuarioPersistenceMapper {
                 datosCliente);
     }
 
+    /** Convierte el agregado en entidad y enlaza los datos de proveedor o cliente si los tiene. */
     public UsuarioEntity toEntity(Usuario usuario) {
         UsuarioEntity entity = new UsuarioEntity(
                 usuario.getId(),

@@ -49,6 +49,7 @@ public class ReservaController {
     private final ReportarDanioUseCase reportarDanio;
     private final ConsultarReservasUseCase consultarReservas;
 
+    /** Recibe los casos de uso por constructor (inyección de dependencias de Spring). */
     public ReservaController(CrearReservaUseCase crearReserva, AceptarReservaUseCase aceptarReserva,
                              RechazarReservaUseCase rechazarReserva, RegistrarEntregaUseCase registrarEntrega,
                              RegistrarDevolucionUseCase registrarDevolucion, ReportarDanioUseCase reportarDanio,
@@ -62,6 +63,7 @@ public class ReservaController {
         this.consultarReservas = consultarReservas;
     }
 
+    /** POST /api/reservas : el cliente solicita una reserva, que queda PENDIENTE (201 Created). */
     @PostMapping("/api/reservas")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Solicita una reserva (solo CLIENTE); queda PENDIENTE",
@@ -70,6 +72,7 @@ public class ReservaController {
         return crearReserva.crear(request.toCommand(SolicitanteJwt.desde(jwt)));
     }
 
+    /** GET /api/reservas/mias : reservas del cliente autenticado. */
     @GetMapping("/api/reservas/mias")
     @Operation(summary = "Reservas del cliente autenticado (solo CLIENTE)")
     public PaginaResponse<ReservaResponse> misReservas(@AuthenticationPrincipal Jwt jwt,
@@ -79,12 +82,14 @@ public class ReservaController {
         return consultarReservas.misReservas(Long.valueOf(jwt.getSubject()), estado, page, size);
     }
 
+    /** GET /api/reservas/{id} : detalle de una reserva; el caso de uso decide si el solicitante puede verla. */
     @GetMapping("/api/reservas/{id}")
     @Operation(summary = "Detalle de una reserva (su cliente, el proveedor de la herramienta o un ADMIN)")
     public ReservaResponse porId(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
         return consultarReservas.porId(id, SolicitanteJwt.desde(jwt));
     }
 
+    /** GET /api/proveedor/reservas : reservas de las herramientas del proveedor autenticado. */
     @GetMapping("/api/proveedor/reservas")
     @Operation(summary = "Reservas de las herramientas del proveedor autenticado (solo PROVEEDOR)")
     public PaginaResponse<ReservaResponse> delProveedor(@AuthenticationPrincipal Jwt jwt,
@@ -94,6 +99,7 @@ public class ReservaController {
         return consultarReservas.delProveedor(Long.valueOf(jwt.getSubject()), estado, page, size);
     }
 
+    /** GET /api/admin/reservas : historial completo con filtros (solo ADMIN). */
     @GetMapping("/api/admin/reservas")
     @Operation(summary = "Historial de reservas con filtros (solo ADMIN)",
             description = "desde/hasta devuelven las reservas cuyo periodo se cruza con ese intervalo.")
@@ -109,30 +115,35 @@ public class ReservaController {
                 new FiltroHistorialReservas(estado, clienteId, herramientaId, desde, hasta, page, size));
     }
 
+    /** PATCH /api/reservas/{id}/aceptar : acepta una reserva PENDIENTE. */
     @PatchMapping("/api/reservas/{id}/aceptar")
     @Operation(summary = "Acepta una reserva PENDIENTE (proveedor dueño o ADMIN)")
     public ReservaResponse aceptar(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
         return aceptarReserva.aceptar(id, SolicitanteJwt.desde(jwt));
     }
 
+    /** PATCH /api/reservas/{id}/rechazar : rechaza una reserva PENDIENTE. */
     @PatchMapping("/api/reservas/{id}/rechazar")
     @Operation(summary = "Rechaza una reserva PENDIENTE (proveedor dueño o ADMIN)")
     public ReservaResponse rechazar(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
         return rechazarReserva.rechazar(id, SolicitanteJwt.desde(jwt));
     }
 
+    /** PATCH /api/reservas/{id}/entregar : registra la entrega de una reserva ACEPTADA y pagada. */
     @PatchMapping("/api/reservas/{id}/entregar")
     @Operation(summary = "Registra la entrega de una reserva ACEPTADA (proveedor dueño o ADMIN)")
     public ReservaResponse entregar(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
         return registrarEntrega.entregar(id, SolicitanteJwt.desde(jwt));
     }
 
+    /** PATCH /api/reservas/{id}/devolver : registra la devolución de una reserva ENTREGADA. */
     @PatchMapping("/api/reservas/{id}/devolver")
     @Operation(summary = "Registra la devolución de una reserva ENTREGADA (proveedor dueño o ADMIN)")
     public ReservaResponse devolver(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
         return registrarDevolucion.devolver(id, SolicitanteJwt.desde(jwt));
     }
 
+    /** POST /api/reservas/{id}/danios : reporta un daño en una reserva DEVUELTA (201 Created). */
     @PostMapping("/api/reservas/{id}/danios")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Reporta un daño en una reserva DEVUELTA y marca la herramienta como DANADA "

@@ -16,6 +16,7 @@ public class RelojConfig {
 
     public static final String ZONA_NEGOCIO = "America/Bogota";
 
+    /** Reloj del sistema en la zona horaria America/Bogota; se inyecta en los servicios. */
     @Bean
     Clock relojNegocio() {
         return Clock.system(ZoneId.of(ZONA_NEGOCIO));

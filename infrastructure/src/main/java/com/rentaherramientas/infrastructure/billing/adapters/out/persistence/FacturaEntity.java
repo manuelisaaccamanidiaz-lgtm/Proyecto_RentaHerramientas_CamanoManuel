@@ -20,6 +20,11 @@ import java.util.List;
  * Modelo de persistencia de "facturas". pago_id es otro agregado (Pago): Long
  * simple, sin @ManyToOne. No hay reserva_id: la reserva se obtiene vía el pago.
  * Las líneas son hijas del agregado: cascada desde el padre. No hay columna total.
+ *
+ * TÉCNICA AVANZADA (Hibernate): `@JdbcTypeCode(SqlTypes.CHAR)`
+ *   Qué hace: por defecto Hibernate asocia un `String` a VARCHAR. Con `ddl-auto=validate`, al arrancar
+ *     compara las entidades con las tablas y fallaría ante una columna CHAR(3); esta anotación le indica el
+ *     tipo JDBC real.
  */
 @Entity
 @Table(name = "facturas")
@@ -48,10 +53,12 @@ public class FacturaEntity {
     @OrderBy("id ASC")
     private List<FacturaLineaEntity> lineas = new ArrayList<>();
 
+    /** Constructor sin argumentos exigido por JPA. */
     protected FacturaEntity() {
         // requerido por JPA
     }
 
+    /** Crea la entidad a partir del agregado; un id null indica INSERT. */
     public FacturaEntity(Long id, String numero, Long pagoId, String moneda, LocalDateTime fechaEmision) {
         this.id = id;
         this.numero = numero;
@@ -66,26 +73,32 @@ public class FacturaEntity {
         lineas.add(linea);
     }
 
+    /** Id de la factura. */
     public Long getId() {
         return id;
     }
 
+    /** Número legal de la factura. */
     public String getNumero() {
         return numero;
     }
 
+    /** Id del pago facturado. */
     public Long getPagoId() {
         return pagoId;
     }
 
+    /** Moneda de la factura. */
     public String getMoneda() {
         return moneda;
     }
 
+    /** Momento de emisión. */
     public LocalDateTime getFechaEmision() {
         return fechaEmision;
     }
 
+    /** Líneas de la factura, ordenadas por id. */
     public List<FacturaLineaEntity> getLineas() {
         return lineas;
     }

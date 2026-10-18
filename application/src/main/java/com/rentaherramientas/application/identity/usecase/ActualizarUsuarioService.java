@@ -18,10 +18,18 @@ public class ActualizarUsuarioService implements ActualizarUsuarioUseCase {
 
     private final UsuarioRepository usuarioRepository;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea IdentityBeansConfig. */
     public ActualizarUsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
+    /**
+     * Carga el usuario, aplica los cambios a través del agregado y lo guarda.
+     *
+     * TÉCNICA AVANZADA (Java): `Optional.orElseThrow(Supplier)`
+     *   Qué hace: devuelve el valor si existe o lanza la excepción creada por la lambda; reemplaza el patrón
+     *     "if (x == null) throw ...".
+     */
     @Override
     public UsuarioResponse actualizar(ActualizarUsuarioCommand command) {
         Usuario usuario = usuarioRepository.buscarPorId(command.usuarioId())

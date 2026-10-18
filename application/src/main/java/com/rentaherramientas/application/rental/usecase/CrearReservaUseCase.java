@@ -8,5 +8,6 @@ import com.rentaherramientas.application.rental.dto.ReservaResponse;
  */
 public interface CrearReservaUseCase {
 
+    /** Crea una solicitud de reserva y devuelve sus datos. */
     ReservaResponse crear(CrearReservaCommand command);
 }

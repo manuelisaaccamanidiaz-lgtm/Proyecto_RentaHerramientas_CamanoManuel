@@ -43,6 +43,7 @@ public class PagoController {
     private final RechazarPagoUseCase rechazarPago;
     private final ConsultarPagosUseCase consultarPagos;
 
+    /** Recibe los casos de uso por constructor (inyección de dependencias de Spring). */
     public PagoController(PagarReservaUseCase pagarReserva, ConfirmarPagoUseCase confirmarPago,
                           RechazarPagoUseCase rechazarPago, ConsultarPagosUseCase consultarPagos) {
         this.pagarReserva = pagarReserva;
@@ -51,6 +52,7 @@ public class PagoController {
         this.consultarPagos = consultarPagos;
     }
 
+    /** POST /api/pagos : el cliente paga una reserva ACEPTADA (201 Created). */
     @PostMapping("/api/pagos")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Paga una reserva ACEPTADA propia (solo CLIENTE)",
@@ -60,6 +62,7 @@ public class PagoController {
         return pagarReserva.pagar(request.toCommand(SolicitanteJwt.desde(jwt)));
     }
 
+    /** GET /api/pagos/mios : pagos del cliente autenticado. */
     @GetMapping("/api/pagos/mios")
     @Operation(summary = "Pagos del cliente autenticado (solo CLIENTE)")
     public PaginaResponse<PagoResponse> misPagos(@AuthenticationPrincipal Jwt jwt,
@@ -68,24 +71,28 @@ public class PagoController {
         return consultarPagos.misPagos(Long.valueOf(jwt.getSubject()), page, size);
     }
 
+    /** GET /api/pagos/{id} : detalle de un pago. */
     @GetMapping("/api/pagos/{id}")
     @Operation(summary = "Detalle de un pago (cliente, proveedor de la herramienta o ADMIN)")
     public PagoResponse porId(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
         return consultarPagos.porId(id, SolicitanteJwt.desde(jwt));
     }
 
+    /** PATCH /api/pagos/{id}/confirmar : aprueba un pago PENDIENTE y emite su factura. */
     @PatchMapping("/api/pagos/{id}/confirmar")
     @Operation(summary = "Confirma un pago PENDIENTE y emite la factura (proveedor dueño o ADMIN)")
     public PagoResponse confirmar(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
         return confirmarPago.confirmar(id, SolicitanteJwt.desde(jwt));
     }
 
+    /** PATCH /api/pagos/{id}/rechazar : rechaza un pago PENDIENTE. */
     @PatchMapping("/api/pagos/{id}/rechazar")
     @Operation(summary = "Rechaza un pago PENDIENTE (proveedor dueño o ADMIN)")
     public PagoResponse rechazar(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
         return rechazarPago.rechazar(id, SolicitanteJwt.desde(jwt));
     }
 
+    /** GET /api/proveedor/pagos : pagos de las herramientas del proveedor autenticado. */
     @GetMapping("/api/proveedor/pagos")
     @Operation(summary = "Pagos de reservas de las herramientas del proveedor autenticado (solo PROVEEDOR)")
     public PaginaResponse<PagoResponse> delProveedor(@AuthenticationPrincipal Jwt jwt,
@@ -94,6 +101,7 @@ public class PagoController {
         return consultarPagos.delProveedor(Long.valueOf(jwt.getSubject()), page, size);
     }
 
+    /** GET /api/admin/pagos : historial de pagos con filtros (solo ADMIN). */
     @GetMapping("/api/admin/pagos")
     @Operation(summary = "Historial de pagos con filtros (solo ADMIN)",
             description = "desde/hasta filtran por la fecha del pago (ambos días incluidos).")

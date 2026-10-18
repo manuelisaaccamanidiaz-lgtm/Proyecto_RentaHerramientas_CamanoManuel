@@ -6,5 +6,6 @@ package com.rentaherramientas.application.billing.port;
  */
 public interface GeneradorPdfFactura {
 
+    /** Genera el PDF de la factura y devuelve sus bytes. */
     byte[] generar(DocumentoFactura documento);
 }

@@ -21,6 +21,7 @@ public record UrlImagen(String valor) {
     /** Segmentos de ruta con caracteres seguros; nada de espacios, "\", "?" ni "#". */
     private static final Pattern RUTA_RELATIVA = Pattern.compile("^(/[A-Za-z0-9._~-]+)+$");
 
+    /** Constructor compacto: recorta la URL y la valida como ruta relativa ("/...") o como URL http/https. */
     public UrlImagen {
         if (valor == null || valor.isBlank()) {
             throw new ValorInvalidoException("La URL de la imagen es obligatoria");
@@ -36,6 +37,7 @@ public record UrlImagen(String valor) {
         }
     }
 
+    /** Indica si la imagen se sirve desde esta misma aplicación (ruta que empieza por "/"). */
     public boolean esRelativa() {
         return valor.startsWith("/");
     }
@@ -55,6 +57,13 @@ public record UrlImagen(String valor) {
         }
     }
 
+    /**
+     * Valida una URL absoluta: debe tener esquema http o https y un host.
+     *
+     * TÉCNICA AVANZADA (Java): `java.net.URI`
+     *   Qué hace: analiza la URL según el estándar RFC 3986 y separa esquema, host y ruta, algo más fiable
+     *     que una expresión regular. La `URISyntaxException` comprobada se traduce a la excepción de dominio.
+     */
     private static void validarUrlAbsoluta(String url) {
         try {
             URI uri = new URI(url);

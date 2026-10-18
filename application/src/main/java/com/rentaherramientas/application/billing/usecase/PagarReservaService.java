@@ -39,6 +39,7 @@ public class PagarReservaService implements PagarReservaUseCase {
     private final EmisorFactura emisorFactura;
     private final Clock clock;
 
+    /** Recibe sus dependencias por constructor (el bean lo crea BillingBeansConfig) y arma su EmisorFactura. */
     public PagarReservaService(PagoRepository pagoRepository, FacturaRepository facturaRepository,
                                ConsultaReservas consultaReservas, GeneradorNumeroFactura generadorNumeroFactura,
                                UnidadDeTrabajo unidadDeTrabajo, Clock clock) {
@@ -49,6 +50,11 @@ public class PagarReservaService implements PagarReservaUseCase {
         this.clock = clock;
     }
 
+    /**
+     * El cliente paga su reserva ACEPTADA. Si el método se aprueba al instante, el pago queda
+     * APROBADO y se emite la factura; si no, queda PENDIENTE hasta que el proveedor lo confirme.
+     * Pago y factura se guardan en una sola transacción mediante UnidadDeTrabajo.
+     */
     @Override
     public PagoResponse pagar(PagarReservaCommand command) {
         if (command.solicitante().rol() != Rol.CLIENTE) {

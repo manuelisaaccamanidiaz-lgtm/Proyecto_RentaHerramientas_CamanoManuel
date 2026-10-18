@@ -19,18 +19,26 @@ import java.util.List;
  */
 public interface ConsultasReportes {
 
+    /**
+     * Totales generales: ingresos por moneda, pagos aprobados, facturas emitidas, reservas por estado y usuarios por rol.
+     */
     ResumenGeneralResponse resumenGeneral();
 
     /** desde/hasta incluidos, por la fecha del pago; meses sin ingresos no aparecen. */
     List<IngresoMensualResponse> ingresosPorMes(LocalDate desde, LocalDate hasta);
 
+    /** Las herramientas con más reservas, hasta `limite` resultados. */
     List<HerramientaAlquiladaResponse> herramientasMasAlquiladas(int limite);
 
+    /** Los clientes con más alquileres y lo que han pagado, hasta `limite` resultados. */
     List<ClienteFrecuenteResponse> clientesFrecuentes(int limite);
 
+    /** Total de herramientas y su conteo por estado y por categoría. */
     InventarioResponse inventario();
 
+    /** Herramientas y proveedores que más ingresos generan, hasta `limite` de cada uno. */
     RentabilidadResponse rentabilidad(int limite);
 
+    /** Resumen de un proveedor: ingresos, pagos aprobados, reservas y herramientas por estado. */
     ResumenProveedorResponse resumenProveedor(Long proveedorId);
 }

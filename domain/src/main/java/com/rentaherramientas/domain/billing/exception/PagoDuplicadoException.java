@@ -10,6 +10,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class PagoDuplicadoException extends DomainException {
 
+    /** Crea la excepción indicando la reserva que ya tiene un pago en curso o aprobado. */
     public PagoDuplicadoException(Long reservaId) {
         super("La reserva " + reservaId + " ya tiene un pago pendiente o aprobado");
     }

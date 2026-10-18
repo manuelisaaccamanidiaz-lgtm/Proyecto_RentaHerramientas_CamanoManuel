@@ -26,6 +26,20 @@ public class SecurityConfig {
     private static final String ADMIN = "ADMIN";
     private static final String CLIENTE = "CLIENTE";
 
+    /**
+     * Define la cadena de filtros de seguridad: sin sesiones, CORS, reglas por URL y rol, y JWT.
+     *
+     * TÉCNICA AVANZADA (Spring Security 6): DSL con lambdas
+     *   Qué hace: cada sección (`csrf`, `cors`, `authorizeHttpRequests`...) se configura con una lambda. El
+     *     orden de los `requestMatchers` importa: gana la primera regla que coincide, por eso las reglas
+     *     concretas van antes que las generales y `anyRequest()` va al final.
+     *
+     * Nota: `hasRole("ADMIN")` comprueba la authority `ROLE_ADMIN`, que crea el `JwtAuthenticationConverter`
+     *   de JwtConfig a partir del claim "rol".
+     *
+     * Nota: `SessionCreationPolicy.STATELESS`: el servidor no guarda sesión; cada petición se autentica solo
+     *   con su token.
+     */
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http,
                                             JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
@@ -79,6 +93,13 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Codificador de contraseñas BCrypt.
+     *
+     * Técnica avanzada — BCrypt: algoritmo de hash lento a propósito y con "sal" aleatoria: dos contraseñas
+     *   iguales dan hashes distintos y los ataques de fuerza bruta son costosos. Se verifica con
+     *   `matches(plano, hash)`, nunca comparando hashes.
+     */
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

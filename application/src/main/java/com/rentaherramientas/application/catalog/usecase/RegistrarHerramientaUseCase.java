@@ -8,5 +8,6 @@ import com.rentaherramientas.application.catalog.dto.HerramientaResponse;
  */
 public interface RegistrarHerramientaUseCase {
 
+    /** Registra una herramienta nueva del proveedor solicitante. */
     HerramientaResponse registrar(RegistrarHerramientaCommand command);
 }

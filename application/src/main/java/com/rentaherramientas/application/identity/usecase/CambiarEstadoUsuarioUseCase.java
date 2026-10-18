@@ -9,7 +9,9 @@ import com.rentaherramientas.application.shared.command.Solicitante;
  */
 public interface CambiarEstadoUsuarioUseCase {
 
+    /** Desactiva el usuario indicado; el solicitante sirve para impedir la auto-desactivación. */
     UsuarioResponse desactivar(Long usuarioId, Solicitante solicitante);
 
+    /** Reactiva el usuario indicado. */
     UsuarioResponse activar(Long usuarioId);
 }

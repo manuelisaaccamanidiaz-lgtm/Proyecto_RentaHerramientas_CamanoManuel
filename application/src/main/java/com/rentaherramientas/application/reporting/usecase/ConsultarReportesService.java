@@ -29,16 +29,22 @@ public class ConsultarReportesService implements ConsultarReportesUseCase {
     private final ConsultasReportes consultasReportes;
     private final Clock clock;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea ReportingBeansConfig. */
     public ConsultarReportesService(ConsultasReportes consultasReportes, Clock clock) {
         this.consultasReportes = consultasReportes;
         this.clock = clock;
     }
 
+    /** Devuelve el resumen general del sistema. */
     @Override
     public ResumenGeneralResponse resumenGeneral() {
         return consultasReportes.resumenGeneral();
     }
 
+    /**
+     * Ingresos agrupados por mes. Sin fechas, toma los últimos MESES_POR_DEFECTO meses hasta hoy;
+     * rechaza periodos invertidos o de más de 5 años.
+     */
     @Override
     public List<IngresoMensualResponse> ingresosPorMes(LocalDate desde, LocalDate hasta) {
         LocalDate fin = hasta == null ? LocalDate.now(clock) : hasta;
@@ -52,31 +58,37 @@ public class ConsultarReportesService implements ConsultarReportesUseCase {
         return consultasReportes.ingresosPorMes(inicio, fin);
     }
 
+    /** Ranking de herramientas más alquiladas, con el límite validado. */
     @Override
     public List<HerramientaAlquiladaResponse> herramientasMasAlquiladas(int limite) {
         return consultasReportes.herramientasMasAlquiladas(validarLimite(limite));
     }
 
+    /** Ranking de clientes con más alquileres, con el límite validado. */
     @Override
     public List<ClienteFrecuenteResponse> clientesFrecuentes(int limite) {
         return consultasReportes.clientesFrecuentes(validarLimite(limite));
     }
 
+    /** Devuelve el inventario de herramientas por estado y por categoría. */
     @Override
     public InventarioResponse inventario() {
         return consultasReportes.inventario();
     }
 
+    /** Ranking de ingresos por herramienta y por proveedor, con el límite validado. */
     @Override
     public RentabilidadResponse rentabilidad(int limite) {
         return consultasReportes.rentabilidad(validarLimite(limite));
     }
 
+    /** Devuelve el resumen del proveedor indicado. */
     @Override
     public ResumenProveedorResponse resumenProveedor(Long proveedorId) {
         return consultasReportes.resumenProveedor(Validaciones.requerido(proveedorId, "proveedorId"));
     }
 
+    /** Exige que el límite de un ranking esté entre 1 y LIMITE_MAXIMO. */
     private static int validarLimite(int limite) {
         if (limite < 1 || limite > LIMITE_MAXIMO) {
             throw new ValorInvalidoException("El límite debe estar entre 1 y " + LIMITE_MAXIMO);

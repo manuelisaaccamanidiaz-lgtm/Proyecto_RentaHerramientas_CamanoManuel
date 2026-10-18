@@ -54,10 +54,12 @@ public class PagoEntity {
     @Column(name = "fecha", nullable = false)
     private LocalDateTime fecha;
 
+    /** Constructor sin argumentos exigido por JPA. */
     protected PagoEntity() {
         // requerido por JPA
     }
 
+    /** Crea la entidad a partir del agregado; un id null indica INSERT. */
     public PagoEntity(Long id, Long reservaId, BigDecimal monto, String moneda, MetodoPago metodo,
                       EstadoPago estado, String referencia, LocalDateTime fecha) {
         this.id = id;
@@ -70,34 +72,42 @@ public class PagoEntity {
         this.fecha = fecha;
     }
 
+    /** Id del pago. */
     public Long getId() {
         return id;
     }
 
+    /** Id de la reserva pagada. */
     public Long getReservaId() {
         return reservaId;
     }
 
+    /** Monto del pago. */
     public BigDecimal getMonto() {
         return monto;
     }
 
+    /** Moneda del pago. */
     public String getMoneda() {
         return moneda;
     }
 
+    /** Medio de pago. */
     public MetodoPago getMetodo() {
         return metodo;
     }
 
+    /** Estado del pago. */
     public EstadoPago getEstado() {
         return estado;
     }
 
+    /** Referencia única de la transacción. */
     public String getReferencia() {
         return referencia;
     }
 
+    /** Momento del pago. */
     public LocalDateTime getFecha() {
         return fecha;
     }

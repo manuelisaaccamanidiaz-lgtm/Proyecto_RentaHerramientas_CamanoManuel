@@ -8,7 +8,9 @@ import com.rentaherramientas.domain.identity.model.valueobject.PasswordHash;
  */
 public interface CodificadorPassword {
 
+    /** Calcula el hash de una contraseña en texto plano. */
     PasswordHash codificar(String plano);
 
+    /** Comprueba si la contraseña en texto plano corresponde al hash guardado. */
     boolean coincide(String plano, PasswordHash hash);
 }

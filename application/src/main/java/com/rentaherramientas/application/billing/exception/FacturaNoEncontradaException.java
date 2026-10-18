@@ -7,6 +7,7 @@ import com.rentaherramientas.application.shared.exception.RecursoNoEncontradoExc
  */
 public class FacturaNoEncontradaException extends RecursoNoEncontradoException {
 
+    /** Crea la excepción indicando el id que no existe. */
     public FacturaNoEncontradaException(Long id) {
         super("No existe la factura " + id);
     }

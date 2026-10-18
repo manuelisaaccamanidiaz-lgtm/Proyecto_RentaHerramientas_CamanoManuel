@@ -9,6 +9,7 @@ public enum EstadoPago {
     APROBADO,
     RECHAZADO;
 
+    /** Indica si el estado es definitivo (APROBADO o RECHAZADO), es decir, distinto de PENDIENTE. */
     public boolean esFinal() {
         return this != PENDIENTE;
     }

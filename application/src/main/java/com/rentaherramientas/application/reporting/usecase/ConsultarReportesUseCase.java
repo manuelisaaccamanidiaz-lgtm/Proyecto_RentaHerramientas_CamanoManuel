@@ -16,18 +16,24 @@ import java.util.List;
  */
 public interface ConsultarReportesUseCase {
 
+    /** Resumen general del sistema. */
     ResumenGeneralResponse resumenGeneral();
 
     /** desde null = primer día del mes, 11 meses atrás; hasta null = hoy. */
     List<IngresoMensualResponse> ingresosPorMes(LocalDate desde, LocalDate hasta);
 
+    /** Herramientas más alquiladas. */
     List<HerramientaAlquiladaResponse> herramientasMasAlquiladas(int limite);
 
+    /** Clientes con más alquileres. */
     List<ClienteFrecuenteResponse> clientesFrecuentes(int limite);
 
+    /** Inventario de herramientas por estado y por categoría. */
     InventarioResponse inventario();
 
+    /** Herramientas y proveedores más rentables. */
     RentabilidadResponse rentabilidad(int limite);
 
+    /** Resumen de un proveedor. */
     ResumenProveedorResponse resumenProveedor(Long proveedorId);
 }

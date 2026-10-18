@@ -5,6 +5,7 @@ package com.rentaherramientas.application.identity.command;
  */
 public record LoginCommand(String email, String password) {
 
+    /** Oculta la contraseña para que no aparezca en logs. */
     @Override
     public String toString() {
         return "LoginCommand[email=" + email + ", password=****]";

@@ -22,6 +22,7 @@ public class RegistrarEntregaService implements RegistrarEntregaUseCase {
     private final ConsultaPagos consultaPagos;
     private final Clock clock;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea RentalBeansConfig. */
     public RegistrarEntregaService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas,
                                    ConsultaPagos consultaPagos, Clock clock) {
         this.reservaRepository = reservaRepository;
@@ -30,6 +31,7 @@ public class RegistrarEntregaService implements RegistrarEntregaUseCase {
         this.clock = clock;
     }
 
+    /** Registra la entrega de la herramienta; exige que la reserva tenga un pago aprobado. */
     @Override
     public ReservaResponse entregar(Long reservaId, Solicitante solicitante) {
         Reserva reserva = PropiedadReserva.cargarParaGestionar(reservaRepository, catalogoHerramientas,

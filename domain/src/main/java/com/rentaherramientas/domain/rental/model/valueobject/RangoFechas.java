@@ -11,6 +11,7 @@ import com.rentaherramientas.domain.shared.exception.ValorInvalidoException;
  */
 public record RangoFechas(LocalDate inicio, LocalDate fin) {
 
+    /** Constructor compacto: exige ambas fechas y que el fin no sea anterior al inicio. */
     public RangoFechas {
         if (inicio == null || fin == null) {
             throw new ValorInvalidoException("Las fechas de la reserva son obligatorias");
@@ -25,6 +26,13 @@ public record RangoFechas(LocalDate inicio, LocalDate fin) {
         return !this.fin.isBefore(otro.inicio) && !otro.fin.isBefore(this.inicio);
     }
 
+    /**
+     * Número de días del rango contando ambos extremos (del 1 al 3 son 3 días).
+     *
+     * TÉCNICA AVANZADA (Java): `ChronoUnit.DAYS.between`
+     *   Qué hace: calcula días entre fechas de la API `java.time` sin errores de horario de verano; devuelve
+     *     el intervalo abierto al final, por eso se suma 1.
+     */
     public long dias() {
         return ChronoUnit.DAYS.between(inicio, fin) + 1;
     }

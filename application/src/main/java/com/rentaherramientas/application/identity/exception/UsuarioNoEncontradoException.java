@@ -7,6 +7,7 @@ import com.rentaherramientas.application.shared.exception.RecursoNoEncontradoExc
  */
 public class UsuarioNoEncontradoException extends RecursoNoEncontradoException {
 
+    /** Crea la excepción indicando el id que no existe. */
     public UsuarioNoEncontradoException(Long id) {
         super("No existe el usuario " + id);
     }

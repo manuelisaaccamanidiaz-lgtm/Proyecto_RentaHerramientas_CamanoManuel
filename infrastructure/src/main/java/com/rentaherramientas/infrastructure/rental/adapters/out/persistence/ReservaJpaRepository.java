@@ -17,17 +17,32 @@ import java.util.List;
 public interface ReservaJpaRepository extends JpaRepository<ReservaEntity, Long>,
         JpaSpecificationExecutor<ReservaEntity> {
 
+    /**
+     * Reservas de un cliente, de la más reciente a la más antigua.
+     *
+     * TÉCNICA AVANZADA (Spring Data): `OrderBy` en el nombre
+     *   Qué hace: la parte `OrderByCreadoEnDesc` añade `ORDER BY creado_en DESC` a la consulta derivada.
+     */
     List<ReservaEntity> findByClienteIdOrderByCreadoEnDesc(Long clienteId);
 
+    /** Reservas de una herramienta ordenadas por fecha de inicio. */
     List<ReservaEntity> findByHerramientaIdOrderByFechaInicioAsc(Long herramientaId);
 
+    /** Ids de las reservas de un cliente. */
     @Query("select r.id from ReservaEntity r where r.clienteId = :clienteId order by r.id")
     List<Long> idsPorCliente(@Param("clienteId") Long clienteId);
 
+    /** Ids de las reservas de varias herramientas (la colección no puede estar vacía). */
     @Query("select r.id from ReservaEntity r where r.herramientaId in :herramientaIds order by r.id")
     List<Long> idsPorHerramientas(@Param("herramientaIds") Collection<Long> herramientaIds);
 
-    /** Rangos inclusivos: se cruzan si cada uno empieza antes (o el mismo día) de que termine el otro. */
+    /**
+     * Rangos inclusivos: se cruzan si cada uno empieza antes (o el mismo día) de que termine el otro.
+     *
+     * TÉCNICA AVANZADA (Java 15+): text blocks `""" ... """`
+     *   Qué hace: permiten escribir la consulta en varias líneas sin concatenar cadenas.
+     *     `select count(r) > 0` devuelve directamente un boolean.
+     */
     @Query("""
             select count(r) > 0 from ReservaEntity r
             where r.herramientaId = :herramientaId
@@ -40,7 +55,13 @@ public interface ReservaJpaRepository extends JpaRepository<ReservaEntity, Long>
                                @Param("fin") LocalDate fin,
                                @Param("estados") Collection<EstadoReserva> estados);
 
-    /** Solo las fechas: el endpoint de disponibilidad es público y no debe cargar reservas completas. */
+    /**
+     * Solo las fechas: el endpoint de disponibilidad es público y no debe cargar reservas completas.
+     *
+     * TÉCNICA AVANZADA (JPQL): expresión constructora `select new ...`
+     *   Qué hace: crea directamente objetos `RangoFechas` con las dos columnas, sin cargar entidades
+     *     completas. Requiere el nombre completo de la clase y un constructor con esos parámetros.
+     */
     @Query("""
             select new com.rentaherramientas.domain.rental.model.valueobject.RangoFechas(r.fechaInicio, r.fechaFin)
             from ReservaEntity r
@@ -59,7 +80,11 @@ public interface ReservaJpaRepository extends JpaRepository<ReservaEntity, Long>
     @Query("select distinct r from ReservaEntity r left join fetch r.reportes where r.id in :ids")
     List<ReservaEntity> cargarConReportes(@Param("ids") Collection<Long> ids);
 
-    /** Sin paginación, así que los reportes pueden venir en la misma consulta con fetch join. */
+    /**
+     * Sin paginación, así que los reportes pueden venir en la misma consulta con fetch join.
+     *
+     * Nota: Una reserva PENDIENTE vence si su inicio ya pasó; una ACEPTADA, si su fin ya pasó.
+     */
     @Query("""
             select distinct r from ReservaEntity r left join fetch r.reportes
             where (r.estado = :pendiente and r.fechaInicio < :hoy)

@@ -10,5 +10,14 @@ import java.util.function.Supplier;
  */
 public interface UnidadDeTrabajo {
 
+    /**
+     * Ejecuta la operación dentro de una transacción y devuelve su resultado; si lanza una
+     * excepción, se deshacen todas sus escrituras.
+     *
+     * TÉCNICA AVANZADA (Java): `Supplier<T>` como bloque de código
+     *   Qué hace: el llamador pasa una lambda `() -> { ...; return x; }` y la implementación decide cuándo y
+     *     cómo ejecutarla (aquí, envuelta en una transacción de Spring).
+     *   Cómo usarlo: `unidadDeTrabajo.ejecutar(() -> repo.guardar(entidad));`
+     */
     <T> T ejecutar(Supplier<T> operacion);
 }

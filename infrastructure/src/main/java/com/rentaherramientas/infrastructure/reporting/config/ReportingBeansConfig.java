@@ -14,6 +14,7 @@ import java.time.Clock;
 @Configuration
 public class ReportingBeansConfig {
 
+    /** Bean del caso de uso de reportes. */
     @Bean
     ConsultarReportesUseCase consultarReportesUseCase(ConsultasReportes consultasReportes, Clock relojNegocio) {
         return new ConsultarReportesService(consultasReportes, relojNegocio);

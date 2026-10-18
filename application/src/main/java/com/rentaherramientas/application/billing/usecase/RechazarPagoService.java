@@ -17,11 +17,13 @@ public class RechazarPagoService implements RechazarPagoUseCase {
     private final PagoRepository pagoRepository;
     private final ConsultaReservas consultaReservas;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea BillingBeansConfig. */
     public RechazarPagoService(PagoRepository pagoRepository, ConsultaReservas consultaReservas) {
         this.pagoRepository = pagoRepository;
         this.consultaReservas = consultaReservas;
     }
 
+    /** El proveedor de la herramienta (o un ADMIN) rechaza un pago pendiente. */
     @Override
     public PagoResponse rechazar(Long pagoId, Solicitante solicitante) {
         Pago pago = pagoRepository.buscarPorId(pagoId).orElseThrow(() -> new PagoNoEncontradoException(pagoId));

@@ -23,12 +23,20 @@ public class GestionarImagenesHerramientaService implements GestionarImagenesHer
     private final HerramientaRepository herramientaRepository;
     private final AlmacenamientoImagenes almacenamiento;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea CatalogBeansConfig. */
     public GestionarImagenesHerramientaService(HerramientaRepository herramientaRepository,
                                                AlmacenamientoImagenes almacenamiento) {
         this.herramientaRepository = herramientaRepository;
         this.almacenamiento = almacenamiento;
     }
 
+    /**
+     * Valida el archivo, lo guarda en el almacenamiento y lo asocia a la herramienta.
+     *
+     * Técnica avanzada — acción compensatoria: el disco no participa en la transacción de la base de datos.
+     *   Si guardar en BD falla después de escribir el archivo, el `catch` borra el archivo y relanza la
+     *   excepción, para no dejar imágenes huérfanas.
+     */
     @Override
     public HerramientaResponse agregar(AgregarImagenCommand command) {
         FormatoImagen formato = validarImagen(command.contenido(), command.contentType());
@@ -49,6 +57,7 @@ public class GestionarImagenesHerramientaService implements GestionarImagenesHer
         }
     }
 
+    /** Quita la imagen de la herramienta y, después de guardar en BD, borra el archivo. */
     @Override
     public HerramientaResponse quitar(Long herramientaId, int orden, Solicitante solicitante) {
         Herramienta herramienta = PropiedadHerramienta.cargarParaModificar(herramientaRepository,
@@ -65,6 +74,10 @@ public class GestionarImagenesHerramientaService implements GestionarImagenesHer
         return respuesta;
     }
 
+    /**
+     * Comprueba que el archivo no esté vacío, que el tipo MIME esté admitido y que su contenido
+     * real coincida con ese tipo.
+     */
     private static FormatoImagen validarImagen(byte[] contenido, String contentType) {
         if (contenido == null || contenido.length == 0) {
             throw new ValorInvalidoException("El archivo de imagen está vacío");

@@ -8,6 +8,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class FechaInvalidaException extends DomainException {
 
+    /** Crea la excepción con el motivo concreto por el que la fecha no es válida. */
     public FechaInvalidaException(String mensaje) {
         super(mensaje);
     }

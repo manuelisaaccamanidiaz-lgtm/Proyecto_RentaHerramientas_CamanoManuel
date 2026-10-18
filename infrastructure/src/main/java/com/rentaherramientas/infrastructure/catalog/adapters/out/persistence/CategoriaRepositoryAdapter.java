@@ -21,41 +21,48 @@ public class CategoriaRepositoryAdapter implements CategoriaRepository {
     private final CategoriaJpaRepository jpaRepository;
     private final CategoriaPersistenceMapper mapper;
 
+    /** Recibe el repositorio de Spring Data y el mapper por constructor. */
     public CategoriaRepositoryAdapter(CategoriaJpaRepository jpaRepository, CategoriaPersistenceMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
     }
 
+    /** Guarda la categoría (INSERT o UPDATE) y devuelve el agregado con id. */
     @Override
     @Transactional
     public Categoria guardar(Categoria categoria) {
         return mapper.toDomain(jpaRepository.save(mapper.toEntity(categoria)));
     }
 
+    /** Busca por id y convierte la entidad en agregado. */
     @Override
     @Transactional(readOnly = true)
     public Optional<Categoria> buscarPorId(Long id) {
         return jpaRepository.findById(id).map(mapper::toDomain);
     }
 
+    /** Todas las categorías ordenadas por nombre. */
     @Override
     @Transactional(readOnly = true)
     public List<Categoria> buscarTodas() {
         return jpaRepository.findAll(Sort.by("nombre")).stream().map(mapper::toDomain).toList();
     }
 
+    /** Indica si el nombre (recortado) ya está en uso. */
     @Override
     @Transactional(readOnly = true)
     public boolean existePorNombre(String nombre) {
         return jpaRepository.existsByNombre(nombre == null ? null : nombre.strip());
     }
 
+    /** Busca por nombre (recortado). */
     @Override
     @Transactional(readOnly = true)
     public Optional<Categoria> buscarPorNombre(String nombre) {
         return jpaRepository.findByNombre(nombre == null ? null : nombre.strip()).map(mapper::toDomain);
     }
 
+    /** Indica si existen todas las categorías indicadas; quita duplicados antes de contar. */
     @Override
     @Transactional(readOnly = true)
     public boolean existenTodas(Collection<Long> ids) {

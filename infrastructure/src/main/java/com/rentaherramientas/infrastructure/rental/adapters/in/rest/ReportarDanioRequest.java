@@ -17,6 +17,7 @@ public record ReportarDanioRequest(
         @NotBlank @Size(max = 2000) String descripcion,
         @PositiveOrZero @Digits(integer = 10, fraction = 2) BigDecimal costoEstimado) {
 
+    /** Convierte el cuerpo HTTP en el command de aplicación para la reserva indicada. */
     public ReportarDanioCommand toCommand(Long reservaId, Solicitante solicitante) {
         return new ReportarDanioCommand(reservaId, solicitante, descripcion, costoEstimado);
     }

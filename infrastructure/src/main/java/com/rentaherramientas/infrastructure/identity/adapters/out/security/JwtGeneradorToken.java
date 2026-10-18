@@ -25,11 +25,19 @@ public class JwtGeneradorToken implements GeneradorToken {
     private final JwtEncoder jwtEncoder;
     private final Duration expiracion;
 
+    /** Recibe el codificador JWT y calcula la duración de los tokens a partir de la configuración. */
     public JwtGeneradorToken(JwtEncoder jwtEncoder, JwtProperties properties) {
         this.jwtEncoder = jwtEncoder;
         this.expiracion = Duration.ofMinutes(properties.expiracionMinutos());
     }
 
+    /**
+     * Construye los claims del usuario, los firma con HS256 y devuelve el token y su expiración.
+     *
+     * TÉCNICA AVANZADA (Spring Security): `JwtClaimsSet.builder()`
+     *   Qué hace: patrón Builder para armar el contenido del token. `sub` lleva el id; `iss`, `iat` y `exp`
+     *     son claims estándar que JwtDecoder valida al recibir el token.
+     */
     @Override
     public TokenEmitido generar(Usuario usuario) {
         Instant ahora = Instant.now();

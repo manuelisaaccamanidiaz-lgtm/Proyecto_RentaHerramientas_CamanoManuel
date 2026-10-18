@@ -27,17 +27,20 @@ public class UsuarioController {
     private final ConsultarUsuarioUseCase consultarUsuario;
     private final ActualizarUsuarioUseCase actualizarUsuario;
 
+    /** Recibe los casos de uso por constructor (inyección de dependencias de Spring). */
     public UsuarioController(ConsultarUsuarioUseCase consultarUsuario, ActualizarUsuarioUseCase actualizarUsuario) {
         this.consultarUsuario = consultarUsuario;
         this.actualizarUsuario = actualizarUsuario;
     }
 
+    /** GET /api/usuarios/me : datos del usuario autenticado (id tomado del claim "sub"). */
     @GetMapping
     @Operation(summary = "Datos del usuario autenticado")
     public UsuarioResponse me(@AuthenticationPrincipal Jwt jwt) {
         return consultarUsuario.buscarPorId(Long.valueOf(jwt.getSubject()));
     }
 
+    /** PUT /api/usuarios/me : el usuario actualiza su propio perfil. */
     @PutMapping
     @Operation(summary = "Actualiza el nombre y los datos de rol del usuario autenticado")
     public UsuarioResponse actualizar(@AuthenticationPrincipal Jwt jwt,

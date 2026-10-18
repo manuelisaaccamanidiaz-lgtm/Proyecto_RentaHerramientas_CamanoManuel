@@ -40,6 +40,14 @@ public final class Herramienta extends AggregateRoot {
     private final List<ImagenHerramienta> imagenes;
     private final Set<Long> categoriaIds;
 
+    /**
+     * Constructor privado: valida todos los datos, añade las imágenes una a una y exige al menos una categoría.
+     *
+     * TÉCNICA AVANZADA (Java): referencia a método
+     *   Qué hace: `forEach(this::anexarImagen)` equivale a `forEach(img -> this.anexarImagen(img))`; así cada
+     *     imagen pasa por las mismas validaciones que al añadirla después. `LinkedHashSet` evita categorías
+     *     repetidas y conserva el orden de inserción.
+     */
     private Herramienta(Long id, Long proveedorId, String nombre, String descripcion, Dinero tarifaDiaria,
                         EstadoHerramienta estado, List<ImagenHerramienta> imagenes, Set<Long> categoriaIds) {
         this.id = id;
@@ -63,6 +71,7 @@ public final class Herramienta extends AggregateRoot {
                 EstadoHerramienta.DISPONIBLE, List.of(), categoriaIds);
     }
 
+    /** Reconstruye una herramienta leída de la base de datos; no emite eventos. */
     public static Herramienta reconstruir(Long id, Long proveedorId, String nombre, String descripcion,
                                           Dinero tarifaDiaria, EstadoHerramienta estado,
                                           List<ImagenHerramienta> imagenes, Set<Long> categoriaIds) {
@@ -72,11 +81,13 @@ public final class Herramienta extends AggregateRoot {
 
     // ---------------------------------------------------------------- datos
 
+    /** Actualiza nombre y descripción con las mismas reglas que al crearla. */
     public void actualizarDatos(String nuevoNombre, String nuevaDescripcion) {
         this.nombre = Validaciones.textoRequerido(nuevoNombre, "nombre", NOMBRE_MAX);
         this.descripcion = Validaciones.textoOpcional(nuevaDescripcion, "descripcion", DESCRIPCION_MAX);
     }
 
+    /** Cambia la tarifa diaria; debe ser mayor que cero. */
     public void actualizarTarifa(Dinero nuevaTarifa) {
         this.tarifaDiaria = validarTarifa(nuevaTarifa);
     }
@@ -92,14 +103,23 @@ public final class Herramienta extends AggregateRoot {
         anexarImagen(ImagenHerramienta.nueva(url, siguienteOrden));
     }
 
+    /** Indica si aún no se alcanzó el máximo de imágenes permitido. */
     public boolean admiteMasImagenes() {
         return imagenes.size() < MAX_IMAGENES;
     }
 
+    /**
+     * Elimina la imagen que ocupa la posición indicada; si no existe, no hace nada.
+     *
+     * TÉCNICA AVANZADA (Java): `Collection.removeIf`
+     *   Qué hace: borra los elementos que cumplen el predicado sin escribir un bucle con `Iterator`, evitando
+     *     la `ConcurrentModificationException` de borrar dentro de un for-each.
+     */
     public void quitarImagen(int orden) {
         imagenes.removeIf(imagen -> imagen.getOrden() == orden);
     }
 
+    /** Añade una imagen comprobando que su posición (orden) no esté repetida. */
     private void anexarImagen(ImagenHerramienta imagen) {
         Validaciones.requerido(imagen, "imagen");
         if (imagenes.stream().anyMatch(existente -> existente.getOrden() == imagen.getOrden())) {
@@ -110,10 +130,12 @@ public final class Herramienta extends AggregateRoot {
 
     // ----------------------------------------------------------- categorías
 
+    /** Asocia la herramienta a una categoría; si ya estaba asociada no cambia nada (es un Set). */
     public void asignarCategoria(Long categoriaId) {
         categoriaIds.add(Validaciones.requerido(categoriaId, "categoriaId"));
     }
 
+    /** Quita una categoría, salvo que sea la última: una herramienta siempre tiene al menos una. */
     public void quitarCategoria(Long categoriaId) {
         if (categoriaIds.contains(categoriaId) && categoriaIds.size() == 1) {
             throw new HerramientaSinCategoriaException();
@@ -123,18 +145,22 @@ public final class Herramienta extends AggregateRoot {
 
     // -------------------------------------------------------------- estados
 
+    /** Pasa la herramienta a EN_MANTENIMIENTO si la transición está permitida. */
     public void marcarEnMantenimiento() {
         cambiarEstado(EstadoHerramienta.EN_MANTENIMIENTO);
     }
 
+    /** Pasa la herramienta a DISPONIBLE si la transición está permitida. */
     public void marcarDisponible() {
         cambiarEstado(EstadoHerramienta.DISPONIBLE);
     }
 
+    /** Pasa la herramienta a DANADA si la transición está permitida. */
     public void marcarDanada() {
         cambiarEstado(EstadoHerramienta.DANADA);
     }
 
+    /** Pasa la herramienta a INACTIVA (baja del catálogo) si la transición está permitida. */
     public void inactivar() {
         cambiarEstado(EstadoHerramienta.INACTIVA);
     }
@@ -144,6 +170,7 @@ public final class Herramienta extends AggregateRoot {
         return estado == EstadoHerramienta.DISPONIBLE;
     }
 
+    /** Punto único de cambio de estado: valida la transición y emite HerramientaEstadoCambiado. */
     private void cambiarEstado(EstadoHerramienta destino) {
         if (!estado.puedeCambiarA(destino)) {
             throw new TransicionEstadoInvalidaException(estado, destino);
@@ -153,6 +180,7 @@ public final class Herramienta extends AggregateRoot {
         registrarEvento(new HerramientaEstadoCambiado(id, anterior, destino, LocalDateTime.now()));
     }
 
+    /** Exige una tarifa presente y positiva y la devuelve para asignarla directamente. */
     private static Dinero validarTarifa(Dinero tarifa) {
         Validaciones.requerido(tarifa, "tarifaDiaria");
         if (!tarifa.esPositivo()) {
@@ -163,30 +191,37 @@ public final class Herramienta extends AggregateRoot {
 
     // -------------------------------------------------------------- lectura
 
+    /** Indica si el usuario dado es el proveedor dueño de la herramienta. */
     public boolean perteneceA(Long usuarioId) {
         return proveedorId.equals(usuarioId);
     }
 
+    /** Identificador de la herramienta; null si aún no se ha guardado. */
     public Long getId() {
         return id;
     }
 
+    /** Id del usuario PROVEEDOR dueño de la herramienta. */
     public Long getProveedorId() {
         return proveedorId;
     }
 
+    /** Nombre de la herramienta. */
     public String getNombre() {
         return nombre;
     }
 
+    /** Descripción opcional; puede ser null. */
     public String getDescripcion() {
         return descripcion;
     }
 
+    /** Precio de alquiler por día. */
     public Dinero getTarifaDiaria() {
         return tarifaDiaria;
     }
 
+    /** Estado actual de la herramienta. */
     public EstadoHerramienta getEstado() {
         return estado;
     }
@@ -196,6 +231,7 @@ public final class Herramienta extends AggregateRoot {
         return imagenes.stream().sorted(Comparator.comparingInt(ImagenHerramienta::getOrden)).toList();
     }
 
+    /** Copia inmutable de los ids de categoría: modificarla no altera el agregado. */
     public Set<Long> getCategoriaIds() {
         return Set.copyOf(categoriaIds);
     }

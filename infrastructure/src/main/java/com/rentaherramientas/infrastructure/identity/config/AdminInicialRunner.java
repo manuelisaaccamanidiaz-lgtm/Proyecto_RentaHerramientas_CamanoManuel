@@ -15,6 +15,11 @@ import org.springframework.stereotype.Component;
  * Crea el primer ADMIN al arrancar, porque el registro público no permite ese
  * rol. Es idempotente: si el email ya existe no hace nada. El password nunca se
  * escribe en los logs.
+ *
+ * TÉCNICA AVANZADA (Spring Boot): `ApplicationRunner`
+ *   Qué hace: Spring ejecuta el método `run` de todos los beans que implementan esta interfaz justo después
+ *     de arrancar el contexto. Sirve para tareas de inicialización como crear datos base.
+ *   Cómo usarlo: crea un `@Component` que implemente `ApplicationRunner`.
  */
 @Component
 public class AdminInicialRunner implements ApplicationRunner {
@@ -26,6 +31,7 @@ public class AdminInicialRunner implements ApplicationRunner {
     private final UsuarioRepository usuarioRepository;
     private final CodificadorPassword codificadorPassword;
 
+    /** Recibe la configuración, el repositorio y el codificador por constructor. */
     public AdminInicialRunner(AdminInicialProperties properties, UsuarioRepository usuarioRepository,
                               CodificadorPassword codificadorPassword) {
         this.properties = properties;
@@ -33,6 +39,7 @@ public class AdminInicialRunner implements ApplicationRunner {
         this.codificadorPassword = codificadorPassword;
     }
 
+    /** Crea el ADMIN inicial si está configurado y aún no existe; falla si la contraseña es corta. */
     @Override
     public void run(ApplicationArguments args) {
         if (!properties.configurado()) {

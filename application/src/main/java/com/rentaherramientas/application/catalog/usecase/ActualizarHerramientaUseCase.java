@@ -8,5 +8,6 @@ import com.rentaherramientas.application.catalog.dto.HerramientaResponse;
  */
 public interface ActualizarHerramientaUseCase {
 
+    /** Actualiza la herramienta indicada en el comando y devuelve el resultado. */
     HerramientaResponse actualizar(ActualizarHerramientaCommand command);
 }

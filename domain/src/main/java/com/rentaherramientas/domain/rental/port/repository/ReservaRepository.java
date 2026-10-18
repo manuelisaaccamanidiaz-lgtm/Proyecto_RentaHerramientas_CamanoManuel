@@ -21,10 +21,13 @@ public interface ReservaRepository {
      */
     Reserva guardar(Reserva reserva);
 
+    /** Busca una reserva por id; vacío si no existe. */
     Optional<Reserva> buscarPorId(Long id);
 
+    /** Devuelve las reservas de un cliente, de la más reciente a la más antigua. */
     List<Reserva> buscarPorClienteId(Long clienteId);
 
+    /** Devuelve las reservas de una herramienta ordenadas por fecha de inicio. */
     List<Reserva> buscarPorHerramientaId(Long herramientaId);
 
     /** Solo los ids (sin cargar reportes de daño): los usan otros BC para filtrar por cliente. */

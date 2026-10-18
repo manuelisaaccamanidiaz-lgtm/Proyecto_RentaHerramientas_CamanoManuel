@@ -8,5 +8,6 @@ import com.rentaherramientas.application.rental.dto.ReservaResponse;
  */
 public interface ReportarDanioUseCase {
 
+    /** Reporta un daño en la reserva indicada en el comando. */
     ReservaResponse reportar(ReportarDanioCommand command);
 }

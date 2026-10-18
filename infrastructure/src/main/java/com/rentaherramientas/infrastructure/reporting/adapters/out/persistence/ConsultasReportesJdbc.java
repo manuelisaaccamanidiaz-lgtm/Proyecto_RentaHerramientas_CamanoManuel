@@ -27,6 +27,15 @@ import java.util.Map;
  * - "ingresos" = pagos APROBADOS, agrupados por moneda (nunca se suman monedas distintas);
  * - "alquiler" = reserva que llegó a entregarse (ENTREGADA o DEVUELTA).
  * Los parámetros siempre van enlazados (:nombre), nunca concatenados en el SQL.
+ *
+ * TÉCNICA AVANZADA (Spring): `@Transactional` a nivel de clase
+ *   Qué hace: se aplica a todos los métodos públicos. Con `readOnly = true` el driver de PostgreSQL puede
+ *     optimizar la conexión y ninguna escritura accidental se confirma.
+ *
+ * TÉCNICA AVANZADA (seguridad): parámetros enlazados
+ *   Qué hace: `.param("limite", x)` envía el valor por separado del SQL, lo que impide la inyección SQL. La
+ *     única cadena que se inserta con `formatted` es la constante ESTADOS_ALQUILADA, que no viene del
+ *     usuario.
  */
 @Component
 @Transactional(readOnly = true)
@@ -36,10 +45,12 @@ public class ConsultasReportesJdbc implements ConsultasReportes {
 
     private final JdbcClient jdbc;
 
+    /** Recibe el JdbcClient que configura Spring Boot. */
     public ConsultasReportesJdbc(JdbcClient jdbc) {
         this.jdbc = jdbc;
     }
 
+    /** Ingresos por moneda, pagos aprobados, facturas y conteos por estado o rol, cada uno con su consulta agregada. */
     @Override
     public ResumenGeneralResponse resumenGeneral() {
         Map<String, BigDecimal> ingresos = montosPorClave("""
@@ -58,7 +69,16 @@ public class ConsultasReportesJdbc implements ConsultasReportes {
                         Map.of()));
     }
 
-    /** date_trunc agrupa por mes calendario; el filtro usa [desde 00:00, hasta+1 00:00) para incluir todo "hasta". */
+    /**
+     * date_trunc agrupa por mes calendario; el filtro usa [desde 00:00, hasta+1 00:00) para incluir todo "hasta".
+     *
+     * TÉCNICA AVANZADA (PostgreSQL): `date_trunc('month', fecha)`
+     *   Qué hace: recorta la fecha al primer instante del mes, así todas las fechas de un mismo mes quedan
+     *     iguales y se pueden agrupar con `GROUP BY`. `to_char(..., 'YYYY-MM')` la convierte en texto.
+     *
+     * TÉCNICA AVANZADA (Spring): `RowMapper` con lambda
+     *   Qué hace: `.query((rs, fila) -> new ...)` convierte cada fila del `ResultSet` en un objeto.
+     */
     @Override
     public List<IngresoMensualResponse> ingresosPorMes(LocalDate desde, LocalDate hasta) {
         return jdbc.sql("""
@@ -77,6 +97,13 @@ public class ConsultasReportesJdbc implements ConsultasReportes {
                 .list();
     }
 
+    /**
+     * Ranking de herramientas por número de alquileres y días alquilados.
+     *
+     * TÉCNICA AVANZADA (PostgreSQL): aritmética de fechas
+     *   Qué hace: restar dos columnas `DATE` devuelve los días entre ellas como entero; se suma 1 porque
+     *     ambos extremos cuentan. `LIMIT :limite` corta el ranking en la base de datos.
+     */
     @Override
     public List<HerramientaAlquiladaResponse> herramientasMasAlquiladas(int limite) {
         return jdbc.sql("""
@@ -100,6 +127,9 @@ public class ConsultasReportesJdbc implements ConsultasReportes {
     /**
      * El LEFT JOIN con pagos solo toma el APROBADO, y el índice único parcial
      * garantiza que hay como mucho uno por reserva: el JOIN no duplica reservas.
+     *
+     * Nota: `coalesce(sum(p.monto), 0)` devuelve 0 en lugar de null cuando el cliente no tiene pagos
+     *   aprobados.
      */
     @Override
     public List<ClienteFrecuenteResponse> clientesFrecuentes(int limite) {
@@ -142,6 +172,7 @@ public class ConsultasReportesJdbc implements ConsultasReportes {
                 porCategoria);
     }
 
+    /** Dos rankings de ingresos de pagos APROBADOS: por herramienta y por proveedor. */
     @Override
     public RentabilidadResponse rentabilidad(int limite) {
         List<RentabilidadResponse.IngresoHerramienta> porHerramienta = jdbc.sql("""
@@ -181,6 +212,7 @@ public class ConsultasReportesJdbc implements ConsultasReportes {
         return new RentabilidadResponse(porHerramienta, porProveedor);
     }
 
+    /** Indicadores de un proveedor: todas las consultas filtran por `h.proveedor_id = :proveedorId`. */
     @Override
     public ResumenProveedorResponse resumenProveedor(Long proveedorId) {
         Map<String, Object> proveedor = Map.of("proveedorId", proveedorId);
@@ -217,11 +249,18 @@ public class ConsultasReportesJdbc implements ConsultasReportes {
 
     // ------------------------------------------------------------ utilidades
 
+    /** Ejecuta una consulta `COUNT` y devuelve su único valor. */
     private long contar(String sql, Map<String, ?> parametros) {
         return jdbc.sql(sql).params(parametros).query(Long.class).single();
     }
 
-    /** Consulta con columnas (clave, total) → mapa ordenado como la consulta. */
+    /**
+     * Consulta con columnas (clave, total) → mapa ordenado como la consulta.
+     *
+     * TÉCNICA AVANZADA (Spring): `RowCallbackHandler`
+     *   Qué hace: la lambda `(ResultSet rs) -> { ... }` se ejecuta una vez por fila y no devuelve nada; sirve
+     *     para llenar una estructura propia. `LinkedHashMap` conserva el orden del ORDER BY.
+     */
     private Map<String, Long> conteoPorClave(String sql, Map<String, ?> parametros) {
         Map<String, Long> resultado = new LinkedHashMap<>();
         jdbc.sql(sql).params(parametros).query((ResultSet rs) -> {
@@ -230,6 +269,7 @@ public class ConsultasReportesJdbc implements ConsultasReportes {
         return resultado;
     }
 
+    /** Consulta con columnas (clave, total) → mapa de montos ordenado como la consulta. */
     private Map<String, BigDecimal> montosPorClave(String sql, Map<String, ?> parametros) {
         Map<String, BigDecimal> resultado = new LinkedHashMap<>();
         jdbc.sql(sql).params(parametros).query((ResultSet rs) -> {
@@ -238,6 +278,7 @@ public class ConsultasReportesJdbc implements ConsultasReportes {
         return resultado;
     }
 
+    /** Lee la columna "total" como BigDecimal; null (SUM sin filas) se convierte en cero. */
     private static BigDecimal montoDe(ResultSet rs) throws SQLException {
         BigDecimal total = rs.getBigDecimal("total");
         return total == null ? BigDecimal.ZERO : total;

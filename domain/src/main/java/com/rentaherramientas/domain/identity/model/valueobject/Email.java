@@ -15,6 +15,13 @@ public record Email(String valor) {
     private static final Pattern FORMATO =
             Pattern.compile("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$");
 
+    /**
+     * Constructor compacto: rechaza vacíos, normaliza a minúsculas y valida longitud y formato.
+     *
+     * TÉCNICA AVANZADA (Java): `Locale.ROOT` en `toLowerCase`
+     *   Qué hace: sin él, en equipos configurados en turco la "I" se convierte en "ı" y el email cambiaría.
+     *     ROOT da un resultado independiente del idioma del sistema.
+     */
     public Email {
         if (valor == null || valor.isBlank()) {
             throw new ValorInvalidoException("El email es obligatorio");

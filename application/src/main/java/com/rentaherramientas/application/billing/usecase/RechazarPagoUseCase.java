@@ -9,5 +9,6 @@ import com.rentaherramientas.application.shared.command.Solicitante;
  */
 public interface RechazarPagoUseCase {
 
+    /** Rechaza el pago indicado. */
     PagoResponse rechazar(Long pagoId, Solicitante solicitante);
 }

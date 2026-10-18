@@ -21,12 +21,18 @@ public class ActualizarHerramientaService implements ActualizarHerramientaUseCas
     private final HerramientaRepository herramientaRepository;
     private final CategoriaRepository categoriaRepository;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea CatalogBeansConfig. */
     public ActualizarHerramientaService(HerramientaRepository herramientaRepository,
                                         CategoriaRepository categoriaRepository) {
         this.herramientaRepository = herramientaRepository;
         this.categoriaRepository = categoriaRepository;
     }
 
+    /**
+     * Actualiza datos, tarifa y categorías de una herramienta del proveedor (o de cualquiera si es ADMIN).
+     * Primero añade las categorías nuevas y después quita las sobrantes, para que la herramienta
+     * nunca se quede sin categoría a mitad del proceso.
+     */
     @Override
     public HerramientaResponse actualizar(ActualizarHerramientaCommand command) {
         Herramienta herramienta = PropiedadHerramienta.cargarParaModificar(herramientaRepository,

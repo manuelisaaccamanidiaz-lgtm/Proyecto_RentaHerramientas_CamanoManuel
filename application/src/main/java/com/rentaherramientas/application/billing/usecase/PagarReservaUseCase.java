@@ -8,5 +8,6 @@ import com.rentaherramientas.application.billing.dto.PagoResponse;
  */
 public interface PagarReservaUseCase {
 
+    /** Registra el pago de una reserva y devuelve el pago (con factura si quedó aprobado). */
     PagoResponse pagar(PagarReservaCommand command);
 }

@@ -9,7 +9,9 @@ import com.rentaherramientas.application.shared.dto.PaginaResponse;
  */
 public interface ConsultarHerramientaUseCase {
 
+    /** Devuelve la herramienta con ese id. */
     HerramientaResponse buscarPorId(Long id);
 
+    /** Busca herramientas con filtros opcionales y paginación. */
     PaginaResponse<HerramientaResponse> buscar(FiltroHerramientas filtro);
 }

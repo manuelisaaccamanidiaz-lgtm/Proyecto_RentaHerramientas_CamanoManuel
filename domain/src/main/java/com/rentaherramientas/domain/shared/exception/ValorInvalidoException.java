@@ -7,6 +7,7 @@ package com.rentaherramientas.domain.shared.exception;
  */
 public class ValorInvalidoException extends DomainException {
 
+    /** Crea la excepción con el mensaje que verá el cliente de la API. */
     public ValorInvalidoException(String mensaje) {
         super(mensaje);
     }

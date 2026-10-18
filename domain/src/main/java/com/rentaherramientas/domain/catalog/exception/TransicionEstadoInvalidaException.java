@@ -9,6 +9,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class TransicionEstadoInvalidaException extends DomainException {
 
+    /** Crea la excepción indicando el estado actual y el estado al que se intentó pasar. */
     public TransicionEstadoInvalidaException(EstadoHerramienta origen, EstadoHerramienta destino) {
         super("La herramienta no puede pasar de " + origen + " a " + destino);
     }

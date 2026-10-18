@@ -18,11 +18,13 @@ public class VencerReservasService implements VencerReservasUseCase {
     private final ReservaRepository reservaRepository;
     private final Clock clock;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea RentalBeansConfig. */
     public VencerReservasService(ReservaRepository reservaRepository, Clock clock) {
         this.reservaRepository = reservaRepository;
         this.clock = clock;
     }
 
+    /** Vence todas las reservas cuya fecha ya pasó sin entregarse y devuelve cuántas venció. */
     @Override
     public int vencer() {
         List<Reserva> vencibles = reservaRepository.buscarVencibles(LocalDate.now(clock));

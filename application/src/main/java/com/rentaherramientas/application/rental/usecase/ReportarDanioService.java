@@ -19,6 +19,7 @@ public class ReportarDanioService implements ReportarDanioUseCase {
     private final CatalogoHerramientas catalogoHerramientas;
     private final ConsultaPagos consultaPagos;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea RentalBeansConfig. */
     public ReportarDanioService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas,
                                 ConsultaPagos consultaPagos) {
         this.reservaRepository = reservaRepository;
@@ -26,6 +27,10 @@ public class ReportarDanioService implements ReportarDanioUseCase {
         this.consultaPagos = consultaPagos;
     }
 
+    /**
+     * Añade un reporte de daño a la reserva y marca la herramienta como DANADA en el catálogo.
+     * El costo estimado, si se envía, usa la misma moneda que el precio de la reserva.
+     */
     @Override
     public ReservaResponse reportar(ReportarDanioCommand command) {
         Reserva reserva = PropiedadReserva.cargarParaGestionar(reservaRepository, catalogoHerramientas,

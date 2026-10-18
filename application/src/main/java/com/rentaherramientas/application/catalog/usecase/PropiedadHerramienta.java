@@ -13,9 +13,11 @@ import com.rentaherramientas.domain.catalog.port.repository.HerramientaRepositor
  */
 final class PropiedadHerramienta {
 
+    /** Constructor privado: clase de utilidades estáticas. */
     private PropiedadHerramienta() {
     }
 
+    /** Carga la herramienta y comprueba que el solicitante sea su dueño o un ADMIN. */
     static Herramienta cargarParaModificar(HerramientaRepository repository, Long herramientaId,
                                            Solicitante solicitante) {
         Herramienta herramienta = repository.buscarPorId(herramientaId)

@@ -11,6 +11,7 @@ public record PasswordHash(String valor) {
 
     private static final int LONGITUD_MAXIMA = 255;
 
+    /** Constructor compacto: exige un hash no vacío y de longitud compatible con la columna. */
     public PasswordHash {
         if (valor == null || valor.isBlank()) {
             throw new ValorInvalidoException("El hash de contraseña es obligatorio");
@@ -20,6 +21,7 @@ public record PasswordHash(String valor) {
         }
     }
 
+    /** Oculta el hash para que no aparezca en logs ni mensajes de error. */
     @Override
     public String toString() {
         return "PasswordHash[****]";

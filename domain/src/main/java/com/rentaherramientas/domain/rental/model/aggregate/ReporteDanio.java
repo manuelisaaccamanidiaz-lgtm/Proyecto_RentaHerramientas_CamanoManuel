@@ -19,6 +19,7 @@ public final class ReporteDanio {
     private final Dinero costoEstimado;
     private final LocalDateTime reportadoEn;
 
+    /** Constructor privado: exige descripción y fecha; el costo estimado es opcional. */
     private ReporteDanio(Long id, String descripcion, Dinero costoEstimado, LocalDateTime reportadoEn) {
         this.id = id;
         this.descripcion = Validaciones.textoRequerido(descripcion, "descripcion", DESCRIPCION_MAX);
@@ -26,19 +27,23 @@ public final class ReporteDanio {
         this.reportadoEn = Validaciones.requerido(reportadoEn, "reportadoEn");
     }
 
+    /** Crea un reporte nuevo sin id. Visibilidad de paquete: solo la Reserva puede crearlo. */
     static ReporteDanio nuevo(String descripcion, Dinero costoEstimado, LocalDateTime reportadoEn) {
         return new ReporteDanio(null, descripcion, costoEstimado, reportadoEn);
     }
 
+    /** Reconstruye un reporte leído de la base de datos. */
     public static ReporteDanio reconstruir(Long id, String descripcion, Dinero costoEstimado,
                                            LocalDateTime reportadoEn) {
         return new ReporteDanio(Validaciones.requerido(id, "id"), descripcion, costoEstimado, reportadoEn);
     }
 
+    /** Identificador del reporte; null si aún no se ha guardado. */
     public Long getId() {
         return id;
     }
 
+    /** Descripción del daño observado. */
     public String getDescripcion() {
         return descripcion;
     }
@@ -48,6 +53,7 @@ public final class ReporteDanio {
         return costoEstimado;
     }
 
+    /** Momento en que se reportó el daño. */
     public LocalDateTime getReportadoEn() {
         return reportadoEn;
     }

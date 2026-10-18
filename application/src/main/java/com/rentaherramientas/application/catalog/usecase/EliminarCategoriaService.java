@@ -12,10 +12,12 @@ public class EliminarCategoriaService implements EliminarCategoriaUseCase {
 
     private final CategoriaRepository categoriaRepository;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea CatalogBeansConfig. */
     public EliminarCategoriaService(CategoriaRepository categoriaRepository) {
         this.categoriaRepository = categoriaRepository;
     }
 
+    /** Elimina la categoría; lanza 404 si no existe. */
     @Override
     public void eliminar(Long id) {
         if (categoriaRepository.buscarPorId(id).isEmpty()) {

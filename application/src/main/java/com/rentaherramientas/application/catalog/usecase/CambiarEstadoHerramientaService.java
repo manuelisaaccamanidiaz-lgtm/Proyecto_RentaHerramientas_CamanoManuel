@@ -16,10 +16,12 @@ public class CambiarEstadoHerramientaService implements CambiarEstadoHerramienta
 
     private final HerramientaRepository herramientaRepository;
 
+    /** Recibe sus dependencias por constructor; el bean lo crea CatalogBeansConfig. */
     public CambiarEstadoHerramientaService(HerramientaRepository herramientaRepository) {
         this.herramientaRepository = herramientaRepository;
     }
 
+    /** Traduce el estado pedido al método de negocio correspondiente del agregado y guarda. */
     @Override
     public HerramientaResponse cambiarEstado(CambiarEstadoHerramientaCommand command) {
         EstadoHerramienta destino = Validaciones.requerido(command.estado(), "estado");
@@ -34,6 +36,10 @@ public class CambiarEstadoHerramientaService implements CambiarEstadoHerramienta
         return HerramientaResponse.desde(herramientaRepository.guardar(herramienta));
     }
 
+    /**
+     * Borrado lógico: inactiva la herramienta en lugar de eliminar la fila, para conservar el
+     * historial de reservas. Si ya estaba inactiva no hace nada.
+     */
     @Override
     public void eliminar(Long herramientaId, Solicitante solicitante) {
         Herramienta herramienta = PropiedadHerramienta.cargarParaModificar(herramientaRepository,

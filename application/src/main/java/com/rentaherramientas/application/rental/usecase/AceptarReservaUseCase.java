@@ -8,5 +8,6 @@ import com.rentaherramientas.application.shared.command.Solicitante;
  */
 public interface AceptarReservaUseCase {
 
+    /** Acepta la reserva indicada. */
     ReservaResponse aceptar(Long reservaId, Solicitante solicitante);
 }

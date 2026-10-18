@@ -15,6 +15,7 @@ public record CrearReservaRequest(
         @NotNull LocalDate fechaInicio,
         @NotNull LocalDate fechaFin) {
 
+    /** Convierte el cuerpo HTTP en el command de aplicación, con el cliente tomado del JWT. */
     public CrearReservaCommand toCommand(Solicitante solicitante) {
         return new CrearReservaCommand(solicitante, herramientaId, fechaInicio, fechaFin);
     }

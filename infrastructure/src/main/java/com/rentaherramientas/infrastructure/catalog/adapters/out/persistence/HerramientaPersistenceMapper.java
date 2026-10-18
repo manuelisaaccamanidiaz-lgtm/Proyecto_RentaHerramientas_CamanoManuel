@@ -17,6 +17,7 @@ import java.util.List;
 @Component
 public class HerramientaPersistenceMapper {
 
+    /** Convierte la entidad (con imágenes y categorías) en el agregado Herramienta. */
     public Herramienta toDomain(HerramientaEntity entity) {
         List<ImagenHerramienta> imagenes = entity.getImagenes().stream()
                 .map(imagen -> ImagenHerramienta.reconstruir(
@@ -33,6 +34,7 @@ public class HerramientaPersistenceMapper {
                 entity.getCategoriaIds());
     }
 
+    /** Convierte el agregado en entidad y añade sus imágenes conservando sus ids. */
     public HerramientaEntity toEntity(Herramienta herramienta) {
         HerramientaEntity entity = new HerramientaEntity(
                 herramienta.getId(),

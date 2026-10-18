@@ -9,5 +9,6 @@ import com.rentaherramientas.application.shared.command.Solicitante;
  */
 public interface ConfirmarPagoUseCase {
 
+    /** Aprueba el pago indicado y devuelve el pago con su factura. */
     PagoResponse confirmar(Long pagoId, Solicitante solicitante);
 }

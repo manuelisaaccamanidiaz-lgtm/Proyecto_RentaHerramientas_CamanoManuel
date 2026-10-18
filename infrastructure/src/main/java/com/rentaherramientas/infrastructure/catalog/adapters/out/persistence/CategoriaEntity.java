@@ -26,24 +26,29 @@ public class CategoriaEntity {
     @Column(name = "descripcion")
     private String descripcion;
 
+    /** Constructor sin argumentos exigido por JPA. */
     protected CategoriaEntity() {
         // requerido por JPA
     }
 
+    /** Crea la entidad a partir del agregado; un id null indica INSERT. */
     public CategoriaEntity(Long id, String nombre, String descripcion) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
     }
 
+    /** Id de la categoría. */
     public Long getId() {
         return id;
     }
 
+    /** Nombre de la categoría. */
     public String getNombre() {
         return nombre;
     }
 
+    /** Descripción de la categoría; puede ser null. */
     public String getDescripcion() {
         return descripcion;
     }

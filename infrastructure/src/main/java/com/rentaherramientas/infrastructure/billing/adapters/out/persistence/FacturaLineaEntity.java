@@ -39,10 +39,12 @@ public class FacturaLineaEntity {
     @Column(name = "valor_unitario", nullable = false, precision = 12, scale = 2)
     private BigDecimal valorUnitario;
 
+    /** Constructor sin argumentos exigido por JPA. */
     protected FacturaLineaEntity() {
         // requerido por JPA
     }
 
+    /** Crea la entidad; la factura padre se enlaza después con setFactura. */
     public FacturaLineaEntity(Long id, String descripcion, Integer cantidad, BigDecimal valorUnitario) {
         this.id = id;
         this.descripcion = descripcion;
@@ -50,22 +52,27 @@ public class FacturaLineaEntity {
         this.valorUnitario = valorUnitario;
     }
 
+    /** Enlaza la línea con su factura; lo llama FacturaEntity.agregarLinea. */
     void setFactura(FacturaEntity factura) {
         this.factura = factura;
     }
 
+    /** Id de la línea. */
     public Long getId() {
         return id;
     }
 
+    /** Descripción de la línea. */
     public String getDescripcion() {
         return descripcion;
     }
 
+    /** Cantidad facturada. */
     public Integer getCantidad() {
         return cantidad;
     }
 
+    /** Valor por unidad. */
     public BigDecimal getValorUnitario() {
         return valorUnitario;
     }

@@ -18,6 +18,11 @@ import java.util.Optional;
  * Adaptador de salida: implementa el puerto del dominio usando Spring Data JPA.
  * Las lecturas son transaccionales para que el mapper pueda recorrer relaciones
  * perezosas antes de cerrar la sesión de Hibernate.
+ *
+ * TÉCNICA AVANZADA (Spring): `@Transactional(readOnly = true)`
+ *   Qué hace: indica a Hibernate que no habrá escrituras, así se salta la detección de cambios (dirty
+ *     checking) y la consulta es más ligera. `@Repository` además traduce las excepciones de la BD a la
+ *     jerarquía `DataAccessException` de Spring.
  */
 @Repository
 public class UsuarioRepositoryAdapter implements UsuarioRepository {
@@ -25,11 +30,13 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
     private final UsuarioJpaRepository jpaRepository;
     private final UsuarioPersistenceMapper mapper;
 
+    /** Recibe el repositorio de Spring Data y el mapper por constructor. */
     public UsuarioRepositoryAdapter(UsuarioJpaRepository jpaRepository, UsuarioPersistenceMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
     }
 
+    /** Guarda el usuario (INSERT si no tiene id, UPDATE si lo tiene) y devuelve el agregado actualizado. */
     @Override
     @Transactional
     public Usuario guardar(Usuario usuario) {
@@ -37,24 +44,33 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
         return mapper.toDomain(guardado);
     }
 
+    /** Busca por id y convierte la entidad en agregado. */
     @Override
     @Transactional(readOnly = true)
     public Optional<Usuario> buscarPorId(Long id) {
         return jpaRepository.findById(id).map(mapper::toDomain);
     }
 
+    /** Busca por el email normalizado. */
     @Override
     @Transactional(readOnly = true)
     public Optional<Usuario> buscarPorEmail(Email email) {
         return jpaRepository.findByEmail(email.valor()).map(mapper::toDomain);
     }
 
+    /** Indica si el email ya está registrado. */
     @Override
     @Transactional(readOnly = true)
     public boolean existePorEmail(Email email) {
         return jpaRepository.existsByEmail(email.valor());
     }
 
+    /**
+     * Lista usuarios ordenados por id; filtra por rol si se indica.
+     *
+     * Nota: `PageRequest.of(numero, tamano, Sort.by("id"))` traduce la paginación del dominio al `Pageable`
+     *   de Spring Data, que genera `LIMIT/OFFSET` en el SQL.
+     */
     @Override
     @Transactional(readOnly = true)
     public Pagina<Usuario> buscar(Rol rol, SolicitudPagina pagina) {

@@ -10,6 +10,7 @@ import com.rentaherramientas.domain.shared.exception.DomainException;
  */
 public class ReservaSolapadaException extends DomainException {
 
+    /** Crea la excepción indicando la herramienta y el rango de fechas que choca con otra reserva. */
     public ReservaSolapadaException(Long herramientaId, RangoFechas rango) {
         super("La herramienta " + herramientaId + " ya está reservada entre "
                 + rango.inicio() + " y " + rango.fin());

@@ -6,6 +6,7 @@ package com.rentaherramientas.application.identity.exception;
  */
 public class CredencialesInvalidasException extends RuntimeException {
 
+    /** Mensaje genérico a propósito: no revela si falló el email o la contraseña. */
     public CredencialesInvalidasException() {
         super("Credenciales inválidas");
     }
