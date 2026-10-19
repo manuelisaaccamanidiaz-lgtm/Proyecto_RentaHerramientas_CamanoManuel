@@ -808,9 +808,9 @@ Los reportes quedan en `*/target/surefire-reports` y `bootstrap/target/failsafe-
 | Cliente · factura PDF | ![Factura](docs/capturas/factura-pdf.png) |
 | Proveedor · solicitudes | ![Solicitudes](docs/capturas/proveedor-solicitudes.png) |
 | Proveedor · inventario | ![Inventario](docs/capturas/proveedor-inventario.png) |
-| Admin · panel de reportes | [Panel admin](docs/capturas/admin-panel.png) |
-| Swagger UI | [Swagger](docs/capturas/swagger.png) |
-| Vista móvil (375 px) | [Movil](docs/capturas/movil.png) |
+| Admin · panel de reportes | ![Panel admin](docs/capturas/admin-panel.png) |
+| Swagger UI | ![Swagger](docs/capturas/swagger.png) |
+| Vista móvil (375 px) | ![Movil](docs/capturas/movil.png) |
 
 ---
 
