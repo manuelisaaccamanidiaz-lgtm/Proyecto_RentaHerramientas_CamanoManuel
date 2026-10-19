@@ -799,19 +799,18 @@ Los reportes quedan en `*/target/surefire-reports` y `bootstrap/target/failsafe-
 
 ## 🖼️ Capturas
 
-> 📸 *Pendiente: agregar las capturas en `docs/capturas/` y reemplazar los marcadores.*
 
 | Pantalla | Captura |
 |---|---|
-| Inicio y catálogo | `<!-- docs/capturas/catalogo.png -->` |
-| Ficha de herramienta con calendario | `<!-- docs/capturas/herramienta.png -->` |
-| Cliente · mis reservas y pago | `<!-- docs/capturas/cliente-reservas.png -->` |
-| Cliente · factura PDF | `<!-- docs/capturas/factura-pdf.png -->` |
-| Proveedor · solicitudes | `<!-- docs/capturas/proveedor-solicitudes.png -->` |
-| Proveedor · inventario | `<!-- docs/capturas/proveedor-inventario.png -->` |
-| Admin · panel de reportes | `<!-- docs/capturas/admin-panel.png -->` |
-| Swagger UI | `<!-- docs/capturas/swagger.png -->` |
-| Vista móvil (375 px) | `<!-- docs/capturas/movil.png -->` |
+| Inicio y catálogo | ![Catálogo](docs/capturas/catalogo.png) |
+| Ficha de herramienta con calendario | ![Herramienta](docs/capturas/herramienta.png) |
+| Cliente · mis reservas y pago | ![Reservas](docs/capturas/cliente-reservas.png) |
+| Cliente · factura PDF | ![Factura](docs/capturas/factura-pdf.png) |
+| Proveedor · solicitudes | ![Solicitudes](docs/capturas/proveedores-solicitudes.png) |
+| Proveedor · inventario | ![Inventario](docs/capturas/proveedor-inventario.png) |
+| Admin · panel de reportes | [Panel admin](docs/capturas/admin-panel.png) |
+| Swagger UI | [Swagger](docs/capturas/swagger.png) |
+| Vista móvil (375 px) | [Movil](docs/capturas/movil.png) |
 
 ---
 
