@@ -511,6 +511,74 @@ export async function conCarga(boton, accion) {
   }
 }
 
+const ICONO_CARGA = `
+<svg class="zona-carga__icono" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="3" width="18" height="18" rx="3"/>
+  <circle cx="9" cy="9" r="2"/>
+  <path d="m21 15-4.5-4.5L8 19"/>
+</svg>`;
+
+const formatoPeso = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 });
+
+/** 245760 → "240 KB"; 1258291 → "1,2 MB". */
+export function pesoArchivo(bytes) {
+  return bytes < 1024 * 1024
+    ? `${formatoPeso.format(Math.max(1, Math.round(bytes / 1024)))} KB`
+    : `${formatoPeso.format(bytes / (1024 * 1024))} MB`;
+}
+
+/**
+ * Convierte un <input type="file"> en una zona de carga con arrastrar y soltar.
+ * El input real queda encima de la zona, transparente: el clic, el teclado y
+ * soltar un archivo los resuelve el navegador, y su "change" llega intacto a
+ * quien lo escuche. Al elegir un archivo muestra miniatura, nombre, peso y un
+ * botón para quitarlo (vacía el input y vuelve a disparar "change").
+ */
+export function zonaCarga(input, { texto = 'Arrastra una imagen o haz clic para elegirla' } = {}) {
+  input.classList.add('zona-carga__input');
+  const archivo = el('div', { class: 'zona-carga__archivo', 'aria-live': 'polite' });
+  const zona = el('div', { class: 'zona-carga' },
+    input,
+    el('div', { class: 'zona-carga__contenido', 'aria-hidden': 'true' },
+      svgConstante(ICONO_CARGA),
+      el('span', { class: 'zona-carga__texto', text: texto })));
+
+  const resaltar = (activo) => zona.classList.toggle('zona-carga--arrastrando', activo);
+  input.addEventListener('dragenter', () => resaltar(true));
+  input.addEventListener('dragleave', () => resaltar(false));
+  input.addEventListener('drop', () => resaltar(false));
+
+  input.addEventListener('change', () => {
+    const elegido = input.files[0];
+    if (!elegido) {
+      archivo.replaceChildren();
+      return;
+    }
+    let miniatura;
+    if (elegido.type.startsWith('image/')) {
+      miniatura = el('img', { class: 'zona-carga__miniatura', alt: '', src: URL.createObjectURL(elegido) });
+      const liberar = () => URL.revokeObjectURL(miniatura.src);
+      miniatura.addEventListener('load', liberar, { once: true });
+      miniatura.addEventListener('error', liberar, { once: true });
+    } else {
+      miniatura = el('span', { class: 'zona-carga__miniatura', 'aria-hidden': 'true' }, svgConstante(ICONO_CARGA));
+    }
+    const quitar = el('button', { class: 'btn btn--fantasma btn--sm', type: 'button', 'aria-label': `Quitar ${elegido.name}`, text: 'Quitar' });
+    quitar.addEventListener('click', () => {
+      input.value = '';
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.focus();
+    });
+    reemplazar(archivo, miniatura,
+      el('div', { class: 'zona-carga__datos' },
+        el('span', { class: 'zona-carga__nombre', title: elegido.name, text: elegido.name }),
+        el('span', { class: 'zona-carga__peso', text: pesoArchivo(elegido.size) })),
+      quitar);
+  });
+
+  return el('div', { class: 'zona-carga__grupo' }, zona, archivo);
+}
+
 /** Botón de acción para tablas que ejecuta una función con estado de carga. */
 export function botonAccion(texto, clase, accion, atributos = {}) {
   const boton = el('button', { class: `btn btn--sm ${clase}`, type: 'button', ...atributos }, el('span', { text: texto }));

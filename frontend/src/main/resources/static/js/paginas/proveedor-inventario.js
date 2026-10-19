@@ -9,7 +9,7 @@ import { montarLayout } from '../layout.js';
 import { crearListado, filtrosEnUrl } from '../listado.js';
 import {
   abrirModal, badgeEstado, botonAccion, campo, confirmar, conCarga, cop, el, imagenHerramienta, modalFormulario,
-  reemplazar, tabla, textoEstado, toast, toastError,
+  reemplazar, tabla, textoEstado, toast, toastError, zonaCarga,
 } from '../ui.js';
 
 const MAX_IMAGENES = 5;
@@ -165,28 +165,25 @@ function iniciar() {
     const pintar = () => {
       const lleno = herramienta.imagenes.length >= MAX_IMAGENES;
       const input = el('input', { type: 'file', name: 'archivo', accept: TIPOS_IMAGEN.join(','), id: 'archivo-imagen', 'aria-describedby': 'ayuda-imagen error-imagen' });
-      const vistaPrevia = el('div', {});
       const error = el('p', { class: 'campo__error', id: 'error-imagen', role: 'alert' });
       const subir = el('button', { class: 'btn btn--primario', type: 'button', disabled: true }, el('span', { text: 'Subir imagen' }));
-      let urlPrevia = null;
 
       input.addEventListener('change', () => {
         error.textContent = '';
-        if (urlPrevia) URL.revokeObjectURL(urlPrevia);
-        vistaPrevia.replaceChildren();
+        input.removeAttribute('aria-invalid');
         subir.disabled = true;
         const archivo = input.files[0];
         if (!archivo) return;
         if (!TIPOS_IMAGEN.includes(archivo.type)) {
           error.textContent = 'Solo se admiten imágenes JPG, PNG o WebP.';
+          input.setAttribute('aria-invalid', 'true');
           return;
         }
         if (archivo.size > MAX_BYTES) {
           error.textContent = 'La imagen supera 5 MB.';
+          input.setAttribute('aria-invalid', 'true');
           return;
         }
-        urlPrevia = URL.createObjectURL(archivo);
-        vistaPrevia.append(el('img', { class: 'vista-previa', src: urlPrevia, alt: 'Vista previa de la imagen seleccionada' }));
         subir.disabled = false;
       });
 
@@ -197,7 +194,6 @@ function iniciar() {
           herramienta = await api.subir(`/herramientas/${herramienta.id}/imagenes`, datosArchivo);
           cambios = true;
           toast('Imagen agregada.', 'exito');
-          if (urlPrevia) URL.revokeObjectURL(urlPrevia);
           pintar();
         } catch (e) {
           error.textContent = e instanceof ApiError ? e.detalle : 'No se pudo subir la imagen.';
@@ -226,10 +222,9 @@ function iniciar() {
           ? el('p', { class: 'aviso aviso--info', text: `Llegaste al máximo de ${MAX_IMAGENES} imágenes. Quita una para subir otra.` })
           : el('div', { class: 'campo' },
             el('label', { for: 'archivo-imagen', text: 'Agregar imagen' }),
-            input,
+            zonaCarga(input),
             el('p', { class: 'campo__ayuda', id: 'ayuda-imagen', text: `JPG, PNG o WebP de hasta 5 MB. ${herramienta.imagenes.length}/${MAX_IMAGENES} usadas.` }),
             error,
-            vistaPrevia,
             el('div', {}, subir)));
     };
 

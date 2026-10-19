@@ -143,7 +143,7 @@ Requisitos: **Git** y **Docker** (opción A), o **JDK 21 + Maven 3.9+ + Docker/P
 (opción B). Detalles y solución de problemas en [COMPILACION.md](COMPILACION.md).
 
 ```bash
-git clone <url-del-repositorio> proyecto-rentaherramientas
+git clone https://github.com/manuelisaaccamanidiaz-lgtm/Proyecto_RentaHerramientas_CamanoManuel.git proyecto-rentaherramientas
 cd proyecto-rentaherramientas
 cp .env.example .env        # en Windows (PowerShell): Copy-Item .env.example .env
 ```
