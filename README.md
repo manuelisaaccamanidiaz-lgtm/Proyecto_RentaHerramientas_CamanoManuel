@@ -806,7 +806,7 @@ Los reportes quedan en `*/target/surefire-reports` y `bootstrap/target/failsafe-
 | Ficha de herramienta con calendario | ![Herramienta](docs/capturas/herramienta.png) |
 | Cliente · mis reservas y pago | ![Reservas](docs/capturas/cliente-reservas.png) |
 | Cliente · factura PDF | ![Factura](docs/capturas/factura-pdf.png) |
-| Proveedor · solicitudes | ![Solicitudes](docs/capturas/proveedores-solicitudes.png) |
+| Proveedor · solicitudes | ![Solicitudes](docs/capturas/proveedor-solicitudes.png) |
 | Proveedor · inventario | ![Inventario](docs/capturas/proveedor-inventario.png) |
 | Admin · panel de reportes | [Panel admin](docs/capturas/admin-panel.png) |
 | Swagger UI | [Swagger](docs/capturas/swagger.png) |
