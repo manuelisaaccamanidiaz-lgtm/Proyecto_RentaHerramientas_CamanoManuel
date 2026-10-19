@@ -13,6 +13,11 @@ import com.rentaherramientas.application.shared.dto.PaginaResponse;
 import com.rentaherramientas.domain.rental.model.valueobject.EstadoReserva;
 import com.rentaherramientas.infrastructure.shared.adapters.in.rest.SolicitanteJwt;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -68,6 +73,42 @@ public class ReservaController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Solicita una reserva (solo CLIENTE); queda PENDIENTE",
             description = "Máximo 30 días, desde hoy en adelante, sin cruzarse con otras reservas activas.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Reserva creada en estado PENDIENTE",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ReservaResponse.class),
+                            examples = @ExampleObject(name = "Reserva creada", value = """
+                                    {
+                                      "id": 15,
+                                      "herramientaId": 7,
+                                      "clienteId": 22,
+                                      "fechaInicio": "2026-10-24",
+                                      "fechaFin": "2026-10-27",
+                                      "dias": 4,
+                                      "estado": "PENDIENTE",
+                                      "precioTotal": 180000.00,
+                                      "moneda": "COP",
+                                      "pagada": false,
+                                      "fechaEntrega": null,
+                                      "fechaDevolucion": null,
+                                      "creadoEn": "2026-10-19T09:42:13.512",
+                                      "reportesDanio": []
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "401", description = "Falta el token Bearer o está vencido",
+                    content = @Content),
+            @ApiResponse(responseCode = "409", description = "Las fechas se cruzan con otra reserva activa",
+                    content = @Content(mediaType = "application/problem+json",
+                            examples = @ExampleObject(name = "Reserva solapada", value = """
+                                    {
+                                      "type": "about:blank",
+                                      "title": "Regla de negocio incumplida",
+                                      "status": 409,
+                                      "detail": "La herramienta 7 ya está reservada entre 2026-10-24 y 2026-10-27",
+                                      "instance": "/api/reservas"
+                                    }
+                                    """)))
+    })
     public ReservaResponse crear(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CrearReservaRequest request) {
         return crearReserva.crear(request.toCommand(SolicitanteJwt.desde(jwt)));
     }

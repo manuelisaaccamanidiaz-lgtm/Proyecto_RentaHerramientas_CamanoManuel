@@ -2,6 +2,7 @@ package com.rentaherramientas.infrastructure.identity.adapters.in.rest;
 
 import com.rentaherramientas.application.identity.command.ActualizarUsuarioCommand;
 import com.rentaherramientas.application.identity.command.RegistrarUsuarioCommand;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -16,8 +17,11 @@ import jakarta.validation.constraints.Size;
  *     los datos de rol son opcionales.
  */
 public record ActualizarUsuarioRequest(
+        @Schema(description = "Nombre completo del usuario", example = "Andrés Felipe Rueda Pinzón")
         @NotBlank @Size(max = 120) String nombre,
+        @Schema(description = "Solo para usuarios PROVEEDOR; opcional")
         @Valid RegistroUsuarioRequest.DatosProveedorRequest datosProveedor,
+        @Schema(description = "Solo para usuarios CLIENTE; opcional")
         @Valid RegistroUsuarioRequest.DatosClienteRequest datosCliente) {
 
     /** Convierte el cuerpo HTTP en el command de aplicación para el usuario indicado. */

@@ -11,6 +11,11 @@ import com.rentaherramientas.domain.billing.model.valueobject.EstadoPago;
 import com.rentaherramientas.domain.billing.model.valueobject.MetodoPago;
 import com.rentaherramientas.infrastructure.shared.adapters.in.rest.SolicitanteJwt;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -58,6 +63,42 @@ public class PagoController {
     @Operation(summary = "Paga una reserva ACEPTADA propia (solo CLIENTE)",
             description = "El monto lo calcula el servidor (precio total de la reserva). TARJETA y PSE se aprueban "
                     + "al instante y emiten la factura; EFECTIVO queda PENDIENTE hasta que el proveedor confirme.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201",
+                    description = "Pago registrado (APROBADO con factura, o PENDIENTE si es EFECTIVO)",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = PagoResponse.class),
+                            examples = @ExampleObject(name = "Pago PSE aprobado", value = """
+                                    {
+                                      "id": 9,
+                                      "reservaId": 15,
+                                      "monto": 180000.00,
+                                      "moneda": "COP",
+                                      "metodo": "PSE",
+                                      "estado": "APROBADO",
+                                      "referencia": "PAG-2026-8F3A2C1D9B4E",
+                                      "fecha": "2026-10-19T10:05:31.204",
+                                      "factura": {
+                                        "id": 9,
+                                        "numero": "FAC-2026-000009",
+                                        "total": 180000.00
+                                      }
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "401", description = "Falta el token Bearer o está vencido",
+                    content = @Content),
+            @ApiResponse(responseCode = "409", description = "La reserva ya tiene un pago o no está ACEPTADA",
+                    content = @Content(mediaType = "application/problem+json",
+                            examples = @ExampleObject(name = "Pago duplicado", value = """
+                                    {
+                                      "type": "about:blank",
+                                      "title": "Regla de negocio incumplida",
+                                      "status": 409,
+                                      "detail": "La reserva 15 ya tiene un pago pendiente o aprobado",
+                                      "instance": "/api/pagos"
+                                    }
+                                    """)))
+    })
     public PagoResponse pagar(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody PagarReservaRequest request) {
         return pagarReserva.pagar(request.toCommand(SolicitanteJwt.desde(jwt)));
     }

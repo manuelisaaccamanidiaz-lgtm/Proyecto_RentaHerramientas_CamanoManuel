@@ -5,6 +5,11 @@ import com.rentaherramientas.application.identity.dto.UsuarioResponse;
 import com.rentaherramientas.application.identity.usecase.AutenticarUsuarioUseCase;
 import com.rentaherramientas.application.identity.usecase.RegistrarUsuarioUseCase;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -53,6 +58,30 @@ public class AuthController {
     /** POST /api/auth/login : valida credenciales y devuelve el token JWT. */
     @PostMapping("/login")
     @Operation(summary = "Inicia sesión y devuelve un JWT Bearer")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Credenciales válidas: token JWT emitido",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TokenResponse.class),
+                            examples = @ExampleObject(name = "Login exitoso", value = """
+                                    {
+                                      "token": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJyZW50YS1oZXJyYW1pZW50YXMiLCJzdWIiOiIyMiJ9.4kQnZ8u1",
+                                      "tipo": "Bearer",
+                                      "expiraEn": "2026-10-19T14:30:00Z",
+                                      "rol": "CLIENTE"
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "401", description = "Email o contraseña incorrectos",
+                    content = @Content(mediaType = "application/problem+json",
+                            examples = @ExampleObject(name = "Credenciales inválidas", value = """
+                                    {
+                                      "type": "about:blank",
+                                      "title": "No autenticado",
+                                      "status": 401,
+                                      "detail": "Credenciales inválidas",
+                                      "instance": "/api/auth/login"
+                                    }
+                                    """)))
+    })
     public TokenResponse login(@Valid @RequestBody LoginRequest request) {
         return autenticarUsuario.autenticar(request.toCommand());
     }
