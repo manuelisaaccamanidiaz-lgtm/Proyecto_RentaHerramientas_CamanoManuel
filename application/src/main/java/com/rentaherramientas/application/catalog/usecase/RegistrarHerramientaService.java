@@ -36,7 +36,7 @@ public class RegistrarHerramientaService implements RegistrarHerramientaUseCase 
         Dinero tarifa = Dinero.de(command.tarifaDiaria(),
                 command.moneda() == null ? Dinero.MONEDA_POR_DEFECTO : command.moneda());
         Herramienta herramienta = Herramienta.registrar(command.solicitante().id(), command.nombre(),
-                command.descripcion(), tarifa, command.categoriaIds());
+                command.descripcion(), command.marca(), tarifa, command.categoriaIds());
         if (!categoriaRepository.existenTodas(herramienta.getCategoriaIds())) {
             throw new CategoriaNoEncontradaException(herramienta.getCategoriaIds());
         }

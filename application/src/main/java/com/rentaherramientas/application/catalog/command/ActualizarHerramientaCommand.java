@@ -11,6 +11,6 @@ import java.util.Set;
  * moneda null = moneda por defecto (COP).
  */
 public record ActualizarHerramientaCommand(Long herramientaId, Solicitante solicitante, String nombre,
-                                           String descripcion, BigDecimal tarifaDiaria, String moneda,
+                                           String descripcion, String marca, BigDecimal tarifaDiaria, String moneda,
                                            Set<Long> categoriaIds) {
 }

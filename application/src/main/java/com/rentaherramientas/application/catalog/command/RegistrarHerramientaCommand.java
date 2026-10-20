@@ -10,6 +10,6 @@ import java.util.Set;
  * solicitante autenticado: el cuerpo de la petición no puede elegirlo.
  * moneda null = moneda por defecto (COP).
  */
-public record RegistrarHerramientaCommand(Solicitante solicitante, String nombre, String descripcion,
+public record RegistrarHerramientaCommand(Solicitante solicitante, String nombre, String descripcion, String marca,
                                           BigDecimal tarifaDiaria, String moneda, Set<Long> categoriaIds) {
 }

@@ -29,6 +29,8 @@ public record HerramientaRequest(
         @Schema(description = "Descripción opcional (estado, accesorios incluidos...)",
                 example = "Incluye maletín, 2 brocas de concreto y extensión. Entrega en Cabecera del Llano.")
         @Size(max = 2000) String descripcion,
+        @Size(max = 60)
+        @Schema(description = "marca del fabricante(opcional)",example = "Bosch")String marca,
         @Schema(description = "Tarifa por día en la moneda indicada", example = "45000.00")
         @NotNull @Positive @Digits(integer = 10, fraction = 2) BigDecimal tarifaDiaria,
         @Schema(description = "Código ISO 4217; si se omite se usa COP", example = "COP")
@@ -38,12 +40,12 @@ public record HerramientaRequest(
 
     /** Convierte el cuerpo HTTP en el command de alta, con el proveedor tomado del JWT. */
     public RegistrarHerramientaCommand toRegistrarCommand(Solicitante solicitante) {
-        return new RegistrarHerramientaCommand(solicitante, nombre, descripcion, tarifaDiaria, moneda, categoriaIds);
+        return new RegistrarHerramientaCommand(solicitante, nombre, descripcion, marca, tarifaDiaria, moneda, categoriaIds);
     }
 
     /** Convierte el cuerpo HTTP en el command de actualización de la herramienta indicada. */
     public ActualizarHerramientaCommand toActualizarCommand(Long herramientaId, Solicitante solicitante) {
-        return new ActualizarHerramientaCommand(herramientaId, solicitante, nombre, descripcion, tarifaDiaria,
+        return new ActualizarHerramientaCommand(herramientaId, solicitante, nombre, descripcion, marca, tarifaDiaria,
                 moneda, categoriaIds);
     }
 }

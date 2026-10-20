@@ -30,11 +30,13 @@ public final class Herramienta extends AggregateRoot {
     private static final int NOMBRE_MAX = 120;
     private static final int DESCRIPCION_MAX = 2000;
     public static final int MAX_IMAGENES = 5;
+    private static final int MARCA_MAX=60;
 
     private final Long id;
     private final Long proveedorId;
     private String nombre;
     private String descripcion;
+    private String marca;
     private Dinero tarifaDiaria;
     private EstadoHerramienta estado;
     private final List<ImagenHerramienta> imagenes;
@@ -48,12 +50,13 @@ public final class Herramienta extends AggregateRoot {
      *     imagen pasa por las mismas validaciones que al añadirla después. `LinkedHashSet` evita categorías
      *     repetidas y conserva el orden de inserción.
      */
-    private Herramienta(Long id, Long proveedorId, String nombre, String descripcion, Dinero tarifaDiaria,
+    private Herramienta(Long id, Long proveedorId, String nombre, String descripcion, String marca, Dinero tarifaDiaria,
                         EstadoHerramienta estado, List<ImagenHerramienta> imagenes, Set<Long> categoriaIds) {
         this.id = id;
         this.proveedorId = Validaciones.requerido(proveedorId, "proveedorId");
         this.nombre = Validaciones.textoRequerido(nombre, "nombre", NOMBRE_MAX);
         this.descripcion = Validaciones.textoOpcional(descripcion, "descripcion", DESCRIPCION_MAX);
+        this.marca = Validaciones.textoOpcional(marca, marca, MARCA_MAX);
         this.tarifaDiaria = validarTarifa(tarifaDiaria);
         this.estado = Validaciones.requerido(estado, "estado");
         this.imagenes = new ArrayList<>();
@@ -65,26 +68,27 @@ public final class Herramienta extends AggregateRoot {
     }
 
     /** Alta de una nueva unidad: siempre empieza DISPONIBLE y sin imágenes. */
-    public static Herramienta registrar(Long proveedorId, String nombre, String descripcion,
+    public static Herramienta registrar(Long proveedorId, String nombre, String descripcion, String marca, 
                                         Dinero tarifaDiaria, Set<Long> categoriaIds) {
-        return new Herramienta(null, proveedorId, nombre, descripcion, tarifaDiaria,
+        return new Herramienta(null, proveedorId, nombre, descripcion, marca, tarifaDiaria,
                 EstadoHerramienta.DISPONIBLE, List.of(), categoriaIds);
     }
 
     /** Reconstruye una herramienta leída de la base de datos; no emite eventos. */
-    public static Herramienta reconstruir(Long id, Long proveedorId, String nombre, String descripcion,
+    public static Herramienta reconstruir(Long id, Long proveedorId, String nombre, String descripcion, String marca,
                                           Dinero tarifaDiaria, EstadoHerramienta estado,
                                           List<ImagenHerramienta> imagenes, Set<Long> categoriaIds) {
-        return new Herramienta(Validaciones.requerido(id, "id"), proveedorId, nombre, descripcion,
+        return new Herramienta(Validaciones.requerido(id, "id"), proveedorId, nombre, descripcion, marca,
                 tarifaDiaria, estado, imagenes, categoriaIds);
     }
 
     // ---------------------------------------------------------------- datos
 
     /** Actualiza nombre y descripción con las mismas reglas que al crearla. */
-    public void actualizarDatos(String nuevoNombre, String nuevaDescripcion) {
+    public void actualizarDatos(String nuevoNombre, String nuevaDescripcion, String nuevaMarca) {
         this.nombre = Validaciones.textoRequerido(nuevoNombre, "nombre", NOMBRE_MAX);
         this.descripcion = Validaciones.textoOpcional(nuevaDescripcion, "descripcion", DESCRIPCION_MAX);
+        this.marca = Validaciones.textoOpcional(nuevaMarca, "nuevaMarca", MARCA_MAX);
     }
 
     /** Cambia la tarifa diaria; debe ser mayor que cero. */
@@ -235,4 +239,10 @@ public final class Herramienta extends AggregateRoot {
     public Set<Long> getCategoriaIds() {
         return Set.copyOf(categoriaIds);
     }
+
+    public String getMarca() {
+        return marca;
+    }
+
+    
 }

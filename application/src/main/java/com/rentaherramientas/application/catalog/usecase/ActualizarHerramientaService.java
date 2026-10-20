@@ -46,7 +46,7 @@ public class ActualizarHerramientaService implements ActualizarHerramientaUseCas
             throw new CategoriaNoEncontradaException(nuevasCategorias);
         }
 
-        herramienta.actualizarDatos(command.nombre(), command.descripcion());
+        herramienta.actualizarDatos(command.nombre(), command.descripcion(), command.marca());
         herramienta.actualizarTarifa(Dinero.de(command.tarifaDiaria(),
                 command.moneda() == null ? Dinero.MONEDA_POR_DEFECTO : command.moneda()));
         nuevasCategorias.forEach(herramienta::asignarCategoria);

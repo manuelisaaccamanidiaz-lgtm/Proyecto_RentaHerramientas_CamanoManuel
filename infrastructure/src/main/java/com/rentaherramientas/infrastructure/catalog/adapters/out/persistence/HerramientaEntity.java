@@ -57,6 +57,9 @@ public class HerramientaEntity {
     @Column(name = "descripcion")
     private String descripcion;
 
+    @Column(name = "marca", length = 60)
+    private String marca;
+
     @Column(name = "tarifa_diaria", nullable = false, precision = 12, scale = 2)
     private BigDecimal tarifaDiaria;
 
@@ -85,13 +88,14 @@ public class HerramientaEntity {
     }
 
     /** Crea la entidad a partir del agregado; un id null indica INSERT. */
-    public HerramientaEntity(Long id, Long proveedorId, String nombre, String descripcion,
+    public HerramientaEntity(Long id, Long proveedorId, String nombre, String descripcion, String marca,
                              BigDecimal tarifaDiaria, String moneda, EstadoHerramienta estado,
                              Set<Long> categoriaIds) {
         this.id = id;
         this.proveedorId = proveedorId;
         this.nombre = nombre;
         this.descripcion = descripcion;
+        this.marca = marca;
         this.tarifaDiaria = tarifaDiaria;
         this.moneda = moneda;
         this.estado = estado;
@@ -124,6 +128,10 @@ public class HerramientaEntity {
         return descripcion;
     }
 
+    public String getMarca() {
+        return marca;
+    }
+
     /** Monto de la tarifa diaria. */
     public BigDecimal getTarifaDiaria() {
         return tarifaDiaria;
@@ -148,4 +156,6 @@ public class HerramientaEntity {
     public Set<Long> getCategoriaIds() {
         return categoriaIds;
     }
+
+    
 }
