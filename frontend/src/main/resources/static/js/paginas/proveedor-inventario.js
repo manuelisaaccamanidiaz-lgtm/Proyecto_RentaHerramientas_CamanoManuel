@@ -62,6 +62,7 @@ function iniciar() {
     const seleccionadas = new Set(herramienta.categoriaIds ?? []);
     return [
       campo({ etiqueta: 'Nombre', nombre: 'nombre', valor: herramienta.nombre, requerido: true, atributos: { maxlength: 120 } }),
+      campo({ etiqueta: 'Marca', nombre: 'marca', valor: herramienta.marca, requerido:false, atributos: {maxlength: 60}}),
       campo({ etiqueta: 'Descripción', nombre: 'descripcion', tipo: 'textarea', valor: herramienta.descripcion, atributos: { maxlength: 2000 } }),
       campo({
         etiqueta: 'Tarifa diaria (COP)', nombre: 'tarifaDiaria', tipo: 'number', valor: herramienta.tarifaDiaria, requerido: true,
@@ -87,6 +88,7 @@ function iniciar() {
     return {
       nombre: valores.nombre,
       descripcion: valores.descripcion,
+      marca:valores.marca,
       tarifaDiaria: Number(valores.tarifaDiaria),
       categoriaIds: valores.categoriaIds.map(Number),
     };

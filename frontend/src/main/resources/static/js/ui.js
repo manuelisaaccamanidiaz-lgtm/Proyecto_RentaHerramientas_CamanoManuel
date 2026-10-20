@@ -727,6 +727,9 @@ export function tarjetaHerramienta(herramienta) {
       herramienta.descripcion
         ? el('p', { class: 'texto-suave texto-sm', text: recortar(herramienta.descripcion, 90) })
         : null,
+      herramienta.marca
+        ? el('p', { class: 'texto-suave texto-sm', text: recortar(herramienta.marca, 90) })
+        : null,
       el('div', { class: 'herramienta__pie' },
         el('p', { class: 'precio' }, cop(herramienta.tarifaDiaria), el('small', { text: ' / día' })),
         badgeEstado(herramienta.estado))));
