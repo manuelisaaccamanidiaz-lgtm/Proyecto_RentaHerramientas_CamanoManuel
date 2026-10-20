@@ -11,6 +11,7 @@ public enum EstadoReserva {
     RECHAZADA,
     ENTREGADA,
     DEVUELTA,
+    CANCELADA,
     VENCIDA;
 
     /**
@@ -22,10 +23,10 @@ public enum EstadoReserva {
      */
     public boolean puedeCambiarA(EstadoReserva destino) {
         return switch (this) {
-            case PENDIENTE -> destino == ACEPTADA || destino == RECHAZADA || destino == VENCIDA;
+            case PENDIENTE -> destino == ACEPTADA || destino == RECHAZADA || destino == VENCIDA || destino == CANCELADA;
             case ACEPTADA -> destino == ENTREGADA || destino == VENCIDA;
             case ENTREGADA -> destino == DEVUELTA;
-            case RECHAZADA, DEVUELTA, VENCIDA -> false;
+            case RECHAZADA, DEVUELTA, VENCIDA , CANCELADA-> false;
         };
     }
 

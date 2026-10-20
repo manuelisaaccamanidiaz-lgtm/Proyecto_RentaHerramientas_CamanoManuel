@@ -51,7 +51,7 @@ class ReservaTest {
 
     /** Únicas transiciones válidas (estado origen + acción); cualquier otra combinación debe fallar. */
     private static final Set<String> VALIDAS = Set.of(
-            "PENDIENTE:aceptar", "PENDIENTE:rechazar", "PENDIENTE:vencer",
+            "PENDIENTE:aceptar", "PENDIENTE:rechazar", "PENDIENTE:vencer", "PENDIENTE:cancelar",
             "ACEPTADA:entregar", "ACEPTADA:vencer",
             "ENTREGADA:devolver");
 
@@ -120,6 +120,23 @@ class ReservaTest {
         reserva.registrarDevolucion(ENTREGA.plusDays(3));
         assertEquals(EstadoReserva.DEVUELTA, reserva.getEstado());
         assertEquals(ENTREGA.plusDays(3), reserva.getFechaDevolucion());
+    }
+
+    @Test 
+    @DisplayName ("cambio de estado de PENDIENTE a CANCELADA")
+    void cancelacionAdecuada(){
+        Reserva reserva = enEstado(EstadoReserva.PENDIENTE);
+
+        reserva.cancelar();
+        assertEquals(EstadoReserva.CANCELADA, reserva.getEstado());
+    }
+
+    @Test 
+    @DisplayName ("ACEPTADA → CANCELADA es inválida")
+    void cancelacionFallida(){
+        Reserva reserva = enEstado(EstadoReserva.ACEPTADA);
+
+        assertThrows(TransicionDeEstadoInvalidaException.class, () -> reserva.cancelar());
     }
 
     @Test

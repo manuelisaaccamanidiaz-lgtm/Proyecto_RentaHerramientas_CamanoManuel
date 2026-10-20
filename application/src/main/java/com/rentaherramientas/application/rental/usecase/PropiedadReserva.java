@@ -42,6 +42,16 @@ final class PropiedadReserva {
         return reserva;
     }
 
+    static Reserva cargarDelCliente(ReservaRepository reservaRepository,
+                                    Long reservaId, Solicitante solicitante){
+        Reserva reserva = cargar(reservaRepository, reservaId);
+        boolean esSuCliente = solicitante.rol() == Rol.CLIENTE && reserva.getClienteId().equals(solicitante.id());
+        if(!esSuCliente){
+            throw new AccesoDenegadoException("no tienes acceso a esta reserva");
+        }
+        return reserva;
+    }
+
     /** Carga la reserva o lanza ReservaNoEncontradaException (404). */
     private static Reserva cargar(ReservaRepository reservaRepository, Long reservaId) {
         return reservaRepository.buscarPorId(reservaId)

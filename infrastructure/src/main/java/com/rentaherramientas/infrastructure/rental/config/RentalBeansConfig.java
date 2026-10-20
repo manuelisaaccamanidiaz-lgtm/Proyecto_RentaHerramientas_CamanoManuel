@@ -4,6 +4,8 @@ import com.rentaherramientas.application.rental.port.CatalogoHerramientas;
 import com.rentaherramientas.application.rental.port.ConsultaPagos;
 import com.rentaherramientas.application.rental.usecase.AceptarReservaService;
 import com.rentaherramientas.application.rental.usecase.AceptarReservaUseCase;
+import com.rentaherramientas.application.rental.usecase.CancelarReservaService;
+import com.rentaherramientas.application.rental.usecase.CancelarReservaUseCase;
 import com.rentaherramientas.application.rental.usecase.ConsultarReservasService;
 import com.rentaherramientas.application.rental.usecase.ConsultarReservasUseCase;
 import com.rentaherramientas.application.rental.usecase.CrearReservaService;
@@ -56,6 +58,11 @@ public class RentalBeansConfig {
     RechazarReservaUseCase rechazarReservaUseCase(ReservaRepository reservaRepository,
                                                   CatalogoHerramientas catalogoHerramientas) {
         return new RechazarReservaService(reservaRepository, catalogoHerramientas);
+    }
+
+    @Bean
+    CancelarReservaUseCase cancelarReservaUseCase(ReservaRepository reservaRepository) {
+        return new CancelarReservaService(reservaRepository);
     }
 
     /** Bean del caso de uso de registrar entregas. */

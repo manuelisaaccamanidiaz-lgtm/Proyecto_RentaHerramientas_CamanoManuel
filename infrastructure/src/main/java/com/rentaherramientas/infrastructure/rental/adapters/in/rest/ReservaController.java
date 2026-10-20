@@ -3,6 +3,7 @@ package com.rentaherramientas.infrastructure.rental.adapters.in.rest;
 import com.rentaherramientas.application.rental.command.FiltroHistorialReservas;
 import com.rentaherramientas.application.rental.dto.ReservaResponse;
 import com.rentaherramientas.application.rental.usecase.AceptarReservaUseCase;
+import com.rentaherramientas.application.rental.usecase.CancelarReservaUseCase;
 import com.rentaherramientas.application.rental.usecase.ConsultarReservasUseCase;
 import com.rentaherramientas.application.rental.usecase.CrearReservaUseCase;
 import com.rentaherramientas.application.rental.usecase.RechazarReservaUseCase;
@@ -49,6 +50,7 @@ public class ReservaController {
     private final CrearReservaUseCase crearReserva;
     private final AceptarReservaUseCase aceptarReserva;
     private final RechazarReservaUseCase rechazarReserva;
+    private final CancelarReservaUseCase cancelarReserva;
     private final RegistrarEntregaUseCase registrarEntrega;
     private final RegistrarDevolucionUseCase registrarDevolucion;
     private final ReportarDanioUseCase reportarDanio;
@@ -56,12 +58,13 @@ public class ReservaController {
 
     /** Recibe los casos de uso por constructor (inyección de dependencias de Spring). */
     public ReservaController(CrearReservaUseCase crearReserva, AceptarReservaUseCase aceptarReserva,
-                             RechazarReservaUseCase rechazarReserva, RegistrarEntregaUseCase registrarEntrega,
+                             RechazarReservaUseCase rechazarReserva, CancelarReservaUseCase cancelarReserva, RegistrarEntregaUseCase registrarEntrega,
                              RegistrarDevolucionUseCase registrarDevolucion, ReportarDanioUseCase reportarDanio,
                              ConsultarReservasUseCase consultarReservas) {
         this.crearReserva = crearReserva;
         this.aceptarReserva = aceptarReserva;
         this.rechazarReserva = rechazarReserva;
+        this.cancelarReserva = cancelarReserva;
         this.registrarEntrega = registrarEntrega;
         this.registrarDevolucion = registrarDevolucion;
         this.reportarDanio = reportarDanio;
@@ -168,6 +171,12 @@ public class ReservaController {
     @Operation(summary = "Rechaza una reserva PENDIENTE (proveedor dueño o ADMIN)")
     public ReservaResponse rechazar(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
         return rechazarReserva.rechazar(id, SolicitanteJwt.desde(jwt));
+    }
+
+    @PatchMapping("/api/reservas/{id}/cancelar")
+    @Operation(summary = "Cancela la reserva hecha por el CLIENTE")
+    public ReservaResponse cancelar(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
+        return cancelarReserva.cancelar(id, SolicitanteJwt.desde(jwt));
     }
 
     /** PATCH /api/reservas/{id}/entregar : registra la entrega de una reserva ACEPTADA y pagada. */

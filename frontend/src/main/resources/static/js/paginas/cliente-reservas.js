@@ -8,8 +8,9 @@ import { nombreHerramienta } from '../datos.js';
 import { montarLayout } from '../layout.js';
 import { crearListado, filtrosEnUrl } from '../listado.js';
 import {
-  abrirModal, badge, badgeEstado, botonAccion, cop, datos, el, fechaHora, modalFormulario, rangoFechas,
+  abrirModal, badge, badgeEstado, botonAccion, confirmar, cop, datos, el, fechaHora, modalFormulario, rangoFechas,
   tabla, toast,
+  toastError,
 } from '../ui.js';
 
 const METODOS = [
@@ -85,8 +86,10 @@ function iniciar() {
 
   function acciones(reserva, nombre) {
     const puedePagar = reserva.estado === 'ACEPTADA' && !reserva.pagada && !pagosVigentes.has(reserva.id);
+    const cancelable = reserva.estado === 'PENDIENTE';
     return el('div', { class: 'acciones' },
       botonAccion('Detalle', 'btn--fantasma', async () => verDetalle(reserva, nombre), { 'aria-label': `Ver detalle de la reserva de ${nombre}` }),
+      cancelable ? botonAccion('Cancelar', 'btn--peligro', async () => cancelar(reserva, nombre), { 'aria-label': `Cancelar la reserva de ${nombre}` }) : null,
       puedePagar ? botonAccion('Pagar', 'btn--primario', async () => pagar(reserva, nombre), { 'aria-label': `Pagar la reserva de ${nombre}` }) : null);
   }
 
@@ -144,6 +147,24 @@ function iniciar() {
       toast('Pago en efectivo registrado: el proveedor lo confirmará cuando lo reciba.', 'info', 7000);
     }
     await listado.recargar();
+  }
+
+  async function cancelar(reserva, nombre){
+    const confirmado = await confirmar({
+      titulo: 'Cancelar reserva',
+      mensaje: `¿Seguro que quieres cancelar la reserva de ${nombre}? Las fechas quedarán libres para otros clientes.`,
+      textoConfirmar: 'Sí, cancelar',
+      peligro: true,
+  });
+  if(!confirmado) return;
+  try {
+    await api.patch(`/reservas/${reserva.id}/cancelar`);
+    toast('Reserva cancelada. Laz fechas quedaron libres.', ' exito');
+    await listado.recargar();
+  } catch(error){
+    toastError(error);
+  }
+    
   }
 
   form.addEventListener('change', () => listado.reiniciar());

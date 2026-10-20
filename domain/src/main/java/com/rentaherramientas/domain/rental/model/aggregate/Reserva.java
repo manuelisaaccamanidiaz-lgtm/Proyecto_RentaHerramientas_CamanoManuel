@@ -92,6 +92,10 @@ public final class Reserva extends AggregateRoot {
         cambiarEstado(EstadoReserva.RECHAZADA);
     }
 
+    public void cancelar() {
+        cambiarEstado(EstadoReserva.CANCELADA);
+    }
+
     /** Marca la reserva como VENCIDA cuando pasó su fecha sin entregarse (lo hace la tarea programada). */
     public void vencer() {
         cambiarEstado(EstadoReserva.VENCIDA);

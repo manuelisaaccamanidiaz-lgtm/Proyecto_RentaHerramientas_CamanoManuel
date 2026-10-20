@@ -162,6 +162,7 @@ const ESTADOS = {
   ENTREGADA: ['Entregada', 'primario'],
   DEVUELTA: ['Devuelta', 'exito'],
   VENCIDA: ['Vencida', 'neutro'],
+  CANCELADA: ['Cancelada', 'neutro'],
   // pago
   APROBADO: ['Aprobado', 'exito'],
   RECHAZADO: ['Rechazado', 'peligro'],
