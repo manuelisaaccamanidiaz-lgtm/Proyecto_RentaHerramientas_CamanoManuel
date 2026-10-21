@@ -2,6 +2,7 @@ package com.rentaherramientas.infrastructure.reporting.adapters.in.rest;
 
 import com.rentaherramientas.application.reporting.dto.ClienteFrecuenteResponse;
 import com.rentaherramientas.application.reporting.dto.HerramientaAlquiladaResponse;
+import com.rentaherramientas.application.reporting.dto.HerramientaDaniosResponse;
 import com.rentaherramientas.application.reporting.dto.IngresoMensualResponse;
 import com.rentaherramientas.application.reporting.dto.InventarioResponse;
 import com.rentaherramientas.application.reporting.dto.RentabilidadResponse;
@@ -91,4 +92,11 @@ public class ReporteController {
     public ResumenProveedorResponse resumenProveedor(@AuthenticationPrincipal Jwt jwt) {
         return consultarReportes.resumenProveedor(Long.valueOf(jwt.getSubject()));
     }
+
+    @GetMapping("/api/admin/reportes/danios")
+    @Operation(summary = "herramientas con mayor cantidad de danios reportados")
+    public List<HerramientaDaniosResponse> herramientasConMasDanios(@RequestParam(defaultValue = LIMITE_POR_DEFECTO) int limite) {
+        return consultarReportes.herramientasConMasDanios(limite);
+    }
+    
 }

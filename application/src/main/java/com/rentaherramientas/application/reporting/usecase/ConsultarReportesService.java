@@ -2,6 +2,7 @@ package com.rentaherramientas.application.reporting.usecase;
 
 import com.rentaherramientas.application.reporting.dto.ClienteFrecuenteResponse;
 import com.rentaherramientas.application.reporting.dto.HerramientaAlquiladaResponse;
+import com.rentaherramientas.application.reporting.dto.HerramientaDaniosResponse;
 import com.rentaherramientas.application.reporting.dto.IngresoMensualResponse;
 import com.rentaherramientas.application.reporting.dto.InventarioResponse;
 import com.rentaherramientas.application.reporting.dto.RentabilidadResponse;
@@ -87,6 +88,12 @@ public class ConsultarReportesService implements ConsultarReportesUseCase {
     public ResumenProveedorResponse resumenProveedor(Long proveedorId) {
         return consultasReportes.resumenProveedor(Validaciones.requerido(proveedorId, "proveedorId"));
     }
+
+    @Override 
+    public List<HerramientaDaniosResponse> herramientasConMasDanios(int limite){
+        return consultasReportes.herramientasConMasDanios(validarLimite(limite));
+    }
+
 
     /** Exige que el límite de un ranking esté entre 1 y LIMITE_MAXIMO. */
     private static int validarLimite(int limite) {
