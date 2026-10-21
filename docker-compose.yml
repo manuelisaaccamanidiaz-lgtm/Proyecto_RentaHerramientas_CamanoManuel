@@ -5,20 +5,42 @@
 #
 # Las variables salen de .env. Perfil prod: SPRING_PROFILES_ACTIVE=prod en .env
 # (ver DESPLIEGUE.md). Las migraciones las ejecuta Flyway al arrancar la app.
+#
+# Sintaxis de interpolación de variables que usa este archivo:
+#   ${VAR}              valor de VAR (del .env o de la terminal); vacío si no existe.
+#   ${VAR:-defecto}     usa "defecto" si VAR no existe o está vacía.
+#   ${VAR:?mensaje}     obligatoria: si falta, compose se detiene mostrando "mensaje".
+#   $${VAR}             "$$" escapa el "$": compose no la sustituye y la deja para que la
+#                       resuelva la shell DENTRO del contenedor (ver healthcheck de postgres).
+#
+# Red: compose crea una red privada para este proyecto; cada servicio es accesible desde
+# los demás por su nombre ("postgres", "app") como si fuera un nombre de host.
 services:
   postgres:
+    # Imagen oficial con variantes amd64 y arm64 (Apple Silicon).
     image: postgres:17
     container_name: rentaherramientas-postgres
+    # Se vuelve a iniciar siempre que se detenga (por un fallo o al reiniciar Docker),
+    # salvo que se haya detenido a mano con "docker compose stop" o "down".
     restart: unless-stopped
+    # La imagen de postgres usa estas variables SOLO la primera vez, al inicializar el
+    # volumen vacío. Cambiarlas después no modifica una base ya creada (ver DESPLIEGUE.md).
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?Define POSTGRES_DB en .env (copia .env.example)}
       POSTGRES_USER: ${POSTGRES_USER:?Define POSTGRES_USER en .env (copia .env.example)}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env (copia .env.example)}
     # Publicado también en el host para ejecutar la app sin Docker (mvn spring-boot:run).
+    # Formato "puerto_host:puerto_contenedor": solo cambia el lado izquierdo (POSTGRES_PORT);
+    # dentro de la red de compose PostgreSQL siempre escucha en 5432.
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
+    # Volumen con nombre: los datos sobreviven a "docker compose down" y solo se borran
+    # con "docker compose down -v".
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    # pg_isready comprueba que PostgreSQL acepta conexiones. CMD-SHELL ejecuta el comando
+    # con /bin/sh dentro del contenedor, que expande $${POSTGRES_USER} con las variables del
+    # propio contenedor. Mientras no responda, el estado es "starting" y la app no arranca.
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -26,10 +48,14 @@ services:
       retries: 10
 
   app:
+    # Construye la imagen con el Dockerfile de esta carpeta (requiere BuildKit) y la
+    # etiqueta con el nombre de "image". Sin --build se reutiliza la imagen existente.
     build: .
     image: rentaherramientas:latest
     container_name: rentaherramientas-app
     restart: unless-stopped
+    # No basta con que el contenedor de postgres exista: se espera a que su healthcheck
+    # diga "healthy", así Flyway no intenta migrar contra una base que aún no responde.
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,16 +71,23 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env (mínimo 32 bytes)}
       JWT_EXPIRACION_MINUTOS: ${JWT_EXPIRACION_MINUTOS:-60}
+      # ":-" con valor vacío: si no se definen, no se crea el administrador inicial.
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      # Cron de Spring con 6 campos (seg min hora día mes día_semana): por defecto todos
+      # los días a las 00:05:00. Va entre comillas porque contiene espacios y "*".
       RESERVAS_CRON_VENCIMIENTO: "${RESERVAS_CRON_VENCIMIENTO:-0 5 0 * * *}"
+      # Ruta DENTRO del contenedor donde se monta el volumen uploads_data.
       UPLOADS_DIR: /uploads
     ports:
       - "${APP_PORT:-8080}:8080"
     volumes:
       - uploads_data:/uploads
 
+# Volúmenes con nombre gestionados por Docker (no son carpetas del proyecto). Compose les
+# antepone el nombre del proyecto, p. ej. proyecto-rentaherramientas_postgres_data;
+# se listan con "docker volume ls".
 volumes:
   postgres_data:
   uploads_data:
