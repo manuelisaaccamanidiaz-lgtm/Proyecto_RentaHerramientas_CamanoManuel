@@ -159,7 +159,7 @@ function iniciar() {
   if(!confirmado) return;
   try {
     await api.patch(`/reservas/${reserva.id}/cancelar`);
-    toast('Reserva cancelada. Laz fechas quedaron libres.', ' exito');
+    toast('Reserva cancelada. Las fechas quedaron libres.', 'exito');
     await listado.recargar();
   } catch(error){
     toastError(error);
