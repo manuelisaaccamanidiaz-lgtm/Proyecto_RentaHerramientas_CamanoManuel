@@ -364,7 +364,7 @@ Firma **HS256** con `JWT_SECRET`. Duración: **60 minutos** por defecto
 | **Público** | Ver catálogo, categorías, detalle y disponibilidad de herramientas; registrarse e iniciar sesión |
 | **CLIENTE** | Reservar, ver sus reservas, pagar, ver sus pagos y facturas, descargar PDF, editar su perfil |
 | **PROVEEDOR** | Gestionar sus herramientas e imágenes; aceptar/rechazar, entregar, recibir y reportar daños en reservas de sus herramientas; confirmar pagos en efectivo; ver sus pagos, facturas y resumen |
-| **ADMIN** | Todo lo anterior sobre cualquier recurso, más categorías, usuarios (activar/desactivar), historiales completos y reportes |
+| **ADMIN** | Todo lo anterior sobre cualquier recurso, más categorías, usuarios (activar/desactivar, cambiar rol), historiales completos y reportes |
 
 La regla de **propiedad** (solo el proveedor dueño gestiona sus herramientas y reservas)
 la aplican los casos de uso; Spring Security filtra por rol.
@@ -455,6 +455,7 @@ La columna **Ej.** remite a los ejemplos JSON que siguen a cada tabla.
 | PUT | `/api/admin/usuarios/{id}` | A | Actualiza nombre y datos de proveedor/cliente | I4 |
 | PATCH | `/api/admin/usuarios/{id}/desactivar` | A | Borrado lógico (un admin no puede desactivarse a sí mismo) | I3 |
 | PATCH | `/api/admin/usuarios/{id}/activar` | A | Reactiva un usuario | I3 |
+| PATCH | `/api/admin/usuarios/{id}/rol` | A | Cambia el rol (CLIENTE, PROVEEDOR o ADMIN); 409 si tiene historial o es el mismo rol, 403 si es el propio admin | I5 |
 
 **I1 · Registro** — request (cliente; un proveedor envía `"rol": "PROVEEDOR"` y
 `"datosProveedor": {"razonSocial": "Ferretería El Tornillo SAS", "nit": "900101001-3"}`):
@@ -516,6 +517,22 @@ Response **201**: igual a I3.
   "datosProveedor": { "razonSocial": "Ferretería El Tornillo SAS", "nit": "900101001-3" }
 }
 ```
+
+**I5 · Cambiar rol** — request; response **200**: I3 con el nuevo rol. Se envía el bloque del
+nuevo rol (`datosProveedor` para PROVEEDOR, `datosCliente` para CLIENTE, ninguno para ADMIN);
+los datos del rol anterior se eliminan. No se permite si el usuario ya tiene reservas (como
+cliente) o herramientas (como proveedor).
+
+```json
+{
+  "rol": "PROVEEDOR",
+  "datosProveedor": { "razonSocial": "Herramientas Rueda SAS", "nit": "901234567-8" }
+}
+```
+
+> ⚠️ El rol viaja en el JWT (claim `rol`): el usuario debe **volver a iniciar sesión** para
+> que el cambio surta efecto. Mientras use el token anterior conserva los permisos del rol viejo
+> hasta que ese token expire.
 
 ### 📦 Catalog · categorías, herramientas e imágenes
 

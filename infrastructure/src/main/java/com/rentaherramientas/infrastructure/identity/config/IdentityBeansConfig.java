@@ -1,5 +1,6 @@
 package com.rentaherramientas.infrastructure.identity.config;
 
+import com.rentaherramientas.application.identity.port.ActividadUsuario;
 import com.rentaherramientas.application.identity.port.CodificadorPassword;
 import com.rentaherramientas.application.identity.port.GeneradorToken;
 import com.rentaherramientas.application.identity.usecase.ActualizarUsuarioService;
@@ -8,6 +9,8 @@ import com.rentaherramientas.application.identity.usecase.AutenticarUsuarioServi
 import com.rentaherramientas.application.identity.usecase.AutenticarUsuarioUseCase;
 import com.rentaherramientas.application.identity.usecase.CambiarEstadoUsuarioService;
 import com.rentaherramientas.application.identity.usecase.CambiarEstadoUsuarioUseCase;
+import com.rentaherramientas.application.identity.usecase.CambiarRolUsuarioService;
+import com.rentaherramientas.application.identity.usecase.CambiarRolUsuarioUseCase;
 import com.rentaherramientas.application.identity.usecase.ConsultarUsuarioService;
 import com.rentaherramientas.application.identity.usecase.ConsultarUsuarioUseCase;
 import com.rentaherramientas.application.identity.usecase.RegistrarUsuarioService;
@@ -62,5 +65,12 @@ public class IdentityBeansConfig {
     @Bean
     CambiarEstadoUsuarioUseCase cambiarEstadoUsuarioUseCase(UsuarioRepository usuarioRepository) {
         return new CambiarEstadoUsuarioService(usuarioRepository);
+    }
+
+    /** Bean del caso de uso de cambio de rol. */
+    @Bean
+    CambiarRolUsuarioUseCase cambiarRolUsuarioUseCase(UsuarioRepository usuarioRepository,
+                                                      ActividadUsuario actividadUsuario) {
+        return new CambiarRolUsuarioService(usuarioRepository, actividadUsuario);
     }
 }

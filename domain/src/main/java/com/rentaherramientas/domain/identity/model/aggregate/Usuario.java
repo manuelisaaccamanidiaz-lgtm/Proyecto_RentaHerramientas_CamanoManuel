@@ -3,6 +3,7 @@ package com.rentaherramientas.domain.identity.model.aggregate;
 import com.rentaherramientas.domain.identity.event.UsuarioDesactivado;
 import com.rentaherramientas.domain.identity.event.UsuarioRegistrado;
 import com.rentaherramientas.domain.identity.exception.DatosRolInconsistentesException;
+import com.rentaherramientas.domain.identity.exception.RolSinCambioException;
 import com.rentaherramientas.domain.identity.exception.UsuarioInactivoException;
 import com.rentaherramientas.domain.identity.model.valueobject.DatosCliente;
 import com.rentaherramientas.domain.identity.model.valueobject.DatosProveedor;
@@ -18,9 +19,10 @@ import java.util.Optional;
 /**
  * Raíz del agregado de identidad. Concentra las reglas sobre quién es el usuario,
  * su rol y su estado activo. No expone setters: cada cambio pasa por un método de
- * negocio que valida la regla correspondiente. El rol es inmutable porque cambiarlo
- * afectaría datos de otros BC (herramientas de un proveedor, reservas de un cliente).
- * Los datos propios de cada rol (proveedor o cliente) son coherentes con él siempre.
+ * negocio que valida la regla correspondiente. El rol solo cambia con cambiarRol,
+ * que reemplaza a la vez los datos del subtipo; que el usuario no tenga historial
+ * en otros BC (herramientas de un proveedor, reservas de un cliente) lo verifica
+ * el caso de uso. Los datos propios de cada rol son coherentes con él siempre.
  *
  * TÉCNICA AVANZADA (DDD): constructor privado + métodos fábrica
  *   Qué hace: no se puede hacer `new Usuario(...)`. Hay dos formas de obtener uno: `registrar` (alta nueva,
@@ -34,7 +36,7 @@ public final class Usuario extends AggregateRoot {
     private String nombre;
     private Email email;
     private PasswordHash passwordHash;
-    private final Rol rol;
+    private Rol rol;
     private boolean activo;
     private DatosProveedor datosProveedor;
     private DatosCliente datosCliente;
@@ -107,6 +109,22 @@ public final class Usuario extends AggregateRoot {
             throw new DatosRolInconsistentesException("Solo un CLIENTE tiene datos de cliente");
         }
         this.datosCliente = Validaciones.requerido(nuevosDatos, "datosCliente");
+    }
+
+    /**
+     * Cambia el rol y reemplaza los datos de subtipo: se pasan los del nuevo rol y
+     * null en el otro (ADMIN: ambos null). Los datos del rol anterior se descartan.
+     * Se valida antes de asignar para que un error no deje el agregado a medias.
+     */
+    public void cambiarRol(Rol nuevoRol, DatosProveedor nuevosDatosProveedor, DatosCliente nuevosDatosCliente) {
+        Validaciones.requerido(nuevoRol, "rol");
+        if (nuevoRol == rol) {
+            throw new RolSinCambioException(id, rol);
+        }
+        validarCoherenciaRol(nuevoRol, nuevosDatosProveedor, nuevosDatosCliente);
+        this.rol = nuevoRol;
+        this.datosProveedor = nuevosDatosProveedor;
+        this.datosCliente = nuevosDatosCliente;
     }
 
     /** Idempotente: desactivar un usuario ya inactivo no emite un segundo evento. */
@@ -184,7 +202,7 @@ public final class Usuario extends AggregateRoot {
         return passwordHash;
     }
 
-    /** Rol del usuario; no cambia durante su vida. */
+    /** Rol del usuario; solo lo modifica cambiarRol. */
     public Rol getRol() {
         return rol;
     }

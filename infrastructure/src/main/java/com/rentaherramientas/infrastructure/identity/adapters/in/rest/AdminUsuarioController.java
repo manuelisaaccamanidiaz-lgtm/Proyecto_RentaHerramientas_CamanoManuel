@@ -3,11 +3,17 @@ package com.rentaherramientas.infrastructure.identity.adapters.in.rest;
 import com.rentaherramientas.application.identity.dto.UsuarioResponse;
 import com.rentaherramientas.application.identity.usecase.ActualizarUsuarioUseCase;
 import com.rentaherramientas.application.identity.usecase.CambiarEstadoUsuarioUseCase;
+import com.rentaherramientas.application.identity.usecase.CambiarRolUsuarioUseCase;
 import com.rentaherramientas.application.identity.usecase.ConsultarUsuarioUseCase;
 import com.rentaherramientas.application.shared.dto.PaginaResponse;
 import com.rentaherramientas.domain.identity.model.valueobject.Rol;
 import com.rentaherramientas.infrastructure.shared.adapters.in.rest.SolicitanteJwt;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,13 +42,16 @@ public class AdminUsuarioController {
     private final ConsultarUsuarioUseCase consultarUsuario;
     private final ActualizarUsuarioUseCase actualizarUsuario;
     private final CambiarEstadoUsuarioUseCase cambiarEstadoUsuario;
+    private final CambiarRolUsuarioUseCase cambiarRolUsuario;
 
     /** Recibe los casos de uso por constructor (inyección de dependencias de Spring). */
     public AdminUsuarioController(ConsultarUsuarioUseCase consultarUsuario, ActualizarUsuarioUseCase actualizarUsuario,
-                                  CambiarEstadoUsuarioUseCase cambiarEstadoUsuario) {
+                                  CambiarEstadoUsuarioUseCase cambiarEstadoUsuario,
+                                  CambiarRolUsuarioUseCase cambiarRolUsuario) {
         this.consultarUsuario = consultarUsuario;
         this.actualizarUsuario = actualizarUsuario;
         this.cambiarEstadoUsuario = cambiarEstadoUsuario;
+        this.cambiarRolUsuario = cambiarRolUsuario;
     }
 
     /**
@@ -90,5 +99,69 @@ public class AdminUsuarioController {
     @Operation(summary = "Reactiva un usuario")
     public UsuarioResponse activar(@PathVariable Long id) {
         return cambiarEstadoUsuario.activar(id);
+    }
+
+    /** PATCH /api/admin/usuarios/{id}/rol : cambia el rol y los datos de subtipo de un usuario. */
+    @PatchMapping("/{id}/rol")
+    @Operation(summary = "Cambia el rol de un usuario (CLIENTE, PROVEEDOR o ADMIN)",
+            description = "PROVEEDOR exige datosProveedor y CLIENTE exige datosCliente; ADMIN no admite ninguno. "
+                    + "Los datos del rol anterior se eliminan. No se permite si el usuario tiene reservas (como "
+                    + "cliente) o herramientas (como proveedor). El rol viaja en el JWT: el usuario debe volver "
+                    + "a iniciar sesión para que el cambio surta efecto.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Rol cambiado",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UsuarioResponse.class),
+                            examples = @ExampleObject(name = "Cliente convertido en proveedor", value = """
+                                    {
+                                      "id": 22,
+                                      "nombre": "Andrés Felipe Rueda Pinzón",
+                                      "email": "andres.rueda@gmail.com",
+                                      "rol": "PROVEEDOR",
+                                      "activo": true,
+                                      "datosProveedor": {
+                                        "razonSocial": "Herramientas Rueda SAS",
+                                        "nit": "901234567-8"
+                                      },
+                                      "datosCliente": null
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "403", description = "El administrador intenta cambiar su propio rol",
+                    content = @Content(mediaType = "application/problem+json",
+                            examples = @ExampleObject(name = "Cambio del propio rol", value = """
+                                    {
+                                      "type": "about:blank",
+                                      "title": "Acceso denegado",
+                                      "status": 403,
+                                      "detail": "Un administrador no puede cambiar su propio rol",
+                                      "instance": "/api/admin/usuarios/1/rol"
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "409", description = "El usuario tiene historial o ya tiene ese rol",
+                    content = @Content(mediaType = "application/problem+json",
+                            examples = {
+                                    @ExampleObject(name = "Usuario con historial", value = """
+                                            {
+                                              "type": "about:blank",
+                                              "title": "Conflicto",
+                                              "status": 409,
+                                              "detail": "El usuario tiene reservas registradas: no se puede cambiar su rol",
+                                              "instance": "/api/admin/usuarios/22/rol"
+                                            }
+                                            """),
+                                    @ExampleObject(name = "Mismo rol", value = """
+                                            {
+                                              "type": "about:blank",
+                                              "title": "Regla de negocio incumplida",
+                                              "status": 409,
+                                              "detail": "El usuario 22 ya tiene el rol CLIENTE",
+                                              "instance": "/api/admin/usuarios/22/rol"
+                                            }
+                                            """)
+                            }))
+    })
+    public UsuarioResponse cambiarRol(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id,
+                                      @Valid @RequestBody CambiarRolRequest request) {
+        return cambiarRolUsuario.cambiarRol(request.toCommand(id, SolicitanteJwt.desde(jwt)));
     }
 }

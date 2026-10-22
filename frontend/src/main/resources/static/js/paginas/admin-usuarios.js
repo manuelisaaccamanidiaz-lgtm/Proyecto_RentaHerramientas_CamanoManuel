@@ -1,4 +1,4 @@
-/** Admin · Usuarios: filtro por rol, edición de datos y activación/desactivación (borrado lógico). */
+/** Admin · Usuarios: filtro por rol, edición de datos, cambio de rol y activación/desactivación (borrado lógico). */
 import { api } from '../api.js';
 import { requerirSesion } from '../auth.js';
 import { montarLayout } from '../layout.js';
@@ -38,6 +38,11 @@ function iniciar() {
     const esUnoMismo = usuario.id === actual.id;
     return el('div', { class: 'acciones' },
       botonAccion('Editar', 'btn--fantasma', () => editar(usuario), { 'aria-label': `Editar a ${usuario.nombre}` }),
+      botonAccion('Cambiar rol', 'btn--fantasma', () => cambiarRol(usuario), {
+        'aria-label': `Cambiar el rol de ${usuario.nombre}`,
+        disabled: esUnoMismo,
+        title: esUnoMismo ? 'No puedes cambiar tu propio rol' : null,
+      }),
       usuario.activo
         ? botonAccion('Desactivar', 'btn--peligro', () => cambiarEstado(usuario, false), {
           'aria-label': `Desactivar a ${usuario.nombre}`,
@@ -80,6 +85,52 @@ function iniciar() {
     });
     if (actualizado) {
       toast('Usuario actualizado.', 'exito');
+      await listado.recargar();
+    }
+  }
+
+  async function cambiarRol(usuario) {
+    const opciones = [['CLIENTE', 'Cliente'], ['PROVEEDOR', 'Proveedor'], ['ADMIN', 'Administrador']]
+      .filter(([rol]) => rol !== usuario.rol);
+    const selectorRol = campo({ etiqueta: 'Nuevo rol', nombre: 'rol', tipo: 'select', valor: opciones[0][0], requerido: true, opciones });
+    // Un <fieldset disabled> no se valida ni se envía (datosFormulario lo omite): así solo viaja el bloque del rol elegido.
+    // El fieldset va sin clase: .grupo-campos fija display:grid y anularía el atributo hidden.
+    const grupoProveedor = el('fieldset', {},
+      el('div', { class: 'grupo-campos grupo-campos--2' },
+        campo({ etiqueta: 'Razón social', nombre: 'datosProveedor.razonSocial', requerido: true, atributos: { maxlength: 150 } }),
+        campo({ etiqueta: 'NIT', nombre: 'datosProveedor.nit', requerido: true, ayuda: 'Ej.: 900123456-7', atributos: { maxlength: 20, pattern: '[0-9]{6,10}(-[0-9])?', 'data-mensaje-patron': 'De 6 a 10 dígitos y dígito de verificación opcional (900123456-7).' } })));
+    const grupoCliente = el('fieldset', {},
+      el('div', { class: 'grupo-campos' },
+        el('div', { class: 'grupo-campos grupo-campos--2' },
+          campo({ etiqueta: 'Documento', nombre: 'datosCliente.documento', requerido: true, atributos: { maxlength: 20, pattern: '[0-9]{5,15}', 'data-mensaje-patron': 'De 5 a 15 dígitos.' } }),
+          campo({ etiqueta: 'Teléfono', nombre: 'datosCliente.telefono', tipo: 'tel', requerido: true, atributos: { maxlength: 20, pattern: '\\+?[0-9]{7,15}', 'data-mensaje-patron': 'De 7 a 15 dígitos, con + opcional.' } })),
+        campo({ etiqueta: 'Dirección', nombre: 'datosCliente.direccion', requerido: true, atributos: { maxlength: 200 } })));
+
+    const select = selectorRol.querySelector('select');
+    const mostrarGrupos = () => {
+      for (const [grupo, rol] of [[grupoProveedor, 'PROVEEDOR'], [grupoCliente, 'CLIENTE']]) {
+        const activo = select.value === rol;
+        grupo.hidden = !activo;
+        grupo.disabled = !activo;
+      }
+    };
+    select.addEventListener('change', mostrarGrupos);
+    mostrarGrupos();
+
+    const actualizado = await modalFormulario({
+      titulo: `Cambiar rol · ${usuario.email}`,
+      ancho: 640,
+      campos: [
+        el('p', { class: 'aviso aviso--advertencia', text: `Rol actual: ${usuario.rol}. Los datos del rol actual se eliminarán. No es posible si el usuario ya tiene reservas o herramientas registradas.` }),
+        selectorRol,
+        grupoProveedor,
+        grupoCliente,
+      ],
+      textoEnviar: 'Cambiar rol',
+      alEnviar: (valores) => api.patch(`/admin/usuarios/${usuario.id}/rol`, valores),
+    });
+    if (actualizado) {
+      toast('Rol actualizado. El usuario debe volver a iniciar sesión.', 'exito');
       await listado.recargar();
     }
   }
