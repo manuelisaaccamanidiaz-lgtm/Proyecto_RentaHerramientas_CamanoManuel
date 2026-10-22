@@ -163,6 +163,9 @@ async function cargar() {
           el('section', { class: 'tarjeta pila', 'aria-labelledby': 'titulo-descripcion' },
             el('h2', { id: 'titulo-descripcion', text: 'Descripción' }),
             el('p', { text: herramienta.descripcion || 'El proveedor no agregó una descripción.' }),
+            herramienta.marca
+              ? el('p', { class: 'texto-sm' }, el('strong', { text: 'Marca: ' }), el('span', { text: herramienta.marca }))
+              : null,
             nombresCategoria.length
               ? el('ul', { class: 'chips', role: 'list', 'aria-label': 'Categorías' },
                 nombresCategoria.map((c) => el('li', {}, el('a', { class: 'chip', href: `/catalogo.html?categoriaId=${c.id}`, text: c.nombre }))))

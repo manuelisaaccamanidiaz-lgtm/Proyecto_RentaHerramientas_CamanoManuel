@@ -2,6 +2,7 @@ package com.rentaherramientas.infrastructure.reporting.adapters.out.persistence;
 
 import com.rentaherramientas.application.reporting.dto.ClienteFrecuenteResponse;
 import com.rentaherramientas.application.reporting.dto.HerramientaAlquiladaResponse;
+import com.rentaherramientas.application.reporting.dto.HerramientaDaniosResponse;
 import com.rentaherramientas.application.reporting.dto.IngresoMensualResponse;
 import com.rentaherramientas.application.reporting.dto.InventarioResponse;
 import com.rentaherramientas.application.reporting.dto.RentabilidadResponse;
@@ -246,6 +247,26 @@ public class ConsultasReportesJdbc implements ConsultasReportes {
         return new ResumenProveedorResponse(proveedorId, ingresos, pagosAprobados, reservasPorEstado,
                 herramientasPorEstado);
     }
+
+    @Override 
+    public List<HerramientaDaniosResponse> herramientasConMasDanios(int limite){
+        return jdbc.sql("""
+                        select h.id, h.nombre, pr.razon_social as proveedor,
+                        count(d.id)                          as reportes,     -- cuántos reportes de daño
+                        coalesce(sum(d.costo_estimado), 0)   as costo_total   -- el costo es OPCIONAL (puede ser null)
+                        from reportes_danio d                                        -- partimos de los DAÑOS
+                        join reservas r      on r.id = d.reserva_id                  -- daño → su reserva
+                        join herramientas h  on h.id = r.herramienta_id              -- reserva → su herramienta
+                        join proveedores pr  on pr.usuario_id = h.proveedor_id       -- herramienta → su proveedor
+                        group by h.id, h.nombre, pr.razon_social                     -- una fila POR herramienta
+                        order by reportes desc, costo_total desc, h.id
+                        limit :limite
+                        """).param("limite", limite)
+                .query((rs, fila) -> new HerramientaDaniosResponse(rs.getLong("id"), rs.getString("nombre"),
+                        rs.getString("proveedor"), rs.getLong("reportes"), rs.getBigDecimal("costo_total")))
+                .list();
+    }
+
 
     // ------------------------------------------------------------ utilidades
 

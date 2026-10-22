@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Vista pública de una herramienta con su galería (ordenada) y los ids de sus categorías.
  */
-public record HerramientaResponse(Long id, Long proveedorId, String nombre, String descripcion,
+public record HerramientaResponse(Long id, Long proveedorId, String nombre, String descripcion, String marca,
                                   BigDecimal tarifaDiaria, String moneda, EstadoHerramienta estado,
                                   List<Long> categoriaIds, List<ImagenResponse> imagenes) {
 
@@ -22,6 +22,7 @@ public record HerramientaResponse(Long id, Long proveedorId, String nombre, Stri
                 herramienta.getProveedorId(),
                 herramienta.getNombre(),
                 herramienta.getDescripcion(),
+                herramienta.getMarca(),
                 herramienta.getTarifaDiaria().monto(),
                 herramienta.getTarifaDiaria().moneda(),
                 herramienta.getEstado(),

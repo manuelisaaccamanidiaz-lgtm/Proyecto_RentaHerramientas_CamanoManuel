@@ -162,6 +162,7 @@ const ESTADOS = {
   ENTREGADA: ['Entregada', 'primario'],
   DEVUELTA: ['Devuelta', 'exito'],
   VENCIDA: ['Vencida', 'neutro'],
+  CANCELADA: ['Cancelada', 'neutro'],
   // pago
   APROBADO: ['Aprobado', 'exito'],
   RECHAZADO: ['Rechazado', 'peligro'],
@@ -726,6 +727,9 @@ export function tarjetaHerramienta(herramienta) {
         el('a', { href: `/herramienta.html?id=${encodeURIComponent(herramienta.id)}`, text: herramienta.nombre })),
       herramienta.descripcion
         ? el('p', { class: 'texto-suave texto-sm', text: recortar(herramienta.descripcion, 90) })
+        : null,
+      herramienta.marca
+        ? el('p', { class: 'texto-suave texto-sm', text: recortar(herramienta.marca, 90) })
         : null,
       el('div', { class: 'herramienta__pie' },
         el('p', { class: 'precio' }, cop(herramienta.tarifaDiaria), el('small', { text: ' / día' })),

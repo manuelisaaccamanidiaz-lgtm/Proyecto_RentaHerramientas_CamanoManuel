@@ -2,6 +2,7 @@ package com.rentaherramientas.application.reporting.port;
 
 import com.rentaherramientas.application.reporting.dto.ClienteFrecuenteResponse;
 import com.rentaherramientas.application.reporting.dto.HerramientaAlquiladaResponse;
+import com.rentaherramientas.application.reporting.dto.HerramientaDaniosResponse;
 import com.rentaherramientas.application.reporting.dto.IngresoMensualResponse;
 import com.rentaherramientas.application.reporting.dto.InventarioResponse;
 import com.rentaherramientas.application.reporting.dto.RentabilidadResponse;
@@ -41,4 +42,6 @@ public interface ConsultasReportes {
 
     /** Resumen de un proveedor: ingresos, pagos aprobados, reservas y herramientas por estado. */
     ResumenProveedorResponse resumenProveedor(Long proveedorId);
+
+    List<HerramientaDaniosResponse> herramientasConMasDanios(int limite);
 }

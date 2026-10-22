@@ -2,6 +2,7 @@ package com.rentaherramientas.application.reporting.usecase;
 
 import com.rentaherramientas.application.reporting.dto.ClienteFrecuenteResponse;
 import com.rentaherramientas.application.reporting.dto.HerramientaAlquiladaResponse;
+import com.rentaherramientas.application.reporting.dto.HerramientaDaniosResponse;
 import com.rentaherramientas.application.reporting.dto.IngresoMensualResponse;
 import com.rentaherramientas.application.reporting.dto.InventarioResponse;
 import com.rentaherramientas.application.reporting.dto.RentabilidadResponse;
@@ -36,4 +37,7 @@ public interface ConsultarReportesUseCase {
 
     /** Resumen de un proveedor. */
     ResumenProveedorResponse resumenProveedor(Long proveedorId);
+
+    List<HerramientaDaniosResponse> herramientasConMasDanios(int limite);
+
 }
