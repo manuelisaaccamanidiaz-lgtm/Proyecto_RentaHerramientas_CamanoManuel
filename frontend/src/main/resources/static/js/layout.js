@@ -1,9 +1,11 @@
 /**
  * Estructura común de todas las páginas: navbar responsiva (menú hamburguesa en
- * móvil) con los enlaces según el rol de la sesión, pie de página y región de
- * notificaciones. Cada página llama a montarLayout() al cargar.
+ * móvil) con los enlaces según el rol de la sesión, campana de notificaciones
+ * (con sesión), pie de página y región de toasts. Cada página llama a
+ * montarLayout() al cargar.
  */
 import { cerrarSesion, sesion } from './auth.js';
+import { campanaNotificaciones } from './notificaciones.js';
 import { confirmar, el, mostrarToastPendiente, textoEstado } from './ui.js';
 
 const MENUS = {
@@ -109,10 +111,12 @@ function navbar() {
   });
 
   const marca = el('a', { class: 'navbar__marca', href: '/' }, svg(LOGO), el('span', { text: 'RentaHerramientas' }));
+  // La campana va fuera del menú plegable para que el badge se vea también en móvil.
   return el('div', { class: 'contenedor' },
     el('div', { class: 'navbar__contenido' },
       el('div', { class: 'navbar__barra' }, marca, toggle),
-      menu));
+      menu,
+      actual ? campanaNotificaciones() : null));
 }
 
 function pie() {

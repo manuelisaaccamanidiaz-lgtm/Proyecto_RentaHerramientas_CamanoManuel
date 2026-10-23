@@ -4,6 +4,8 @@ import com.rentaherramientas.application.rental.dto.ReservaResponse;
 import com.rentaherramientas.application.rental.port.CatalogoHerramientas;
 import com.rentaherramientas.application.rental.port.ConsultaPagos;
 import com.rentaherramientas.application.shared.command.Solicitante;
+import com.rentaherramientas.application.shared.port.PublicadorEventos;
+import com.rentaherramientas.application.shared.port.UnidadDeTrabajo;
 import com.rentaherramientas.domain.rental.model.aggregate.Reserva;
 import com.rentaherramientas.domain.rental.port.repository.ReservaRepository;
 
@@ -19,15 +21,20 @@ public class RegistrarDevolucionService implements RegistrarDevolucionUseCase {
     private final ReservaRepository reservaRepository;
     private final CatalogoHerramientas catalogoHerramientas;
     private final ConsultaPagos consultaPagos;
+    private final UnidadDeTrabajo unidadDeTrabajo;
+    private final PublicadorEventos publicadorEventos;
     private final Clock clock;
 
     /** Recibe sus dependencias por constructor; el bean lo crea RentalBeansConfig. */
     public RegistrarDevolucionService(ReservaRepository reservaRepository,
                                       CatalogoHerramientas catalogoHerramientas, ConsultaPagos consultaPagos,
-                                      Clock clock) {
+                                      UnidadDeTrabajo unidadDeTrabajo,
+                                      PublicadorEventos publicadorEventos, Clock clock) {
         this.reservaRepository = reservaRepository;
         this.catalogoHerramientas = catalogoHerramientas;
         this.consultaPagos = consultaPagos;
+        this.unidadDeTrabajo = unidadDeTrabajo;
+        this.publicadorEventos = publicadorEventos;
         this.clock = clock;
     }
 
@@ -37,6 +44,10 @@ public class RegistrarDevolucionService implements RegistrarDevolucionUseCase {
         Reserva reserva = PropiedadReserva.cargarParaGestionar(reservaRepository, catalogoHerramientas,
                 reservaId, solicitante);
         reserva.registrarDevolucion(LocalDateTime.now(clock));
-        return ReservaResponse.desde(reservaRepository.guardar(reserva), consultaPagos.tienePagoAprobado(reservaId));
+        return unidadDeTrabajo.ejecutar(() -> {
+            Reserva guardada = reservaRepository.guardar(reserva);
+            publicadorEventos.publicar(reserva.extraerEventos());
+            return ReservaResponse.desde(guardada, consultaPagos.tienePagoAprobado(reservaId));
+        });
     }
 }

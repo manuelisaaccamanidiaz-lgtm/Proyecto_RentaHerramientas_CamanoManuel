@@ -6,7 +6,11 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.rentaherramientas.domain.rental.event.DanioReportado;
+import com.rentaherramientas.domain.rental.event.ReservaAceptada;
+import com.rentaherramientas.domain.rental.event.ReservaCancelada;
 import com.rentaherramientas.domain.rental.event.ReservaDevuelta;
+import com.rentaherramientas.domain.rental.event.ReservaEntregada;
+import com.rentaherramientas.domain.rental.event.ReservaRechazada;
 import com.rentaherramientas.domain.rental.event.ReservaSolicitada;
 import com.rentaherramientas.domain.rental.exception.DanioNoPermitidoException;
 import com.rentaherramientas.domain.rental.exception.FechaInvalidaException;
@@ -82,18 +86,22 @@ public final class Reserva extends AggregateRoot {
 
     // -------------------------------------------------------------- estados
 
-    /** El proveedor acepta la solicitud: PENDIENTE → ACEPTADA. */
+    /** El proveedor acepta la solicitud: PENDIENTE → ACEPTADA; emite ReservaAceptada. */
     public void aceptar() {
         cambiarEstado(EstadoReserva.ACEPTADA);
+        registrarEvento(new ReservaAceptada(id, herramientaId, clienteId, LocalDateTime.now()));
     }
 
-    /** El proveedor rechaza la solicitud: PENDIENTE → RECHAZADA. */
+    /** El proveedor rechaza la solicitud: PENDIENTE → RECHAZADA; emite ReservaRechazada. */
     public void rechazar() {
         cambiarEstado(EstadoReserva.RECHAZADA);
+        registrarEvento(new ReservaRechazada(id, herramientaId, clienteId, LocalDateTime.now()));
     }
 
+    /** El cliente cancela su reserva → CANCELADA; emite ReservaCancelada. */
     public void cancelar() {
         cambiarEstado(EstadoReserva.CANCELADA);
+        registrarEvento(new ReservaCancelada(id, herramientaId, clienteId, LocalDateTime.now()));
     }
 
     /** Marca la reserva como VENCIDA cuando pasó su fecha sin entregarse (lo hace la tarea programada). */
@@ -101,11 +109,12 @@ public final class Reserva extends AggregateRoot {
         cambiarEstado(EstadoReserva.VENCIDA);
     }
 
-    /** Registra que la herramienta se entregó al cliente: ACEPTADA → ENTREGADA. */
+    /** Registra que la herramienta se entregó al cliente: ACEPTADA → ENTREGADA; emite ReservaEntregada. */
     public void registrarEntrega(LocalDateTime fechaEntrega) {
         Validaciones.requerido(fechaEntrega, "fechaEntrega");
         cambiarEstado(EstadoReserva.ENTREGADA);
         this.fechaEntrega = fechaEntrega;
+        registrarEvento(new ReservaEntregada(id, herramientaId, clienteId, LocalDateTime.now()));
     }
 
     /**

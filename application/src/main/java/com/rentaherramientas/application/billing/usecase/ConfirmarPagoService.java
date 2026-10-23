@@ -7,6 +7,7 @@ import com.rentaherramientas.application.billing.port.ConsultaReservas;
 import com.rentaherramientas.application.billing.port.GeneradorNumeroFactura;
 import com.rentaherramientas.application.billing.port.ReservaFacturable;
 import com.rentaherramientas.application.shared.command.Solicitante;
+import com.rentaherramientas.application.shared.port.PublicadorEventos;
 import com.rentaherramientas.application.shared.port.UnidadDeTrabajo;
 import com.rentaherramientas.domain.billing.model.aggregate.Factura;
 import com.rentaherramientas.domain.billing.model.aggregate.Pago;
@@ -25,15 +26,18 @@ public class ConfirmarPagoService implements ConfirmarPagoUseCase {
     private final PagoRepository pagoRepository;
     private final ConsultaReservas consultaReservas;
     private final UnidadDeTrabajo unidadDeTrabajo;
+    private final PublicadorEventos publicadorEventos;
     private final EmisorFactura emisorFactura;
 
     /** Recibe sus dependencias por constructor (el bean lo crea BillingBeansConfig) y arma su EmisorFactura. */
     public ConfirmarPagoService(PagoRepository pagoRepository, FacturaRepository facturaRepository,
                                 ConsultaReservas consultaReservas, GeneradorNumeroFactura generadorNumeroFactura,
-                                UnidadDeTrabajo unidadDeTrabajo, Clock clock) {
+                                UnidadDeTrabajo unidadDeTrabajo,
+                                PublicadorEventos publicadorEventos, Clock clock) {
         this.pagoRepository = pagoRepository;
         this.consultaReservas = consultaReservas;
         this.unidadDeTrabajo = unidadDeTrabajo;
+        this.publicadorEventos = publicadorEventos;
         this.emisorFactura = new EmisorFactura(facturaRepository, generadorNumeroFactura, clock);
     }
 
@@ -57,6 +61,7 @@ public class ConfirmarPagoService implements ConfirmarPagoUseCase {
             pago.aprobar();
             Pago guardado = pagoRepository.guardar(pago);
             Factura factura = emisorFactura.emitir(guardado, reserva);
+            publicadorEventos.publicar(pago.extraerEventos());
             return PagoResponse.desde(guardado, factura);
         });
     }
