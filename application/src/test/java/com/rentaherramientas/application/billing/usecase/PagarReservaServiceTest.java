@@ -9,7 +9,9 @@ import com.rentaherramientas.application.billing.port.GeneradorNumeroFactura;
 import com.rentaherramientas.application.billing.port.ReservaFacturable;
 import com.rentaherramientas.application.shared.command.Solicitante;
 import com.rentaherramientas.application.shared.exception.AccesoDenegadoException;
+import com.rentaherramientas.application.shared.port.PublicadorEventos;
 import com.rentaherramientas.application.shared.port.UnidadDeTrabajo;
+import com.rentaherramientas.domain.billing.event.PagoAprobado;
 import com.rentaherramientas.domain.billing.exception.PagoDuplicadoException;
 import com.rentaherramientas.domain.billing.model.aggregate.Factura;
 import com.rentaherramientas.domain.billing.model.aggregate.LineaFactura;
@@ -22,6 +24,7 @@ import com.rentaherramientas.domain.billing.port.repository.CriteriosBusquedaPag
 import com.rentaherramientas.domain.billing.port.repository.FacturaRepository;
 import com.rentaherramientas.domain.billing.port.repository.PagoRepository;
 import com.rentaherramientas.domain.identity.model.valueobject.Rol;
+import com.rentaherramientas.domain.shared.event.DomainEvent;
 import com.rentaherramientas.domain.shared.model.Pagina;
 import com.rentaherramientas.domain.shared.model.SolicitudPagina;
 import com.rentaherramientas.domain.shared.model.valueobject.Dinero;
@@ -46,6 +49,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -55,7 +59,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Pruebas de PagarReservaService con dobles escritos a mano (sin Mockito ni
  * Spring): repositorios en memoria, catálogo de reservas en memoria, generador
  * de números secuencial, unidad de trabajo que registra qué se guardó dentro de
- * ella y un reloj fijo.
+ * ella, un publicador que acumula los eventos y un reloj fijo.
  */
 class PagarReservaServiceTest {
 
@@ -74,6 +78,7 @@ class PagarReservaServiceTest {
     private FacturaRepositoryEnMemoria facturas;
     private ConsultaReservasEnMemoria reservas;
     private UnidadDeTrabajoRegistrada unidadDeTrabajo;
+    private PublicadorEnMemoria publicador;
     private PagarReservaService service;
 
     @BeforeEach
@@ -83,8 +88,9 @@ class PagarReservaServiceTest {
         facturas = new FacturaRepositoryEnMemoria(unidadDeTrabajo);
         reservas = new ConsultaReservasEnMemoria();
         reservas.agregar(reserva(RESERVA_ID, "ACEPTADA"));
+        publicador = new PublicadorEnMemoria(unidadDeTrabajo, pagos);
         service = new PagarReservaService(pagos, facturas, reservas, new GeneradorSecuencial(), unidadDeTrabajo,
-                RELOJ);
+                publicador, RELOJ);
     }
 
     private static ReservaFacturable reserva(Long id, String estado) {
@@ -193,6 +199,29 @@ class PagarReservaServiceTest {
         assertTrue(facturas.guardadas.isEmpty());
     }
 
+    // -------------------------------------------------------------- eventos
+
+    @Test
+    @DisplayName("TARJETA: publica exactamente un PagoAprobado, tras guardar el pago y dentro de la unidad de trabajo")
+    void publicaPagoAprobado() {
+        pagar(MetodoPago.TARJETA);
+
+        assertEquals(1, publicador.publicados.size());
+        PagoAprobado evento = assertInstanceOf(PagoAprobado.class, publicador.publicados.getFirst());
+        assertEquals(RESERVA_ID, evento.reservaId());
+        assertEquals(PRECIO, evento.monto());
+        assertTrue(publicador.publicadoDentroDeUnidad, "se publica dentro de la unidad de trabajo");
+        assertTrue(publicador.pagoYaGuardado, "se publica después de guardar el pago");
+    }
+
+    @Test
+    @DisplayName("EFECTIVO: el pago queda PENDIENTE y no se publica ningún evento")
+    void efectivoNoPublica() {
+        pagar(MetodoPago.EFECTIVO);
+
+        assertTrue(publicador.publicados.isEmpty());
+    }
+
     // --------------------------------------------------------------- acceso
 
     @Test
@@ -238,6 +267,28 @@ class PagarReservaServiceTest {
             } finally {
                 dentro = false;
             }
+        }
+    }
+
+    /** Acumula los eventos y anota si llegaron dentro de la unidad y con el pago ya guardado. */
+    private static final class PublicadorEnMemoria implements PublicadorEventos {
+
+        private final UnidadDeTrabajoRegistrada unidad;
+        private final PagoRepositoryEnMemoria pagos;
+        private final List<DomainEvent> publicados = new ArrayList<>();
+        private boolean publicadoDentroDeUnidad;
+        private boolean pagoYaGuardado;
+
+        PublicadorEnMemoria(UnidadDeTrabajoRegistrada unidad, PagoRepositoryEnMemoria pagos) {
+            this.unidad = unidad;
+            this.pagos = pagos;
+        }
+
+        @Override
+        public void publicar(List<DomainEvent> eventos) {
+            publicadoDentroDeUnidad = unidad.dentro;
+            pagoYaGuardado = !pagos.guardados.isEmpty();
+            publicados.addAll(eventos);
         }
     }
 

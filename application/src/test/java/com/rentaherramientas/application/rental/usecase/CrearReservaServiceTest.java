@@ -8,13 +8,18 @@ import com.rentaherramientas.application.rental.port.CatalogoHerramientas;
 import com.rentaherramientas.application.rental.port.HerramientaReservable;
 import com.rentaherramientas.application.shared.command.Solicitante;
 import com.rentaherramientas.application.shared.exception.AccesoDenegadoException;
+import com.rentaherramientas.application.shared.port.PublicadorEventos;
+import com.rentaherramientas.application.shared.port.UnidadDeTrabajo;
 import com.rentaherramientas.domain.identity.model.valueobject.Rol;
+import com.rentaherramientas.domain.rental.event.ReservaAceptada;
+import com.rentaherramientas.domain.rental.event.ReservaSolicitada;
 import com.rentaherramientas.domain.rental.exception.ReservaSolapadaException;
 import com.rentaherramientas.domain.rental.model.aggregate.Reserva;
 import com.rentaherramientas.domain.rental.model.valueobject.EstadoReserva;
 import com.rentaherramientas.domain.rental.model.valueobject.RangoFechas;
 import com.rentaherramientas.domain.rental.port.repository.CriteriosBusquedaReserva;
 import com.rentaherramientas.domain.rental.port.repository.ReservaRepository;
+import com.rentaherramientas.domain.shared.event.DomainEvent;
 import com.rentaherramientas.domain.shared.exception.ValorInvalidoException;
 import com.rentaherramientas.domain.shared.model.Pagina;
 import com.rentaherramientas.domain.shared.model.valueobject.Dinero;
@@ -33,14 +38,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Pruebas del caso de uso con dobles escritos a mano (sin Mockito ni Spring):
- * un repositorio en memoria, un catálogo en memoria y un reloj fijo.
+ * un repositorio en memoria, un catálogo en memoria, un reloj fijo, una unidad
+ * de trabajo que solo ejecuta la lambda y un publicador que acumula los eventos.
+ * Repositorio, unidad y publicador anotan en un mismo registro qué pasó y en qué
+ * orden, para comprobar que los eventos se publican DESPUÉS de guardar.
  */
 class CrearReservaServiceTest {
 
@@ -55,16 +65,22 @@ class CrearReservaServiceTest {
     private static final Solicitante CLIENTE = new Solicitante(5L, Rol.CLIENTE);
     private static final Dinero TARIFA = Dinero.de(new BigDecimal("20000"), "COP");
 
+    private List<String> registro;
     private ReservaRepositoryEnMemoria reservas;
     private CatalogoEnMemoria catalogo;
+    private UnidadDeTrabajoRegistrada unidadDeTrabajo;
+    private PublicadorEnMemoria publicador;
     private CrearReservaService service;
 
     @BeforeEach
     void preparar() {
-        reservas = new ReservaRepositoryEnMemoria();
+        registro = new ArrayList<>();
+        reservas = new ReservaRepositoryEnMemoria(registro);
         catalogo = new CatalogoEnMemoria();
         catalogo.agregar(new HerramientaReservable(HERRAMIENTA_ID, PROVEEDOR_ID, TARIFA, true));
-        service = new CrearReservaService(reservas, catalogo, RELOJ);
+        unidadDeTrabajo = new UnidadDeTrabajoRegistrada(registro);
+        publicador = new PublicadorEnMemoria(registro);
+        service = new CrearReservaService(reservas, catalogo, unidadDeTrabajo, publicador, RELOJ);
     }
 
     private static CrearReservaCommand comando(LocalDate inicio, LocalDate fin) {
@@ -96,6 +112,50 @@ class CrearReservaServiceTest {
         assertEquals(new BigDecimal("84999.99"), respuesta.precioTotal());
         assertEquals(tarifaRebajada.multiplicar(3).monto(), respuesta.precioTotal());
     }
+
+    // -------------------------------------------------------------- eventos
+
+    @Test
+    @DisplayName("Publica exactamente un ReservaSolicitada, después de guardar y dentro de la unidad de trabajo")
+    void publicaReservaSolicitada() {
+        service.crear(comando(HOY, HOY.plusDays(2)));
+
+        assertEquals(1, publicador.publicados.size(), "un solo evento");
+        ReservaSolicitada evento = assertInstanceOf(ReservaSolicitada.class, publicador.publicados.getFirst());
+        assertEquals(HERRAMIENTA_ID, evento.herramientaId());
+        assertEquals(CLIENTE.id(), evento.clienteId());
+        assertEquals(new RangoFechas(HOY, HOY.plusDays(2)), evento.rango());
+        assertEquals(List.of("inicio unidad", "guardar", "publicar 1", "fin unidad"), registro);
+    }
+
+    @Test
+    @DisplayName("Si una regla falla no se guarda ni se publica nada")
+    void sinEventosSiFalla() {
+        assertThrows(ValorInvalidoException.class, () -> service.crear(comando(HOY.minusDays(1), HOY)));
+
+        assertTrue(publicador.publicados.isEmpty());
+        assertTrue(registro.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Aceptar publica solo ReservaAceptada, con el id de la reserva, después de guardar")
+    void aceptarPublicaReservaAceptada() {
+        Long reservaId = service.crear(comando(HOY, HOY.plusDays(2))).id();
+        publicador.publicados.clear();
+        registro.clear();
+        AceptarReservaService aceptar = new AceptarReservaService(reservas, catalogo, unidadDeTrabajo, publicador);
+
+        aceptar.aceptar(reservaId, new Solicitante(PROVEEDOR_ID, Rol.PROVEEDOR));
+
+        assertEquals(1, publicador.publicados.size(), "ReservaSolicitada no se vuelve a publicar");
+        ReservaAceptada evento = assertInstanceOf(ReservaAceptada.class, publicador.publicados.getFirst());
+        assertEquals(reservaId, evento.reservaId());
+        assertEquals(HERRAMIENTA_ID, evento.herramientaId());
+        assertEquals(CLIENTE.id(), evento.clienteId());
+        assertEquals(List.of("inicio unidad", "guardar", "publicar 1", "fin unidad"), registro);
+    }
+
+    // ---------------------------------------------------------------- reglas
 
     @Test
     @DisplayName("Fecha de inicio anterior a hoy → ValorInvalidoException (400) y no guarda nada")
@@ -157,18 +217,64 @@ class CrearReservaServiceTest {
 
     // ------------------------------------------------------- dobles de prueba
 
-    /** Repositorio en memoria: asigna ids y resuelve solapamientos con las reglas del dominio. */
+    /** Ejecuta la lambda tal cual y anota en el registro dónde empieza y termina. */
+    private static final class UnidadDeTrabajoRegistrada implements UnidadDeTrabajo {
+
+        private final List<String> registro;
+
+        UnidadDeTrabajoRegistrada(List<String> registro) {
+            this.registro = registro;
+        }
+
+        @Override
+        public <T> T ejecutar(Supplier<T> operacion) {
+            registro.add("inicio unidad");
+            T resultado = operacion.get();
+            registro.add("fin unidad");
+            return resultado;
+        }
+    }
+
+    /** Acumula los eventos publicados y anota cuántos llegaron en cada llamada. */
+    private static final class PublicadorEnMemoria implements PublicadorEventos {
+
+        private final List<String> registro;
+        private final List<DomainEvent> publicados = new ArrayList<>();
+
+        PublicadorEnMemoria(List<String> registro) {
+            this.registro = registro;
+        }
+
+        @Override
+        public void publicar(List<DomainEvent> eventos) {
+            registro.add("publicar " + eventos.size());
+            publicados.addAll(eventos);
+        }
+    }
+
+    /**
+     * Repositorio en memoria: asigna ids (o reemplaza si ya tiene) y resuelve solapamientos con las reglas
+     * del dominio. Como el adaptador real, devuelve una copia reconstruida, sin los eventos del original.
+     */
     private static final class ReservaRepositoryEnMemoria implements ReservaRepository {
 
+        private final List<String> registro;
         private final List<Reserva> guardadas = new ArrayList<>();
+
+        ReservaRepositoryEnMemoria(List<String> registro) {
+            this.registro = registro;
+        }
 
         @Override
         public Reserva guardar(Reserva reserva) {
-            Reserva conId = Reserva.reconstruir((long) guardadas.size() + 1, reserva.getHerramientaId(),
+            Long id = reserva.getId() != null ? reserva.getId() : (long) guardadas.size() + 1;
+            Reserva conId = Reserva.reconstruir(id, reserva.getHerramientaId(),
                     reserva.getClienteId(), reserva.getRango(), reserva.getEstado(), reserva.getPrecioTotal(),
                     reserva.getFechaEntrega(), reserva.getFechaDevolucion(), reserva.getCreadoEn(),
                     reserva.getReportes());
+            guardadas.removeIf(r -> r.getId().equals(id));
             guardadas.add(conId);
+            registro.add("guardar");
             return conId;
         }
 

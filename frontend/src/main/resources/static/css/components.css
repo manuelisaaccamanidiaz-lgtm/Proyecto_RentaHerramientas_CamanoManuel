@@ -169,6 +169,161 @@
   .navbar__nombre { max-width: 12rem; }
 }
 
+/* ============================================================ notificaciones */
+
+/* Móvil: la campana queda a la derecha de la barra, fuera del menú plegable. */
+.navbar__contenido:has(.campana) {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  column-gap: var(--esp-2);
+}
+
+.navbar__contenido:has(.campana) .navbar__menu { grid-column: 1 / -1; }
+
+.campana {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  min-height: var(--alto-navbar);
+}
+
+.campana__boton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radio-sm);
+  background: transparent;
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.campana__boton:hover,
+.campana__boton[aria-expanded="true"] { background: rgba(255, 255, 255, 0.1); }
+
+.campana__badge {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 var(--esp-1);
+  border-radius: var(--radio-pildora);
+  background: var(--color-primario);
+  color: var(--color-secundario);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-negrita);
+  line-height: 1.25rem;
+  text-align: center;
+}
+
+.campana__badge[hidden] { display: none; }
+
+.campana__panel {
+  position: absolute;
+  top: calc(100% - var(--esp-2));
+  right: 0;
+  z-index: 60;
+  width: min(24rem, calc(100vw - 2rem));
+  max-height: min(28rem, 70vh);
+  overflow-y: auto;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra-3);
+}
+
+.campana__panel[hidden] { display: none; }
+
+.campana__cabecera {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  padding: var(--esp-3) var(--esp-4);
+  border-bottom: 1px solid var(--color-borde);
+  background: var(--color-superficie);
+}
+
+.campana__marcar-todas {
+  border: 0;
+  background: none;
+  color: var(--color-primario-texto);
+  font: inherit;
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+}
+
+.campana__marcar-todas:hover:not(:disabled) { text-decoration: underline; }
+
+.campana__marcar-todas:disabled {
+  color: var(--color-texto-tenue);
+  cursor: default;
+}
+
+.campana__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.campana__item {
+  padding: var(--esp-3) var(--esp-4);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.campana__item:last-child { border-bottom: 0; }
+
+.campana__item--no-leida {
+  background: var(--color-primario-suave);
+  box-shadow: inset 3px 0 0 var(--color-primario);
+  cursor: pointer;
+}
+
+.campana__item--no-leida:hover,
+.campana__item--no-leida:focus-visible { background: #FFEDD5; }
+
+.campana__mensaje {
+  margin: 0;
+  font-size: var(--texto-sm);
+}
+
+.campana__item--no-leida .campana__mensaje { font-weight: var(--peso-semi); }
+
+.campana__fecha {
+  display: block;
+  margin-top: var(--esp-1);
+  font-size: var(--texto-xs);
+  color: var(--color-texto-suave);
+}
+
+.campana__vacio {
+  padding: var(--esp-4);
+  font-size: var(--texto-sm);
+  color: var(--color-texto-suave);
+  text-align: center;
+}
+
+/* Escritorio: la campana va al final de la barra, después del bloque de usuario. */
+@media (min-width: 1024px) {
+  .navbar__contenido:has(.campana) { display: flex; align-items: center; }
+
+  .campana { min-height: 0; }
+
+  .campana__panel { top: calc(100% + var(--esp-2)); }
+}
+
 /* =================================================================== footer */
 
 .pie {

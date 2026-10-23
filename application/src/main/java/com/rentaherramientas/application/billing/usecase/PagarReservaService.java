@@ -7,6 +7,7 @@ import com.rentaherramientas.application.billing.port.ConsultaReservas;
 import com.rentaherramientas.application.billing.port.GeneradorNumeroFactura;
 import com.rentaherramientas.application.billing.port.ReservaFacturable;
 import com.rentaherramientas.application.shared.exception.AccesoDenegadoException;
+import com.rentaherramientas.application.shared.port.PublicadorEventos;
 import com.rentaherramientas.application.shared.port.UnidadDeTrabajo;
 import com.rentaherramientas.domain.billing.exception.PagoDuplicadoException;
 import com.rentaherramientas.domain.billing.model.aggregate.Factura;
@@ -36,16 +37,19 @@ public class PagarReservaService implements PagarReservaUseCase {
     private final PagoRepository pagoRepository;
     private final ConsultaReservas consultaReservas;
     private final UnidadDeTrabajo unidadDeTrabajo;
+    private final PublicadorEventos publicadorEventos;
     private final EmisorFactura emisorFactura;
     private final Clock clock;
 
     /** Recibe sus dependencias por constructor (el bean lo crea BillingBeansConfig) y arma su EmisorFactura. */
     public PagarReservaService(PagoRepository pagoRepository, FacturaRepository facturaRepository,
                                ConsultaReservas consultaReservas, GeneradorNumeroFactura generadorNumeroFactura,
-                               UnidadDeTrabajo unidadDeTrabajo, Clock clock) {
+                               UnidadDeTrabajo unidadDeTrabajo,
+                               PublicadorEventos publicadorEventos, Clock clock) {
         this.pagoRepository = pagoRepository;
         this.consultaReservas = consultaReservas;
         this.unidadDeTrabajo = unidadDeTrabajo;
+        this.publicadorEventos = publicadorEventos;
         this.emisorFactura = new EmisorFactura(facturaRepository, generadorNumeroFactura, clock);
         this.clock = clock;
     }
@@ -81,6 +85,7 @@ public class PagarReservaService implements PagarReservaUseCase {
             }
             Pago guardado = pagoRepository.guardar(pago);
             Factura factura = guardado.estaAprobado() ? emisorFactura.emitir(guardado, reserva) : null;
+            publicadorEventos.publicar(pago.extraerEventos());
             return PagoResponse.desde(guardado, factura);
         });
     }

@@ -7,6 +7,8 @@ import com.rentaherramientas.application.rental.exception.HerramientaNoEncontrad
 import com.rentaherramientas.application.rental.port.CatalogoHerramientas;
 import com.rentaherramientas.application.rental.port.HerramientaReservable;
 import com.rentaherramientas.application.shared.exception.AccesoDenegadoException;
+import com.rentaherramientas.application.shared.port.PublicadorEventos;
+import com.rentaherramientas.application.shared.port.UnidadDeTrabajo;
 import com.rentaherramientas.domain.identity.model.valueobject.Rol;
 import com.rentaherramientas.domain.rental.exception.ReservaSolapadaException;
 import com.rentaherramientas.domain.rental.model.aggregate.Reserva;
@@ -25,6 +27,7 @@ import java.time.LocalDate;
  * (400) y que no se cruce con otra reserva activa (409). Esta última
  * comprobación tiene una carrera entre dos altas simultáneas; la cierra la
  * restricción de exclusión de la BD, que el repositorio traduce a la misma excepción.
+ * Guardar y publicar ReservaSolicitada van en la misma unidad de trabajo.
  */
 public class CrearReservaService implements CrearReservaUseCase {
 
@@ -32,13 +35,18 @@ public class CrearReservaService implements CrearReservaUseCase {
 
     private final ReservaRepository reservaRepository;
     private final CatalogoHerramientas catalogoHerramientas;
+    private final UnidadDeTrabajo unidadDeTrabajo;
+    private final PublicadorEventos publicadorEventos;
     private final Clock clock;
 
     /** Recibe sus dependencias por constructor; el bean lo crea RentalBeansConfig. */
     public CrearReservaService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas,
+                               UnidadDeTrabajo unidadDeTrabajo, PublicadorEventos publicadorEventos,
                                Clock clock) {
         this.reservaRepository = reservaRepository;
         this.catalogoHerramientas = catalogoHerramientas;
+        this.unidadDeTrabajo = unidadDeTrabajo;
+        this.publicadorEventos = publicadorEventos;
         this.clock = clock;
     }
 
@@ -75,7 +83,11 @@ public class CrearReservaService implements CrearReservaUseCase {
 
         Reserva reserva = Reserva.registrar(herramientaId, command.solicitante().id(), rango,
                 herramienta.tarifaDiaria());
-        // Una reserva recién creada no puede tener pagos: solo se pagan las ACEPTADAS.
-        return ReservaResponse.desde(reservaRepository.guardar(reserva), false);
+        return unidadDeTrabajo.ejecutar(() -> {
+            Reserva guardada = reservaRepository.guardar(reserva);
+            publicadorEventos.publicar(reserva.extraerEventos());
+            // Una reserva recién creada no puede tener pagos: solo se pagan las ACEPTADAS.
+            return ReservaResponse.desde(guardada, false);
+        });
     }
 }

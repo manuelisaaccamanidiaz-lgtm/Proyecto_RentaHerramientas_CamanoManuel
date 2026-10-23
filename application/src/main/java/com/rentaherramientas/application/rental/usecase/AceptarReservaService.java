@@ -3,6 +3,8 @@ package com.rentaherramientas.application.rental.usecase;
 import com.rentaherramientas.application.rental.dto.ReservaResponse;
 import com.rentaherramientas.application.rental.port.CatalogoHerramientas;
 import com.rentaherramientas.application.shared.command.Solicitante;
+import com.rentaherramientas.application.shared.port.PublicadorEventos;
+import com.rentaherramientas.application.shared.port.UnidadDeTrabajo;
 import com.rentaherramientas.domain.rental.model.aggregate.Reserva;
 import com.rentaherramientas.domain.rental.port.repository.ReservaRepository;
 
@@ -13,11 +15,16 @@ public class AceptarReservaService implements AceptarReservaUseCase {
 
     private final ReservaRepository reservaRepository;
     private final CatalogoHerramientas catalogoHerramientas;
+    private final UnidadDeTrabajo unidadDeTrabajo;
+    private final PublicadorEventos publicadorEventos;
 
     /** Recibe sus dependencias por constructor; el bean lo crea RentalBeansConfig. */
-    public AceptarReservaService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas) {
+    public AceptarReservaService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas,
+                                 UnidadDeTrabajo unidadDeTrabajo, PublicadorEventos publicadorEventos) {
         this.reservaRepository = reservaRepository;
         this.catalogoHerramientas = catalogoHerramientas;
+        this.unidadDeTrabajo = unidadDeTrabajo;
+        this.publicadorEventos = publicadorEventos;
     }
 
     /** El proveedor de la herramienta (o un ADMIN) acepta una reserva PENDIENTE. */
@@ -26,7 +33,11 @@ public class AceptarReservaService implements AceptarReservaUseCase {
         Reserva reserva = PropiedadReserva.cargarParaGestionar(reservaRepository, catalogoHerramientas,
                 reservaId, solicitante);
         reserva.aceptar();
-        // Venía de PENDIENTE, que no admite pagos: recién aceptada aún no está pagada.
-        return ReservaResponse.desde(reservaRepository.guardar(reserva), false);
+        return unidadDeTrabajo.ejecutar(() -> {
+            Reserva guardada = reservaRepository.guardar(reserva);
+            publicadorEventos.publicar(reserva.extraerEventos());
+            // Venía de PENDIENTE, que no admite pagos: recién aceptada aún no está pagada.
+            return ReservaResponse.desde(guardada, false);
+        });
     }
 }
