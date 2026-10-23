@@ -6,6 +6,7 @@ import { api, ApiError } from '../api.js';
 import { rutaInicio, sesion } from '../auth.js';
 import { crearCalendario } from '../calendario.js';
 import { categorias } from '../datos.js';
+import { botonFavorito, idsFavoritos } from '../favoritos.js';
 import { montarLayout } from '../layout.js';
 import {
   aIso, badgeEstado, conCarga, cop, el, estadoError, estadoVacio, fechaLarga, parametrosUrl, reemplazar,
@@ -153,7 +154,8 @@ async function cargar() {
     return;
   }
   try {
-    const [herramienta, listaCategorias] = await Promise.all([api.get(`/herramientas/${id}`), categorias().catch(() => [])]);
+    const [herramienta, listaCategorias, favoritos] = await Promise.all([
+      api.get(`/herramientas/${id}`), categorias().catch(() => []), idsFavoritos().catch(() => new Set())]);
     document.title = `${herramienta.nombre} · RentaHerramientas`;
     const nombresCategoria = listaCategorias.filter((c) => herramienta.categoriaIds.includes(c.id));
     const { tarjeta, cargarDisponibilidad } = panelReserva(herramienta);
@@ -177,7 +179,9 @@ async function cargar() {
         el('div', { class: 'pila' },
           el('div', { class: 'pila' },
             badgeEstado(herramienta.estado),
-            el('h1', { text: herramienta.nombre }),
+            el('div', { class: 'fila-entre' },
+              el('h1', { text: herramienta.nombre }),
+              botonFavorito(herramienta, { marcado: favoritos.has(herramienta.id), clase: 'btn-favorito--grande' })),
             precioHerramienta(herramienta, { style: 'font-size:2rem' })),
           tarjeta)));
 

@@ -13,6 +13,7 @@ const MENUS = {
   ],
   CLIENTE: [
     ['Catálogo', '/catalogo.html'],
+    ['Mis favoritos', '/cliente/favoritos.html'],
     ['Mis reservas', '/cliente/reservas.html'],
     ['Mis pagos', '/cliente/pagos.html'],
     ['Mi perfil', '/cliente/perfil.html'],

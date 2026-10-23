@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +45,19 @@ public class HerramientaRepositoryAdapter implements HerramientaRepository {
     @Transactional(readOnly = true)
     public Optional<Herramienta> buscarPorId(Long id) {
         return jpaRepository.findById(id).map(mapper::toDomain);
+    }
+
+    /** Varias herramientas por id, con las colecciones cargadas en lote (mismo truco que buscar). */
+    @Override
+    @Transactional(readOnly = true)
+    public List<Herramienta> buscarPorIds(Collection<Long> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        List<HerramientaEntity> entidades = jpaRepository.findAllById(ids);
+        jpaRepository.cargarConImagenes(ids);
+        jpaRepository.cargarConCategorias(ids);
+        return entidades.stream().map(mapper::toDomain).toList();
     }
 
     /** Todas las herramientas de un proveedor. */
