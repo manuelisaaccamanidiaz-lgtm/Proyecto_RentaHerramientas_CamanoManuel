@@ -2,6 +2,8 @@ package com.rentaherramientas.infrastructure.shared.adapters.in.rest;
 
 import com.rentaherramientas.application.identity.exception.CredencialesInvalidasException;
 import com.rentaherramientas.application.identity.exception.EmailYaRegistradoException;
+import com.rentaherramientas.application.identity.exception.PasswordActualIncorrectaException;
+import com.rentaherramientas.application.identity.exception.PasswordSinCambioException;
 import com.rentaherramientas.application.identity.exception.RolNoPermitidoException;
 import com.rentaherramientas.application.shared.exception.AccesoDenegadoException;
 import com.rentaherramientas.application.shared.exception.ConflictoException;
@@ -94,6 +96,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(RolNoPermitidoException.class)
     ProblemDetail rolNoPermitido(RolNoPermitidoException ex) {
         return problema(HttpStatus.BAD_REQUEST, "Rol no permitido", ex.getMessage());
+    }
+
+    /**
+     * 400: al cambiar la contraseña, la actual no coincide o la nueva es igual a la actual.
+     * No es 401: el JWT es válido y el frontend cerraría la sesión ante un 401.
+     */
+    @ExceptionHandler({PasswordActualIncorrectaException.class, PasswordSinCambioException.class})
+    ProblemDetail cambioPasswordInvalido(RuntimeException ex) {
+        return problema(HttpStatus.BAD_REQUEST, "Contraseña no válida", ex.getMessage());
     }
 
     /** 401: email o contraseña incorrectos en el login. */

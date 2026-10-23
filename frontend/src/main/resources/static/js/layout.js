@@ -23,6 +23,7 @@ const MENUS = {
     ['Solicitudes', '/proveedor/solicitudes.html'],
     ['Facturas', '/proveedor/facturas.html'],
     ['Catálogo', '/catalogo.html'],
+    ['Mi cuenta', '/cuenta.html'],
   ],
   ADMIN: [
     ['Panel', '/admin/panel.html'],
@@ -31,6 +32,7 @@ const MENUS = {
     ['Herramientas', '/admin/herramientas.html'],
     ['Reservas', '/admin/reservas.html'],
     ['Pagos', '/admin/pagos.html'],
+    ['Mi cuenta', '/cuenta.html'],
   ],
 };
 

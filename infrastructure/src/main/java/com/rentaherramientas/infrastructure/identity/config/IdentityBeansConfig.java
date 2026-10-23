@@ -9,6 +9,8 @@ import com.rentaherramientas.application.identity.usecase.AutenticarUsuarioServi
 import com.rentaherramientas.application.identity.usecase.AutenticarUsuarioUseCase;
 import com.rentaherramientas.application.identity.usecase.CambiarEstadoUsuarioService;
 import com.rentaherramientas.application.identity.usecase.CambiarEstadoUsuarioUseCase;
+import com.rentaherramientas.application.identity.usecase.CambiarPasswordService;
+import com.rentaherramientas.application.identity.usecase.CambiarPasswordUseCase;
 import com.rentaherramientas.application.identity.usecase.CambiarRolUsuarioService;
 import com.rentaherramientas.application.identity.usecase.CambiarRolUsuarioUseCase;
 import com.rentaherramientas.application.identity.usecase.ConsultarUsuarioService;
@@ -72,5 +74,12 @@ public class IdentityBeansConfig {
     CambiarRolUsuarioUseCase cambiarRolUsuarioUseCase(UsuarioRepository usuarioRepository,
                                                       ActividadUsuario actividadUsuario) {
         return new CambiarRolUsuarioService(usuarioRepository, actividadUsuario);
+    }
+
+    /** Bean del caso de uso de cambio de contraseña propia. */
+    @Bean
+    CambiarPasswordUseCase cambiarPasswordUseCase(UsuarioRepository usuarioRepository,
+                                                  CodificadorPassword codificadorPassword) {
+        return new CambiarPasswordService(usuarioRepository, codificadorPassword);
     }
 }

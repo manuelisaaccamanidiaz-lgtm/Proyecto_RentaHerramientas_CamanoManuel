@@ -1,6 +1,7 @@
-/** Cliente · Mi perfil: nombre y datos de contacto (documento, teléfono, dirección). */
+/** Cliente · Mi perfil: nombre, datos de contacto (documento, teléfono, dirección) y contraseña. */
 import { api } from '../api.js';
 import { requerirSesion } from '../auth.js';
+import { seccionCambiarPassword } from '../cambiar-password.js';
 import { montarLayout } from '../layout.js';
 import {
   badgeEstado, campo, conCarga, datos, datosFormulario, el, estadoError, limpiarErrores, mostrarErrores, reemplazar,
@@ -61,5 +62,6 @@ function pintar(contenedor, usuario) {
       el('p', { class: 'texto-sm texto-suave', text: 'El correo y el tipo de cuenta no se pueden cambiar.' })),
     el('section', { class: 'tarjeta pila', 'aria-labelledby': 'titulo-datos' },
       el('h2', { id: 'titulo-datos', text: 'Datos personales' }),
-      form));
+      form),
+    seccionCambiarPassword());
 }

@@ -2,6 +2,7 @@ package com.rentaherramientas.domain.identity.model.aggregate;
 
 import com.rentaherramientas.domain.identity.exception.DatosRolInconsistentesException;
 import com.rentaherramientas.domain.identity.exception.RolSinCambioException;
+import com.rentaherramientas.domain.identity.exception.UsuarioInactivoException;
 import com.rentaherramientas.domain.identity.model.valueobject.DatosCliente;
 import com.rentaherramientas.domain.identity.model.valueobject.DatosProveedor;
 import com.rentaherramientas.domain.identity.model.valueobject.Email;
@@ -17,8 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Pruebas del cambio de rol del agregado Usuario: reemplazo de los datos de
- * subtipo y coherencia rol ↔ datos.
+ * Pruebas del agregado Usuario: cambio de rol (reemplazo de los datos de
+ * subtipo y coherencia rol ↔ datos) y cambio de contraseña.
  */
 class UsuarioTest {
 
@@ -72,5 +73,27 @@ class UsuarioTest {
         Usuario usuario = cliente();
 
         assertThrows(RolSinCambioException.class, () -> usuario.cambiarRol(Rol.CLIENTE, null, DATOS_CLIENTE));
+    }
+
+    @Test
+    @DisplayName("cambiarPassword en un usuario activo reemplaza el hash")
+    void cambiarPasswordActivo() {
+        Usuario usuario = cliente();
+        PasswordHash nuevoHash = new PasswordHash("$2a$10$nuevoHash");
+
+        usuario.cambiarPassword(nuevoHash);
+
+        assertEquals(nuevoHash, usuario.getPasswordHash());
+    }
+
+    @Test
+    @DisplayName("cambiarPassword en un usuario inactivo → UsuarioInactivoException y conserva el hash")
+    void cambiarPasswordInactivo() {
+        Usuario usuario = cliente();
+        usuario.desactivar();
+
+        assertThrows(UsuarioInactivoException.class,
+                () -> usuario.cambiarPassword(new PasswordHash("$2a$10$nuevoHash")));
+        assertEquals(new PasswordHash("$2a$10$hash"), usuario.getPasswordHash());
     }
 }
