@@ -85,6 +85,19 @@ class CrearReservaServiceTest {
     }
 
     @Test
+    @DisplayName("Con descuento: el catálogo ya entrega la tarifa rebajada y precio = tarifa con descuento × días")
+    void tarifaConDescuento() {
+        // 33333.33 con 15 % = 28333.33: es lo que entrega el adaptador anticorrupción; rental no ve el porcentaje.
+        Dinero tarifaRebajada = Dinero.de(new BigDecimal("33333.33"), "COP").aplicarDescuento(15);
+        catalogo.agregar(new HerramientaReservable(HERRAMIENTA_ID, PROVEEDOR_ID, tarifaRebajada, true));
+
+        ReservaResponse respuesta = service.crear(comando(HOY, HOY.plusDays(2)));
+
+        assertEquals(new BigDecimal("84999.99"), respuesta.precioTotal());
+        assertEquals(tarifaRebajada.multiplicar(3).monto(), respuesta.precioTotal());
+    }
+
+    @Test
     @DisplayName("Fecha de inicio anterior a hoy → ValorInvalidoException (400) y no guarda nada")
     void fechaPasada() {
         assertThrows(ValorInvalidoException.class, () -> service.crear(comando(HOY.minusDays(1), HOY.plusDays(1))));

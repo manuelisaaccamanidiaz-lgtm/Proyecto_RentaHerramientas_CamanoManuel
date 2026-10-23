@@ -9,6 +9,7 @@ import com.rentaherramientas.domain.catalog.exception.TransicionEstadoInvalidaEx
 import com.rentaherramientas.domain.catalog.model.valueobject.EstadoHerramienta;
 import com.rentaherramientas.domain.catalog.model.valueobject.UrlImagen;
 import com.rentaherramientas.domain.shared.model.Validaciones;
+import com.rentaherramientas.domain.shared.exception.ValorInvalidoException;
 import com.rentaherramientas.domain.shared.model.aggregate.AggregateRoot;
 import com.rentaherramientas.domain.shared.model.valueobject.Dinero;
 
@@ -38,6 +39,7 @@ public final class Herramienta extends AggregateRoot {
     private String descripcion;
     private String marca;
     private Dinero tarifaDiaria;
+    private Integer descuentoPorcentaje;
     private EstadoHerramienta estado;
     private final List<ImagenHerramienta> imagenes;
     private final Set<Long> categoriaIds;
@@ -51,13 +53,15 @@ public final class Herramienta extends AggregateRoot {
      *     repetidas y conserva el orden de inserción.
      */
     private Herramienta(Long id, Long proveedorId, String nombre, String descripcion, String marca, Dinero tarifaDiaria,
-                        EstadoHerramienta estado, List<ImagenHerramienta> imagenes, Set<Long> categoriaIds) {
+                        Integer descuentoPorcentaje, EstadoHerramienta estado, List<ImagenHerramienta> imagenes,
+                        Set<Long> categoriaIds) {
         this.id = id;
         this.proveedorId = Validaciones.requerido(proveedorId, "proveedorId");
         this.nombre = Validaciones.textoRequerido(nombre, "nombre", NOMBRE_MAX);
         this.descripcion = Validaciones.textoOpcional(descripcion, "descripcion", DESCRIPCION_MAX);
         this.marca = Validaciones.textoOpcional(marca, marca, MARCA_MAX);
         this.tarifaDiaria = validarTarifa(tarifaDiaria);
+        this.descuentoPorcentaje = validarDescuento(descuentoPorcentaje);
         this.estado = Validaciones.requerido(estado, "estado");
         this.imagenes = new ArrayList<>();
         Validaciones.requerido(imagenes, "imagenes").forEach(this::anexarImagen);
@@ -67,19 +71,20 @@ public final class Herramienta extends AggregateRoot {
         }
     }
 
-    /** Alta de una nueva unidad: siempre empieza DISPONIBLE y sin imágenes. */
-    public static Herramienta registrar(Long proveedorId, String nombre, String descripcion, String marca, 
-                                        Dinero tarifaDiaria, Set<Long> categoriaIds) {
-        return new Herramienta(null, proveedorId, nombre, descripcion, marca, tarifaDiaria,
+    /** Alta de una nueva unidad: siempre empieza DISPONIBLE y sin imágenes. descuentoPorcentaje null = sin descuento. */
+    public static Herramienta registrar(Long proveedorId, String nombre, String descripcion, String marca,
+                                        Dinero tarifaDiaria, Integer descuentoPorcentaje, Set<Long> categoriaIds) {
+        return new Herramienta(null, proveedorId, nombre, descripcion, marca, tarifaDiaria, descuentoPorcentaje,
                 EstadoHerramienta.DISPONIBLE, List.of(), categoriaIds);
     }
 
     /** Reconstruye una herramienta leída de la base de datos; no emite eventos. */
     public static Herramienta reconstruir(Long id, Long proveedorId, String nombre, String descripcion, String marca,
-                                          Dinero tarifaDiaria, EstadoHerramienta estado,
-                                          List<ImagenHerramienta> imagenes, Set<Long> categoriaIds) {
+                                          Dinero tarifaDiaria, Integer descuentoPorcentaje,
+                                          EstadoHerramienta estado, List<ImagenHerramienta> imagenes,
+                                          Set<Long> categoriaIds) {
         return new Herramienta(Validaciones.requerido(id, "id"), proveedorId, nombre, descripcion, marca,
-                tarifaDiaria, estado, imagenes, categoriaIds);
+                tarifaDiaria, descuentoPorcentaje, estado, imagenes, categoriaIds);
     }
 
     // ---------------------------------------------------------------- datos
@@ -94,6 +99,11 @@ public final class Herramienta extends AggregateRoot {
     /** Cambia la tarifa diaria; debe ser mayor que cero. */
     public void actualizarTarifa(Dinero nuevaTarifa) {
         this.tarifaDiaria = validarTarifa(nuevaTarifa);
+    }
+
+    /** Define o quita (null) el descuento porcentual; solo aplica a reservas nuevas. */
+    public void definirDescuento(Integer porcentaje) {
+        this.descuentoPorcentaje = validarDescuento(porcentaje);
     }
 
     // ------------------------------------------------------------- imágenes
@@ -193,6 +203,16 @@ public final class Herramienta extends AggregateRoot {
         return tarifa;
     }
 
+    /** Acepta null (sin descuento) o un entero entre 1 y 90. */
+    private static Integer validarDescuento(Integer porcentaje) {
+        if (porcentaje != null
+                && (porcentaje < Dinero.DESCUENTO_MINIMO || porcentaje > Dinero.DESCUENTO_MAXIMO)) {
+            throw new ValorInvalidoException("El descuento debe estar entre " + Dinero.DESCUENTO_MINIMO + " y "
+                    + Dinero.DESCUENTO_MAXIMO + " %");
+        }
+        return porcentaje;
+    }
+
     // -------------------------------------------------------------- lectura
 
     /** Indica si el usuario dado es el proveedor dueño de la herramienta. */
@@ -223,6 +243,16 @@ public final class Herramienta extends AggregateRoot {
     /** Precio de alquiler por día. */
     public Dinero getTarifaDiaria() {
         return tarifaDiaria;
+    }
+
+    /** Descuento porcentual vigente; null si no tiene. */
+    public Integer getDescuentoPorcentaje() {
+        return descuentoPorcentaje;
+    }
+
+    /** Tarifa diaria que paga una reserva nueva: la tarifa con el descuento aplicado, o la tarifa tal cual. */
+    public Dinero tarifaConDescuento() {
+        return descuentoPorcentaje == null ? tarifaDiaria : tarifaDiaria.aplicarDescuento(descuentoPorcentaje);
     }
 
     /** Estado actual de la herramienta. */

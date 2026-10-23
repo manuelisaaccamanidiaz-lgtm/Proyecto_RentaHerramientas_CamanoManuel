@@ -29,7 +29,7 @@ public class ActualizarHerramientaService implements ActualizarHerramientaUseCas
     }
 
     /**
-     * Actualiza datos, tarifa y categorías de una herramienta del proveedor (o de cualquiera si es ADMIN).
+     * Actualiza datos, tarifa, descuento y categorías de una herramienta del proveedor (o de cualquiera si es ADMIN).
      * Primero añade las categorías nuevas y después quita las sobrantes, para que la herramienta
      * nunca se quede sin categoría a mitad del proceso.
      */
@@ -49,6 +49,7 @@ public class ActualizarHerramientaService implements ActualizarHerramientaUseCas
         herramienta.actualizarDatos(command.nombre(), command.descripcion(), command.marca());
         herramienta.actualizarTarifa(Dinero.de(command.tarifaDiaria(),
                 command.moneda() == null ? Dinero.MONEDA_POR_DEFECTO : command.moneda()));
+        herramienta.definirDescuento(command.descuentoPorcentaje());
         nuevasCategorias.forEach(herramienta::asignarCategoria);
         herramienta.getCategoriaIds().stream()
                 .filter(actual -> !nuevasCategorias.contains(actual))

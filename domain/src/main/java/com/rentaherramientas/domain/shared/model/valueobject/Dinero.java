@@ -23,6 +23,9 @@ public record Dinero(BigDecimal monto, String moneda) {
     private static final Pattern ISO_4217 = Pattern.compile("^[A-Z]{3}$");
     private static final int PRECISION_MAXIMA = 12;
     private static final int ESCALA = 2;
+    public static final int DESCUENTO_MINIMO = 1;
+    public static final int DESCUENTO_MAXIMO = 90;
+    private static final BigDecimal CIEN = BigDecimal.valueOf(100);
 
     /**
      * Constructor compacto: valida moneda ISO 4217, signo, decimales y precisión, y fija la escala a 2.
@@ -85,5 +88,21 @@ public record Dinero(BigDecimal monto, String moneda) {
             throw new ValorInvalidoException("El factor de multiplicación no puede ser negativo");
         }
         return new Dinero(monto.multiply(BigDecimal.valueOf(factor)), moneda);
+    }
+
+    /**
+     * Devuelve el monto con un descuento porcentual (1 a 90) aplicado, redondeado a centavos con HALF_UP.
+     *
+     * Nota: el redondeo se hace aquí, ANTES de construir el Dinero, porque el constructor usa
+     *   `RoundingMode.UNNECESSARY` y fallaría con más de 2 decimales (33333.33 × 0.85 = 28333.3305).
+     */
+    public Dinero aplicarDescuento(int porcentaje) {
+        if (porcentaje < DESCUENTO_MINIMO || porcentaje > DESCUENTO_MAXIMO) {
+            throw new ValorInvalidoException("El descuento debe estar entre " + DESCUENTO_MINIMO + " y "
+                    + DESCUENTO_MAXIMO + " %");
+        }
+        BigDecimal conDescuento = monto.multiply(BigDecimal.valueOf(100L - porcentaje))
+                .divide(CIEN, ESCALA, RoundingMode.HALF_UP);
+        return new Dinero(conDescuento, moneda);
     }
 }

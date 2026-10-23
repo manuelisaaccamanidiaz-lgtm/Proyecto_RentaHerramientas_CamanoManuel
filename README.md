@@ -299,6 +299,7 @@ Generado con `@mermaid-js/mermaid-cli` desde el bloque Mermaid de
 | `V4__billing` | `pagos`, `facturas`, `factura_lineas` |
 | `V5__reservas_sin_solapamiento` | Restricción `EXCLUDE USING gist` (sin rangos cruzados por herramienta) |
 | `V6__secuencia_facturas` | Secuencia para la numeración de facturas |
+| `V9__descuento_herramientas` | `herramientas.descuento_porcentaje` (opcional, `CHECK` 1–90) |
 | `V100__datos_semilla` *(solo dev)* | 1 admin, 20 proveedores, 25 clientes, 20 categorías, 40 herramientas, reservas, pagos y facturas |
 
 ### Normalización hasta 4FN ✅
@@ -546,7 +547,7 @@ cliente) o herramientas (como proveedor).
 | GET | `/api/herramientas?categoriaId=&estado=&texto=&proveedorId=&page=&size=` | 🌍 | Catálogo con filtros y paginación | K2 |
 | GET | `/api/herramientas/{id}` | 🌍 | Detalle de una herramienta | K2 |
 | POST | `/api/herramientas` | P | Registra una herramienta del proveedor autenticado → **201** | K2 |
-| PUT | `/api/herramientas/{id}` | P (dueño), A | Actualiza datos, tarifa y categorías | K2 |
+| PUT | `/api/herramientas/{id}` | P (dueño), A | Actualiza datos, tarifa, descuento y categorías | K2 |
 | PATCH | `/api/herramientas/{id}/estado` | P (dueño), A | Cambia el estado operativo | K3 |
 | DELETE | `/api/herramientas/{id}` | P (dueño), A | Baja lógica (queda `INACTIVA`) → **204** | — |
 | GET | `/api/proveedor/herramientas?categoriaId=&estado=&texto=&page=&size=` | P | Inventario propio, incluidas las inactivas | K2 |
@@ -563,17 +564,24 @@ cliente) o herramientas (como proveedor).
 { "id": 5, "nombre": "Andamios y escaleras", "descripcion": "Andamios certificados y escaleras para trabajo en alturas." }
 ```
 
-**K2 · Herramienta** — request (`moneda` es opcional, por defecto `COP`) y response:
+**K2 · Herramienta** — request (`moneda` es opcional, por defecto `COP`; `descuentoPorcentaje` es
+opcional, entero de 1 a 90, y `null` o ausente significa sin descuento) y response:
 
 ```json
 {
   "nombre": "Taladro percutor Bosch GSB 13 RE 650W",
   "descripcion": "Taladro percutor con mandril de 13 mm, velocidad variable y reversa.",
+  "marca": "Bosch",
   "tarifaDiaria": 25000,
   "moneda": "COP",
+  "descuentoPorcentaje": 10,
   "categoriaIds": [1, 13]
 }
 ```
+
+El descuento se aplica a la **tarifa diaria** (redondeada a centavos, `HALF_UP`) y solo a las
+reservas **nuevas**: `precioTotal = tarifaConDescuento × días`. Las reservas ya creadas conservan
+su precio, porque `reservas.precio_total` es una foto del momento de reservar.
 
 ```json
 {
@@ -581,7 +589,10 @@ cliente) o herramientas (como proveedor).
   "proveedorId": 2,
   "nombre": "Taladro percutor Bosch GSB 13 RE 650W",
   "descripcion": "Taladro percutor con mandril de 13 mm, velocidad variable y reversa.",
+  "marca": "Bosch",
   "tarifaDiaria": 25000,
+  "descuentoPorcentaje": 10,
+  "tarifaConDescuento": 22500.00,
   "moneda": "COP",
   "estado": "DISPONIBLE",
   "categoriaIds": [1, 13],

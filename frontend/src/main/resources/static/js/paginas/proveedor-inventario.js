@@ -35,7 +35,10 @@ function iniciar() {
     pintar: (respuesta) => tabla([
       { titulo: 'Imagen', celda: (h) => imagenHerramienta(h, 'miniatura-tabla') },
       { titulo: 'Herramienta', celda: (h) => el('a', { href: `/herramienta.html?id=${h.id}`, text: h.nombre }) },
-      { titulo: 'Tarifa', clase: 'num', celda: (h) => `${cop(h.tarifaDiaria)}/día` },
+      {
+        titulo: 'Tarifa', clase: 'num',
+        celda: (h) => (h.descuentoPorcentaje ? `${cop(h.tarifaDiaria)}/día · -${h.descuentoPorcentaje} %` : `${cop(h.tarifaDiaria)}/día`),
+      },
       { titulo: 'Estado', celda: (h) => badgeEstado(h.estado) },
       { titulo: 'Imágenes', clase: 'num', celda: (h) => `${h.imagenes.length}/${MAX_IMAGENES}` },
       { titulo: 'Acciones', celda: (h) => acciones(h) },
@@ -68,6 +71,11 @@ function iniciar() {
         etiqueta: 'Tarifa diaria (COP)', nombre: 'tarifaDiaria', tipo: 'number', valor: herramienta.tarifaDiaria, requerido: true,
         ayuda: 'Valor por día de alquiler, en pesos.', atributos: { min: 1, step: 1, inputmode: 'numeric' },
       }),
+      campo({
+        etiqueta: 'Descuento (%)', nombre: 'descuentoPorcentaje', tipo: 'number', valor: herramienta.descuentoPorcentaje,
+        ayuda: 'Opcional, de 1 a 90. Déjalo vacío para no aplicar descuento. Solo afecta a las reservas nuevas.',
+        atributos: { min: 1, max: 90, step: 1, inputmode: 'numeric' },
+      }),
       el('fieldset', { class: 'campo' },
         el('legend', {}, 'Categorías', el('span', { class: 'requerido', 'aria-hidden': 'true', text: ' *' })),
         el('div', { class: 'grupo-campos grupo-campos--2' }, lista.map((categoria) => el('label', { class: 'fila texto-sm' },
@@ -90,6 +98,8 @@ function iniciar() {
       descripcion: valores.descripcion,
       marca:valores.marca,
       tarifaDiaria: Number(valores.tarifaDiaria),
+      // Vacío llega como null: se envía null (sin descuento), nunca 0 ni "".
+      descuentoPorcentaje: valores.descuentoPorcentaje == null ? null : Number(valores.descuentoPorcentaje),
       categoriaIds: valores.categoriaIds.map(Number),
     };
   }

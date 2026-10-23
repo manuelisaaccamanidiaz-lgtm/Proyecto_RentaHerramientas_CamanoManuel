@@ -8,9 +8,9 @@ import java.util.Set;
 /**
  * Reemplaza datos, tarifa y categorías de una herramienta. categoriaIds es el
  * conjunto final: las que no estén se quitan y las nuevas se asignan.
- * moneda null = moneda por defecto (COP).
+ * moneda null = moneda por defecto (COP); descuentoPorcentaje null = sin descuento.
  */
 public record ActualizarHerramientaCommand(Long herramientaId, Solicitante solicitante, String nombre,
                                            String descripcion, String marca, BigDecimal tarifaDiaria, String moneda,
-                                           Set<Long> categoriaIds) {
+                                           Integer descuentoPorcentaje, Set<Long> categoriaIds) {
 }

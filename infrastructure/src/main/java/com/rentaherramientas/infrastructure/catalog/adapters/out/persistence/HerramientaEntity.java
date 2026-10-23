@@ -63,6 +63,10 @@ public class HerramientaEntity {
     @Column(name = "tarifa_diaria", nullable = false, precision = 12, scale = 2)
     private BigDecimal tarifaDiaria;
 
+    /** Nullable: null = sin descuento. El CHECK 1..90 lo pone la migración V9. */
+    @Column(name = "descuento_porcentaje")
+    private Integer descuentoPorcentaje;
+
     /** CHAR(3) en PostgreSQL: se declara el tipo JDBC para que ddl-auto=validate lo acepte. */
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "moneda", nullable = false, length = 3)
@@ -89,14 +93,15 @@ public class HerramientaEntity {
 
     /** Crea la entidad a partir del agregado; un id null indica INSERT. */
     public HerramientaEntity(Long id, Long proveedorId, String nombre, String descripcion, String marca,
-                             BigDecimal tarifaDiaria, String moneda, EstadoHerramienta estado,
-                             Set<Long> categoriaIds) {
+                             BigDecimal tarifaDiaria, Integer descuentoPorcentaje, String moneda,
+                             EstadoHerramienta estado, Set<Long> categoriaIds) {
         this.id = id;
         this.proveedorId = proveedorId;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.marca = marca;
         this.tarifaDiaria = tarifaDiaria;
+        this.descuentoPorcentaje = descuentoPorcentaje;
         this.moneda = moneda;
         this.estado = estado;
         this.categoriaIds = new HashSet<>(categoriaIds);
@@ -135,6 +140,11 @@ public class HerramientaEntity {
     /** Monto de la tarifa diaria. */
     public BigDecimal getTarifaDiaria() {
         return tarifaDiaria;
+    }
+
+    /** Descuento porcentual; null si no tiene. */
+    public Integer getDescuentoPorcentaje() {
+        return descuentoPorcentaje;
     }
 
     /** Moneda de la tarifa (ISO 4217). */

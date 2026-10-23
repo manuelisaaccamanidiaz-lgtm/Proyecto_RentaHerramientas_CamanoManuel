@@ -718,6 +718,21 @@ export function imagenHerramienta(herramienta, clase = 'herramienta__imagen') {
   return el('img', { class: clase, src: url, alt: herramienta.nombre, loading: 'lazy', width: 400, height: 300 });
 }
 
+/**
+ * Precio por día. Con descuento: tarifa original tachada, tarifa con descuento y badge "-10 %";
+ * sin descuento, solo la tarifa. `props` se aplica al precio vigente (p. ej. un tamaño mayor en la ficha).
+ */
+export function precioHerramienta(herramienta, props = {}) {
+  const vigente = (monto) => el('p', { ...props, class: 'precio' }, cop(monto), el('small', { text: ' / día' }));
+  if (!herramienta.descuentoPorcentaje) {
+    return vigente(herramienta.tarifaDiaria);
+  }
+  return el('div', { class: 'precio-descuento' },
+    el('s', { class: 'precio__anterior' }, el('span', { class: 'sr-only', text: 'Antes: ' }), cop(herramienta.tarifaDiaria)),
+    vigente(herramienta.tarifaConDescuento),
+    badge(`-${herramienta.descuentoPorcentaje} %`, 'exito'));
+}
+
 /** Tarjeta de herramienta del catálogo: imagen, nombre, precio en COP y estado. */
 export function tarjetaHerramienta(herramienta) {
   return el('article', { class: 'tarjeta herramienta' },
@@ -732,7 +747,7 @@ export function tarjetaHerramienta(herramienta) {
         ? el('p', { class: 'texto-suave texto-sm', text: recortar(herramienta.marca, 90) })
         : null,
       el('div', { class: 'herramienta__pie' },
-        el('p', { class: 'precio' }, cop(herramienta.tarifaDiaria), el('small', { text: ' / día' })),
+        precioHerramienta(herramienta),
         badgeEstado(herramienta.estado))));
 }
 

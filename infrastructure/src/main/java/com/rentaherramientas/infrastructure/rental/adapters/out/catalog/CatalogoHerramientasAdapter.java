@@ -24,14 +24,17 @@ public class CatalogoHerramientasAdapter implements CatalogoHerramientas {
         this.herramientaRepository = herramientaRepository;
     }
 
-    /** Traduce la herramienta de catalog a los datos mínimos que necesita rental. */
+    /**
+     * Traduce la herramienta de catalog a los datos mínimos que necesita rental. La tarifa que ve rental
+     * ya trae el descuento aplicado: rental no conoce el porcentaje, solo el precio por día vigente.
+     */
     @Override
     public Optional<HerramientaReservable> buscar(Long herramientaId) {
         return herramientaRepository.buscarPorId(herramientaId)
                 .map(herramienta -> new HerramientaReservable(
                         herramienta.getId(),
                         herramienta.getProveedorId(),
-                        herramienta.getTarifaDiaria(),
+                        herramienta.tarifaConDescuento(),
                         herramienta.estaDisponible()));
     }
 

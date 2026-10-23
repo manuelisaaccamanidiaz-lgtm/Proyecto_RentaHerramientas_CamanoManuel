@@ -387,6 +387,19 @@
   white-space: nowrap;
 }
 
+.precio-descuento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--esp-1) var(--esp-2);
+}
+
+.precio__anterior {
+  font-size: var(--texto-sm);
+  color: var(--color-texto-suave);
+  white-space: nowrap;
+}
+
 .precio small {
   font-size: var(--texto-xs);
   font-weight: var(--peso-medio);

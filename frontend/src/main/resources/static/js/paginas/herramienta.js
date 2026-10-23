@@ -1,6 +1,6 @@
 /**
  * Ficha de una herramienta: galería, descripción, tarifa, calendario de
- * disponibilidad y reserva con el precio calculado en vivo (tarifa × días).
+ * disponibilidad y reserva con el precio calculado en vivo (tarifa con descuento × días).
  */
 import { api, ApiError } from '../api.js';
 import { rutaInicio, sesion } from '../auth.js';
@@ -9,7 +9,7 @@ import { categorias } from '../datos.js';
 import { montarLayout } from '../layout.js';
 import {
   aIso, badgeEstado, conCarga, cop, el, estadoError, estadoVacio, fechaLarga, parametrosUrl, reemplazar,
-  sumarDias, toastEnSiguientePagina, toastError,
+  precioHerramienta, sumarDias, toastEnSiguientePagina, toastError,
 } from '../ui.js';
 
 montarLayout();
@@ -51,6 +51,10 @@ function panelReserva(herramienta) {
   hoy.setHours(0, 0, 0, 0);
   const maximo = sumarDias(hoy, DIAS_VISIBLES);
   let seleccion = null;
+  // Misma cuenta que el servidor: tarifa con descuento (ya redondeada a centavos) × días.
+  // Se multiplica en centavos enteros para no arrastrar errores de coma flotante.
+  const tarifa = Number(herramienta.tarifaConDescuento ?? herramienta.tarifaDiaria);
+  const total = (dias) => (Math.round(tarifa * 100) * dias) / 100;
 
   const aviso = el('div', { class: 'aviso aviso--peligro', role: 'alert' });
   const resumen = el('div', { class: 'resumen-reserva', 'aria-live': 'polite' });
@@ -64,9 +68,9 @@ function panelReserva(herramienta) {
     reemplazar(resumen,
       el('div', {}, el('span', { text: 'Desde' }), el('strong', { text: fechaLarga(seleccion.inicio) })),
       el('div', {}, el('span', { text: 'Hasta' }), el('strong', { text: fechaLarga(seleccion.fin) })),
-      el('div', {}, el('span', { text: `${cop(herramienta.tarifaDiaria)} × ${seleccion.dias} día(s)` }),
-        el('span', { text: cop(herramienta.tarifaDiaria * seleccion.dias) })),
-      el('div', { class: 'total' }, el('span', { text: 'Total' }), el('span', { text: cop(herramienta.tarifaDiaria * seleccion.dias) })));
+      el('div', {}, el('span', { text: `${cop(tarifa)} × ${seleccion.dias} día(s)` }),
+        el('span', { text: cop(total(seleccion.dias)) })),
+      el('div', { class: 'total' }, el('span', { text: 'Total' }), el('span', { text: cop(total(seleccion.dias)) })));
   };
 
   const calendario = crearCalendario({
@@ -174,7 +178,7 @@ async function cargar() {
           el('div', { class: 'pila' },
             badgeEstado(herramienta.estado),
             el('h1', { text: herramienta.nombre }),
-            el('p', { class: 'precio', style: 'font-size:2rem' }, cop(herramienta.tarifaDiaria), el('small', { text: ' / día' }))),
+            precioHerramienta(herramienta, { style: 'font-size:2rem' })),
           tarjeta)));
 
     await cargarDisponibilidad().catch((error) => toastError(error, 'No se pudo cargar la disponibilidad'));

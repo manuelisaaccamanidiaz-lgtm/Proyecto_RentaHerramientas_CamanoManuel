@@ -30,6 +30,7 @@ public class HerramientaPersistenceMapper {
                 entity.getDescripcion(),
                 entity.getMarca(),
                 Dinero.de(entity.getTarifaDiaria(), entity.getMoneda()),
+                entity.getDescuentoPorcentaje(),
                 entity.getEstado(),
                 imagenes,
                 entity.getCategoriaIds());
@@ -44,6 +45,7 @@ public class HerramientaPersistenceMapper {
                 herramienta.getDescripcion(),
                 herramienta.getMarca(),
                 herramienta.getTarifaDiaria().monto(),
+                herramienta.getDescuentoPorcentaje(),
                 herramienta.getTarifaDiaria().moneda(),
                 herramienta.getEstado(),
                 herramienta.getCategoriaIds());

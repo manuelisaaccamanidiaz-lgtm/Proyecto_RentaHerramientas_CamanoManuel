@@ -8,9 +8,11 @@ import java.util.List;
 
 /**
  * Vista pública de una herramienta con su galería (ordenada) y los ids de sus categorías.
+ * tarifaConDescuento es lo que paga una reserva nueva por día (igual a tarifaDiaria si no hay descuento).
  */
 public record HerramientaResponse(Long id, Long proveedorId, String nombre, String descripcion, String marca,
-                                  BigDecimal tarifaDiaria, String moneda, EstadoHerramienta estado,
+                                  BigDecimal tarifaDiaria, Integer descuentoPorcentaje, BigDecimal tarifaConDescuento,
+                                  String moneda, EstadoHerramienta estado,
                                   List<Long> categoriaIds, List<ImagenResponse> imagenes) {
 
     public record ImagenResponse(int orden, String url) {
@@ -24,6 +26,8 @@ public record HerramientaResponse(Long id, Long proveedorId, String nombre, Stri
                 herramienta.getDescripcion(),
                 herramienta.getMarca(),
                 herramienta.getTarifaDiaria().monto(),
+                herramienta.getDescuentoPorcentaje(),
+                herramienta.tarifaConDescuento().monto(),
                 herramienta.getTarifaDiaria().moneda(),
                 herramienta.getEstado(),
                 herramienta.getCategoriaIds().stream().sorted().toList(),
