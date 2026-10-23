@@ -15,14 +15,19 @@ import com.rentaherramientas.application.catalog.usecase.CrearCategoriaService;
 import com.rentaherramientas.application.catalog.usecase.CrearCategoriaUseCase;
 import com.rentaherramientas.application.catalog.usecase.EliminarCategoriaService;
 import com.rentaherramientas.application.catalog.usecase.EliminarCategoriaUseCase;
+import com.rentaherramientas.application.catalog.usecase.GestionarFavoritosService;
+import com.rentaherramientas.application.catalog.usecase.GestionarFavoritosUseCase;
 import com.rentaherramientas.application.catalog.usecase.GestionarImagenesHerramientaService;
 import com.rentaherramientas.application.catalog.usecase.GestionarImagenesHerramientaUseCase;
 import com.rentaherramientas.application.catalog.usecase.RegistrarHerramientaService;
 import com.rentaherramientas.application.catalog.usecase.RegistrarHerramientaUseCase;
 import com.rentaherramientas.domain.catalog.port.repository.CategoriaRepository;
+import com.rentaherramientas.domain.catalog.port.repository.FavoritoRepository;
 import com.rentaherramientas.domain.catalog.port.repository.HerramientaRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.time.Clock;
 
 /**
  * Ensambla los casos de uso de catalog. Igual que en identity, los *Service son
@@ -79,6 +84,13 @@ public class CatalogBeansConfig {
     @Bean
     ConsultarHerramientaUseCase consultarHerramientaUseCase(HerramientaRepository herramientaRepository) {
         return new ConsultarHerramientaService(herramientaRepository);
+    }
+
+    /** Bean del caso de uso de favoritos del cliente. */
+    @Bean
+    GestionarFavoritosUseCase gestionarFavoritosUseCase(FavoritoRepository favoritoRepository,
+                                                        HerramientaRepository herramientaRepository, Clock clock) {
+        return new GestionarFavoritosService(favoritoRepository, herramientaRepository, clock);
     }
 
     /** Bean del caso de uso de gestionar la galería de imágenes. */

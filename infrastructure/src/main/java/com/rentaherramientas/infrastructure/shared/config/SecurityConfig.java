@@ -86,6 +86,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/pagos").hasRole(CLIENTE)
                         .requestMatchers(HttpMethod.GET, "/api/pagos/mios", "/api/facturas/mias").hasRole(CLIENTE)
                         .requestMatchers(HttpMethod.PATCH, "/api/pagos/*/*").hasAnyRole(PROVEEDOR, ADMIN)
+                        // Favoritos: marcar, desmarcar y listar son solo del cliente.
+                        .requestMatchers("/api/favoritos/**").hasRole(CLIENTE)
                         .requestMatchers("/api/proveedor/**").hasRole(PROVEEDOR)
                         .requestMatchers("/api/admin/**").hasRole(ADMIN)
                         .anyRequest().authenticated())
