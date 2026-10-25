@@ -14,6 +14,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+
+import java.math.BigDecimal;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -70,10 +73,13 @@ public class HerramientaController {
             @RequestParam(required = false) EstadoHerramienta estado,
             @RequestParam(required = false) String texto,
             @RequestParam(required = false) Long proveedorId,
+            @RequestParam(required = false) String marca,
+            @RequestParam(required = false) BigDecimal precioMin,
+            @RequestParam(required = false) BigDecimal precioMax,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = TAMANO_POR_DEFECTO) int size) {
         return consultarHerramienta.buscar(
-                new FiltroHerramientas(categoriaId, estado, texto, proveedorId, true, page, size));
+                new FiltroHerramientas(categoriaId, estado, texto, proveedorId, marca, precioMin, precioMax, true, page, size));
     }
 
     /** GET /api/herramientas/{id} : detalle público de una herramienta. */
@@ -92,11 +98,14 @@ public class HerramientaController {
             @RequestParam(required = false) Long categoriaId,
             @RequestParam(required = false) EstadoHerramienta estado,
             @RequestParam(required = false) String texto,
+            @RequestParam(required = false) String marca,
+            @RequestParam(required = false) BigDecimal precioMin,
+            @RequestParam(required = false) BigDecimal precioMax,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = TAMANO_POR_DEFECTO) int size) {
         Long proveedorId = Long.valueOf(jwt.getSubject());
         return consultarHerramienta.buscar(
-                new FiltroHerramientas(categoriaId, estado, texto, proveedorId, false, page, size));
+                new FiltroHerramientas(categoriaId, estado, texto, proveedorId, marca, precioMin, precioMax, false, page, size));
     }
 
     /** POST /api/herramientas : registra una herramienta del proveedor autenticado (201 Created). */

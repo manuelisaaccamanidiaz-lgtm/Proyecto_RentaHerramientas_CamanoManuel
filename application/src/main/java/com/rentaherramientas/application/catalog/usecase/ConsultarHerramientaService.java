@@ -37,6 +37,9 @@ public class ConsultarHerramientaService implements ConsultarHerramientaUseCase 
                 filtro.estado(),
                 filtro.texto(),
                 filtro.proveedorId(),
+                filtro.marca(),
+                filtro.precioMin(),
+                filtro.precioMax(),
                 filtro.soloCatalogoPublico(),
                 new SolicitudPagina(filtro.pagina(), filtro.tamano()));
         return PaginaResponse.desde(herramientaRepository.buscar(criterios), HerramientaResponse::desde);

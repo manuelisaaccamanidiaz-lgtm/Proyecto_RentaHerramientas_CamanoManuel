@@ -34,6 +34,21 @@
         <input id="f-texto" name="texto" type="search" class="input" placeholder="Nombre o descripción" autocomplete="off">
       </div>
       <div class="campo">
+        <label for="f-marca">Marca</label>
+        <input id="f-marca" name="marca" type="search" class="input" placeholder="Ej: Bosch" autocomplete="off">
+      </div>
+        <div class="grupo-campos grupo-campos--2">
+          <div class="campo">
+          <label for="f-precio-min">Precio Min.</label>
+          <input id="f-precio-min" name="precioMin" type="number" class="input" min="0" step="1000" inputmode="numeric" placeholder="0">
+        </div>
+        <div class="campo">
+          <label for="f-precio-max">Precio Max.</label>
+          <input id="f-precio-max" name="precioMax" type="number" class="input" min="0" step="1000" inputmode="numeric" placeholder="sin limite">
+        </div>
+      </div>
+      
+      <div class="campo">
         <label for="f-categoria">Categoría</label>
         <select id="f-categoria" name="categoriaId" class="input"><option value="">Todas las categorías</option></select>
       </div>

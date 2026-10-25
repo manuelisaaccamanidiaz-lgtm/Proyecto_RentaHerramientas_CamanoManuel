@@ -4,6 +4,7 @@ import com.rentaherramientas.domain.catalog.model.valueobject.EstadoHerramienta;
 import com.rentaherramientas.domain.catalog.port.repository.CriteriosBusquedaHerramienta;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -43,6 +44,15 @@ final class HerramientaSpecifications {
         if (criterios.texto() != null) {
             filtros.add(contieneTexto(criterios.texto()));
         }
+         if (criterios.marca() != null) {
+            filtros.add(deMarca(criterios.marca()));
+        }
+         if (criterios.precioMin() != null) {
+            filtros.add(tarifaDesde(criterios.precioMin()));
+        }
+        if (criterios.precioMax() != null) {
+            filtros.add(tarifaHasta(criterios.precioMax()));
+        }
         if (criterios.proveedorId() != null) {
             filtros.add(deProveedor(criterios.proveedorId()));
         }
@@ -62,6 +72,19 @@ final class HerramientaSpecifications {
     /** Filtro: herramientas del proveedor indicado. */
     private static Specification<HerramientaEntity> deProveedor(Long proveedorId) {
         return (root, query, cb) -> cb.equal(root.get("proveedorId"), proveedorId);
+    }
+
+    private static Specification<HerramientaEntity> deMarca(String marca){
+        String patron = "%" + escaparLike(marca.toLowerCase(Locale.ROOT)) + "%";
+        return (root, query, cb) -> cb.like(cb.lower(root.get("marca")), patron , ESCAPE);
+    }
+
+    private static Specification<HerramientaEntity> tarifaDesde(BigDecimal min){
+        return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("tarifaDiaria"), min);
+    }
+
+    private static Specification<HerramientaEntity> tarifaHasta(BigDecimal max){
+        return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("tarifaDiaria"), max);
     }
 
     /**
