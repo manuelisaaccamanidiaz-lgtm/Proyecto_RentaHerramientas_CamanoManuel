@@ -842,6 +842,10 @@ Los reportes quedan en `*/target/surefire-reports` y `bootstrap/target/failsafe-
 | Proveedor · inventario | ![Inventario](docs/capturas/proveedor-inventario.png) |
 | Admin · panel de reportes | ![Panel admin](docs/capturas/admin-panel.png) |
 | Swagger UI | ![Swagger](docs/capturas/swagger.png) |
+| tablas reservas | ![tabla resevas](docs/capturas/reserva_estado.png) |
+| devolver | ![postman con api devolver](docs/capturas/devolver.png) |
+| reporte de daño | ![reportar daño](docs/capturas/reporte_danio.png) |
+| tabla reportes | ![tabla reportes](docs/capturas/reportes_danio.png) |
 | Vista móvil (375 px) | ![Movil](docs/capturas/movil.png) |
 
 ---
