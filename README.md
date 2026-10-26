@@ -232,6 +232,7 @@ app:
     dir: ${UPLOADS_DIR:./uploads}
   reservas:
     cron-vencimiento: ${RESERVAS_CRON_VENCIMIENTO:0 5 0 * * *}
+    max-pendientes: ${RESERVAS_MAX_PENDIENTES:3}
 ```
 
 ### Equivalente en `application.properties`
@@ -261,6 +262,7 @@ app.admin.email=${ADMIN_EMAIL:}
 app.admin.password=${ADMIN_PASSWORD:}
 app.uploads.dir=${UPLOADS_DIR:./uploads}
 app.reservas.cron-vencimiento=${RESERVAS_CRON_VENCIMIENTO:0 5 0 * * *}
+app.reservas.max-pendientes=${RESERVAS_MAX_PENDIENTES:3}
 ```
 
 ### Variables de entorno (`.env`)
@@ -277,6 +279,7 @@ app.reservas.cron-vencimiento=${RESERVAS_CRON_VENCIMIENTO:0 5 0 * * *}
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | Orígenes externos permitidos (el frontend incluido no lo necesita) |
 | `UPLOADS_DIR` | `./uploads` | Carpeta de imágenes subidas (en Docker: volumen `/uploads`) |
 | `RESERVAS_CRON_VENCIMIENTO` | `0 5 0 * * *` | Cron de la tarea que vence reservas (hora de Bogotá) |
+| `RESERVAS_MAX_PENDIENTES` | `3` | Máximo de reservas `PENDIENTE` por cliente a la vez (la siguiente → 409) |
 
 ---
 
@@ -621,7 +624,7 @@ Response **201**: K2 con la nueva imagen (`"url": "/uploads/31603bf4-….png"`).
 | Método | Ruta | Rol | Descripción | Ej. |
 |---|---|---|---|---|
 | GET | `/api/herramientas/{id}/disponibilidad?desde=&hasta=` | 🌍 | Rangos ocupados de una herramienta | R1 |
-| POST | `/api/reservas` | C | Solicita una reserva (queda `PENDIENTE`) → **201** (409 si se solapa) | R2 |
+| POST | `/api/reservas` | C | Solicita una reserva (queda `PENDIENTE`) → **201** (409 si se solapa o si ya tiene 3 `PENDIENTE`) | R2 |
 | GET | `/api/reservas/mias?estado=&page=&size=` | C | Reservas del cliente autenticado | R2 |
 | GET | `/api/reservas/{id}` | 🔑 | Detalle (su cliente, el proveedor dueño o un ADMIN) | R2 |
 | GET | `/api/proveedor/reservas?estado=&page=&size=` | P | Reservas de las herramientas del proveedor | R2 |

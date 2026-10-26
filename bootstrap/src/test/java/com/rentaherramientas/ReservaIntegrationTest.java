@@ -1,5 +1,6 @@
 package com.rentaherramientas;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -98,5 +99,17 @@ class ReservaIntegrationTest extends IntegracionBase {
 
         crearReserva(HOY.plusDays(12), HOY.plusDays(14))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    @DisplayName("con 3 reservas PENDIENTES la cuarta responde 409 indicando el límite")
+    void limiteDePendientesResponde409() throws Exception {
+        for (int i = 0; i < 3; i++) {
+            crearReserva(HOY.plusDays(20 + i * 2L), HOY.plusDays(20 + i * 2L)).andExpect(status().isCreated());
+        }
+
+        crearReserva(HOY.plusDays(28), HOY.plusDays(28))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value(containsString("3 reservas pendientes")));
     }
 }

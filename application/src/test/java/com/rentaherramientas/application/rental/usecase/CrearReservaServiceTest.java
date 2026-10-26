@@ -4,6 +4,7 @@ import com.rentaherramientas.application.rental.command.CrearReservaCommand;
 import com.rentaherramientas.application.rental.dto.ReservaResponse;
 import com.rentaherramientas.application.rental.exception.HerramientaNoDisponibleException;
 import com.rentaherramientas.application.rental.exception.HerramientaNoEncontradaException;
+import com.rentaherramientas.application.rental.exception.LimiteReservasPendientesException;
 import com.rentaherramientas.application.rental.port.CatalogoHerramientas;
 import com.rentaherramientas.application.rental.port.HerramientaReservable;
 import com.rentaherramientas.application.shared.command.Solicitante;
@@ -38,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,6 +66,7 @@ class CrearReservaServiceTest {
     private static final Long PROVEEDOR_ID = 2L;
     private static final Solicitante CLIENTE = new Solicitante(5L, Rol.CLIENTE);
     private static final Dinero TARIFA = Dinero.de(new BigDecimal("20000"), "COP");
+    private static final int MAX_PENDIENTES = 3;
 
     private List<String> registro;
     private ReservaRepositoryEnMemoria reservas;
@@ -80,7 +83,8 @@ class CrearReservaServiceTest {
         catalogo.agregar(new HerramientaReservable(HERRAMIENTA_ID, PROVEEDOR_ID, TARIFA, true));
         unidadDeTrabajo = new UnidadDeTrabajoRegistrada(registro);
         publicador = new PublicadorEnMemoria(registro);
-        service = new CrearReservaService(reservas, catalogo, unidadDeTrabajo, publicador, RELOJ);
+        service = new CrearReservaService(reservas, catalogo, unidadDeTrabajo, publicador, RELOJ,
+                MAX_PENDIENTES);
     }
 
     private static CrearReservaCommand comando(LocalDate inicio, LocalDate fin) {
@@ -215,6 +219,44 @@ class CrearReservaServiceTest {
         assertThrows(AccesoDenegadoException.class, () -> service.crear(command));
     }
 
+    // ------------------------------------------------- límite de pendientes
+
+    /** Guarda n reservas del CLIENTE en otras herramientas (no se cruzan) y les aplica la transición dada. */
+    private void reservasPrevias(int n, Consumer<Reserva> transicion) {
+        for (int i = 0; i < n; i++) {
+            Reserva previa = Reserva.registrar(100L + i, CLIENTE.id(), new RangoFechas(HOY, HOY.plusDays(1)), TARIFA);
+            transicion.accept(previa);
+            reservas.guardar(previa);
+        }
+    }
+
+    @Test
+    @DisplayName("Con 2 reservas PENDIENTES el cliente aún puede crear otra")
+    void dosPendientesDejaCrear() {
+        reservasPrevias(2, r -> { });
+
+        assertEquals(EstadoReserva.PENDIENTE, service.crear(comando(HOY, HOY.plusDays(1))).estado());
+    }
+
+    @Test
+    @DisplayName("Con 3 reservas PENDIENTES → LimiteReservasPendientesException (409) con el límite en el mensaje")
+    void tresPendientesRechaza() {
+        reservasPrevias(3, r -> { });
+
+        LimiteReservasPendientesException ex = assertThrows(LimiteReservasPendientesException.class,
+                () -> service.crear(comando(HOY, HOY.plusDays(1))));
+        assertTrue(ex.getMessage().contains("3"));
+        assertEquals(3, reservas.guardadas.size(), "no se guardó la cuarta");
+    }
+
+    @Test
+    @DisplayName("Con 3 reservas ACEPTADAS sí deja crear: solo cuentan las PENDIENTES")
+    void tresAceptadasDejaCrear() {
+        reservasPrevias(3, Reserva::aceptar);
+
+        assertEquals(EstadoReserva.PENDIENTE, service.crear(comando(HOY, HOY.plusDays(1))).estado());
+    }
+
     // ------------------------------------------------------- dobles de prueba
 
     /** Ejecuta la lambda tal cual y anota en el registro dónde empieza y termina. */
@@ -283,6 +325,13 @@ class CrearReservaServiceTest {
             return guardadas.stream().anyMatch(r -> r.getHerramientaId().equals(herramientaId)
                     && r.getEstado().bloqueaDisponibilidad()
                     && r.seCruzaCon(rango));
+        }
+
+        @Override
+        public long contarPorClienteYEstado(Long clienteId, EstadoReserva estado) {
+            return guardadas.stream()
+                    .filter(r -> r.getClienteId().equals(clienteId) && r.getEstado() == estado)
+                    .count();
         }
 
         @Override

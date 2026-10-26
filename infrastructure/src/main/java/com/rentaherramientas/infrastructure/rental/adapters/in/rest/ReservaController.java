@@ -75,7 +75,8 @@ public class ReservaController {
     @PostMapping("/api/reservas")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Solicita una reserva (solo CLIENTE); queda PENDIENTE",
-            description = "Máximo 30 días, desde hoy en adelante, sin cruzarse con otras reservas activas.")
+            description = "Máximo 30 días, desde hoy en adelante, sin cruzarse con otras reservas activas. "
+                    + "Un cliente puede tener a la vez como máximo app.reservas.max-pendientes (3) reservas PENDIENTES.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Reserva creada en estado PENDIENTE",
                     content = @Content(mediaType = "application/json",
@@ -100,17 +101,30 @@ public class ReservaController {
                                     """))),
             @ApiResponse(responseCode = "401", description = "Falta el token Bearer o está vencido",
                     content = @Content),
-            @ApiResponse(responseCode = "409", description = "Las fechas se cruzan con otra reserva activa",
+            @ApiResponse(responseCode = "409",
+                    description = "Las fechas se cruzan con otra reserva activa o el cliente ya tiene el máximo "
+                            + "de reservas PENDIENTES",
                     content = @Content(mediaType = "application/problem+json",
-                            examples = @ExampleObject(name = "Reserva solapada", value = """
-                                    {
-                                      "type": "about:blank",
-                                      "title": "Regla de negocio incumplida",
-                                      "status": 409,
-                                      "detail": "La herramienta 7 ya está reservada entre 2026-10-24 y 2026-10-27",
-                                      "instance": "/api/reservas"
-                                    }
-                                    """)))
+                            examples = {
+                                    @ExampleObject(name = "Reserva solapada", value = """
+                                            {
+                                              "type": "about:blank",
+                                              "title": "Regla de negocio incumplida",
+                                              "status": 409,
+                                              "detail": "La herramienta 7 ya está reservada entre 2026-10-24 y 2026-10-27",
+                                              "instance": "/api/reservas"
+                                            }
+                                            """),
+                                    @ExampleObject(name = "Límite de pendientes", value = """
+                                            {
+                                              "type": "about:blank",
+                                              "title": "Conflicto",
+                                              "status": 409,
+                                              "detail": "Ya tienes 3 reservas pendientes, que es el máximo permitido; espera a que el proveedor responda alguna o cancela una antes de crear otra",
+                                              "instance": "/api/reservas"
+                                            }
+                                            """)
+                            }))
     })
     public ReservaResponse crear(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CrearReservaRequest request) {
         return crearReserva.crear(request.toCommand(SolicitanteJwt.desde(jwt)));

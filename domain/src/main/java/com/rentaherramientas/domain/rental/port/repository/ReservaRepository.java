@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.rentaherramientas.domain.rental.model.aggregate.Reserva;
+import com.rentaherramientas.domain.rental.model.valueobject.EstadoReserva;
 import com.rentaherramientas.domain.rental.model.valueobject.RangoFechas;
 import com.rentaherramientas.domain.shared.model.Pagina;
 
@@ -29,6 +30,9 @@ public interface ReservaRepository {
 
     /** Devuelve las reservas de una herramienta ordenadas por fecha de inicio. */
     List<Reserva> buscarPorHerramientaId(Long herramientaId);
+
+    /** Cuántas reservas del cliente están en ese estado. */
+    long contarPorClienteYEstado(Long clienteId, EstadoReserva estado);
 
     /** Solo los ids (sin cargar reportes de daño): los usan otros BC para filtrar por cliente. */
     List<Long> idsPorCliente(Long clienteId);

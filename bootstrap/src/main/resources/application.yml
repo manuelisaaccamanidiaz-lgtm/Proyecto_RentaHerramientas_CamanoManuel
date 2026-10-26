@@ -51,3 +51,5 @@ app:
   reservas:
     # Cron de Spring (seg min hora día mes día-semana), hora de Bogotá. Por defecto 00:05 cada día.
     cron-vencimiento: ${RESERVAS_CRON_VENCIMIENTO:0 5 0 * * *}
+    # Máximo de reservas PENDIENTES (sin respuesta del proveedor) que puede tener un cliente a la vez.
+    max-pendientes: ${RESERVAS_MAX_PENDIENTES:3}

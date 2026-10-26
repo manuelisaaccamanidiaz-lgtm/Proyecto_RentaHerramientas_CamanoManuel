@@ -4,6 +4,7 @@ import com.rentaherramientas.application.rental.command.CrearReservaCommand;
 import com.rentaherramientas.application.rental.dto.ReservaResponse;
 import com.rentaherramientas.application.rental.exception.HerramientaNoDisponibleException;
 import com.rentaherramientas.application.rental.exception.HerramientaNoEncontradaException;
+import com.rentaherramientas.application.rental.exception.LimiteReservasPendientesException;
 import com.rentaherramientas.application.rental.port.CatalogoHerramientas;
 import com.rentaherramientas.application.rental.port.HerramientaReservable;
 import com.rentaherramientas.application.shared.exception.AccesoDenegadoException;
@@ -12,6 +13,7 @@ import com.rentaherramientas.application.shared.port.UnidadDeTrabajo;
 import com.rentaherramientas.domain.identity.model.valueobject.Rol;
 import com.rentaherramientas.domain.rental.exception.ReservaSolapadaException;
 import com.rentaherramientas.domain.rental.model.aggregate.Reserva;
+import com.rentaherramientas.domain.rental.model.valueobject.EstadoReserva;
 import com.rentaherramientas.domain.rental.model.valueobject.RangoFechas;
 import com.rentaherramientas.domain.rental.port.repository.ReservaRepository;
 import com.rentaherramientas.domain.shared.exception.ValorInvalidoException;
@@ -22,7 +24,7 @@ import java.time.LocalDate;
 
 /**
  * Registra una reserva verificando, en este orden: que el solicitante sea
- * CLIENTE, que la herramienta exista (404) y esté DISPONIBLE (409), que empiece
+ * CLIENTE, que no tenga ya el máximo de reservas PENDIENTES (409), que la herramienta exista (404) y esté DISPONIBLE (409), que empiece
  * hoy o después (400), que no dure más de {@value #DURACION_MAXIMA_DIAS} días
  * (400) y que no se cruce con otra reserva activa (409). Esta última
  * comprobación tiene una carrera entre dos altas simultáneas; la cierra la
@@ -38,16 +40,18 @@ public class CrearReservaService implements CrearReservaUseCase {
     private final UnidadDeTrabajo unidadDeTrabajo;
     private final PublicadorEventos publicadorEventos;
     private final Clock clock;
+    private final int maxReservasPendientes;
 
     /** Recibe sus dependencias por constructor; el bean lo crea RentalBeansConfig. */
     public CrearReservaService(ReservaRepository reservaRepository, CatalogoHerramientas catalogoHerramientas,
                                UnidadDeTrabajo unidadDeTrabajo, PublicadorEventos publicadorEventos,
-                               Clock clock) {
+                               Clock clock, int maxReservasPendientes) {
         this.reservaRepository = reservaRepository;
         this.catalogoHerramientas = catalogoHerramientas;
         this.unidadDeTrabajo = unidadDeTrabajo;
         this.publicadorEventos = publicadorEventos;
         this.clock = clock;
+        this.maxReservasPendientes = maxReservasPendientes;
     }
 
     /**
@@ -62,6 +66,11 @@ public class CrearReservaService implements CrearReservaUseCase {
     public ReservaResponse crear(CrearReservaCommand command) {
         if (command.solicitante().rol() != Rol.CLIENTE) {
             throw new AccesoDenegadoException("Solo un CLIENTE puede crear reservas");
+        }
+        // Solo cuentan las PENDIENTE: las ya aceptadas o cerradas no saturan al proveedor.
+        if (reservaRepository.contarPorClienteYEstado(command.solicitante().id(), EstadoReserva.PENDIENTE)
+                >= maxReservasPendientes) {
+            throw new LimiteReservasPendientesException(maxReservasPendientes);
         }
         Long herramientaId = Validaciones.requerido(command.herramientaId(), "herramientaId");
         HerramientaReservable herramienta = catalogoHerramientas.buscar(herramientaId)

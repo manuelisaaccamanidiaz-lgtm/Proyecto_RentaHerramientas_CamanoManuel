@@ -78,6 +78,7 @@ services:
       # Cron de Spring con 6 campos (seg min hora día mes día_semana): por defecto todos
       # los días a las 00:05:00. Va entre comillas porque contiene espacios y "*".
       RESERVAS_CRON_VENCIMIENTO: "${RESERVAS_CRON_VENCIMIENTO:-0 5 0 * * *}"
+      RESERVAS_MAX_PENDIENTES: "${RESERVAS_MAX_PENDIENTES:-3}"
       # Ruta DENTRO del contenedor donde se monta el volumen uploads_data.
       UPLOADS_DIR: /uploads
     ports:

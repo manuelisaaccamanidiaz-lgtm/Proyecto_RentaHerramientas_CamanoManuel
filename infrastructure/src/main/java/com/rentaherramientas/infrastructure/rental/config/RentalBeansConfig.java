@@ -23,6 +23,7 @@ import com.rentaherramientas.application.rental.usecase.VencerReservasUseCase;
 import com.rentaherramientas.application.shared.port.PublicadorEventos;
 import com.rentaherramientas.application.shared.port.UnidadDeTrabajo;
 import com.rentaherramientas.domain.rental.port.repository.ReservaRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -43,14 +44,19 @@ import java.time.Clock;
 @EnableScheduling
 public class RentalBeansConfig {
 
-    /** Bean del caso de uso de crear reservas. */
+    /**
+     * Bean del caso de uso de crear reservas. El máximo de PENDIENTES por cliente es
+     * una política comercial, no un invariante del agregado: se lee de
+     * app.reservas.max-pendientes (3 por defecto) para ajustarla sin recompilar.
+     */
     @Bean
     CrearReservaUseCase crearReservaUseCase(ReservaRepository reservaRepository,
                                             CatalogoHerramientas catalogoHerramientas,
                                             UnidadDeTrabajo unidadDeTrabajo, PublicadorEventos publicadorEventos,
-                                            Clock relojNegocio) {
+                                            Clock relojNegocio,
+                                            @Value("${app.reservas.max-pendientes:3}") int maxReservasPendientes) {
         return new CrearReservaService(reservaRepository, catalogoHerramientas, unidadDeTrabajo, publicadorEventos,
-                relojNegocio);
+                relojNegocio, maxReservasPendientes);
     }
 
     /** Bean del caso de uso de aceptar reservas. */

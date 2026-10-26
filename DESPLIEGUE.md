@@ -421,6 +421,7 @@ terminal tienen prioridad sobre el `.env`.
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | | vacío | Administrador inicial (se crea si no existe) |
 | `CORS_ALLOWED_ORIGINS` | | `http://localhost:5173` | Orígenes externos permitidos |
 | `RESERVAS_CRON_VENCIMIENTO` | | `0 5 0 * * *` | Cron (formato Spring, con segundos) de la tarea que revisa reservas vencidas: por defecto, todos los días a las 00:05 |
+| `RESERVAS_MAX_PENDIENTES` | | `3` | Máximo de reservas `PENDIENTE` que un cliente puede tener a la vez |
 | `UPLOADS_DIR` | | — | Se ignora en Docker (la app usa `/uploads`, montado como volumen) |
 
 ## 8. Perfiles dev y prod

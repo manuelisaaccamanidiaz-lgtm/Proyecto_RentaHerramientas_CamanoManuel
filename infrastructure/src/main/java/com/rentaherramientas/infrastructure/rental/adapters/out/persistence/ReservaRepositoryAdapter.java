@@ -104,6 +104,13 @@ public class ReservaRepositoryAdapter implements ReservaRepository {
                 .map(mapper::toDomain).toList();
     }
 
+    /** Cuántas reservas del cliente están en ese estado. */
+    @Override
+    @Transactional(readOnly = true)
+    public long contarPorClienteYEstado(Long clienteId, EstadoReserva estado) {
+        return jpaRepository.countByClienteIdAndEstado(clienteId, estado);
+    }
+
     /** Ids de las reservas de un cliente. */
     @Override
     @Transactional(readOnly = true)
