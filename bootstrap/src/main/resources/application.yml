@@ -1,0 +1,55 @@
+# Configuración común a todos los entornos. Lo específico de cada entorno
+# (datasource, logging, origen de las credenciales) vive en application-<perfil>.yml.
+# El perfil se elige con la variable SPRING_PROFILES_ACTIVE (por defecto: dev).
+spring:
+  application:
+    name: renta-herramientas
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  jpa:
+    hibernate:
+      # El esquema lo gobierna Flyway; Hibernate solo verifica que las entidades coincidan.
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  servlet:
+    multipart:
+      # Imágenes de herramientas: 5 MB por archivo (más grande → 413).
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+# Actuator: solo /actuator/health (lo usa el HEALTHCHECK de Docker), sin detalles internos.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+# Propiedades propias de la app. app.jwt.secret se define por perfil
+# (dev con valor por defecto, prod obligatorio desde JWT_SECRET).
+app:
+  jwt:
+    expiracion-minutos: ${JWT_EXPIRACION_MINUTOS:60}
+  cors:
+    # Lista separada por comas. Por defecto, el servidor de desarrollo de Vite.
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  admin:
+    # Opcionales: si alguno falta no se crea el administrador inicial.
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
+  uploads:
+    # Directorio donde se guardan las imágenes subidas (relativo al directorio de arranque).
+    dir: ${UPLOADS_DIR:./uploads}
+  reservas:
+    # Cron de Spring (seg min hora día mes día-semana), hora de Bogotá. Por defecto 00:05 cada día.
+    cron-vencimiento: ${RESERVAS_CRON_VENCIMIENTO:0 5 0 * * *}
+    # Máximo de reservas PENDIENTES (sin respuesta del proveedor) que puede tener un cliente a la vez.
+    max-pendientes: ${RESERVAS_MAX_PENDIENTES:3}

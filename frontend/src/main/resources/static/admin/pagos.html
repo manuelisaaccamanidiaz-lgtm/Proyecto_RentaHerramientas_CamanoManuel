@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pagos y facturas · RentaHerramientas</title>
+  <meta name="description" content="Pagos y facturas de la plataforma.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script type="module" src="/js/paginas/admin-pagos.js"></script>
+</head>
+<body>
+  <a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
+  <header id="encabezado"></header>
+
+  <main id="contenido" class="pagina contenedor" tabindex="-1">
+    <div class="encabezado-pagina">
+      <div>
+        <h1>Pagos y facturas</h1>
+        <p>Historial de pagos (con confirmación de efectivo pendiente) y todas las facturas emitidas.</p>
+      </div>
+    </div>
+    <div class="pestanas" role="tablist" aria-label="Pagos y facturas">
+      <button class="pestana" role="tab" id="tab-pagos" aria-controls="panel-pagos" aria-selected="true" type="button">Pagos</button>
+      <button class="pestana" role="tab" id="tab-facturas" aria-controls="panel-facturas" aria-selected="false" tabindex="-1" type="button">Facturas</button>
+    </div>
+    <section id="panel-pagos" role="tabpanel" aria-labelledby="tab-pagos" class="pila">
+    <form id="filtros" class="tarjeta filtros" role="search" aria-label="Filtros">
+      <div class="campo">
+        <label for="f-estado">Estado</label>
+        <select id="f-estado" name="estado" class="input"><option value="">Todos</option><option value="PENDIENTE">Pendiente</option><option value="APROBADO">Aprobado</option><option value="RECHAZADO">Rechazado</option></select>
+      </div>
+      <div class="campo">
+        <label for="f-metodo">Método</label>
+        <select id="f-metodo" name="metodo" class="input"><option value="">Todos</option><option value="TARJETA">Tarjeta</option><option value="PSE">PSE</option><option value="EFECTIVO">Efectivo</option></select>
+      </div>
+      <div class="campo">
+        <label for="f-desde">Desde</label>
+        <input id="f-desde" name="desde" type="date" class="input">
+      </div>
+      <div class="campo">
+        <label for="f-hasta">Hasta</label>
+        <input id="f-hasta" name="hasta" type="date" class="input">
+      </div>
+    </form>
+      <div id="lista-pagos"></div>
+    </section>
+    <section id="panel-facturas" role="tabpanel" aria-labelledby="tab-facturas" hidden>
+      <div id="lista-facturas"></div>
+    </section>
+  </main>
+
+  <footer id="pie"></footer>
+</body>
+</html>

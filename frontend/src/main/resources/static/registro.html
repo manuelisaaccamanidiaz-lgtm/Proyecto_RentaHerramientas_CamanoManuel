@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crear cuenta · RentaHerramientas</title>
+  <meta name="description" content="Regístrate como cliente para alquilar o como proveedor para publicar tus herramientas.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script type="module" src="/js/paginas/registro.js"></script>
+</head>
+<body>
+  <a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
+  <header id="encabezado"></header>
+
+  <main id="contenido" class="contenedor auth" tabindex="-1">
+    <section class="tarjeta auth__tarjeta auth__tarjeta--ancha" aria-labelledby="titulo-registro">
+      <div class="auth__cabecera">
+        <h1 id="titulo-registro">Crea tu cuenta</h1>
+        <p>Alquila herramientas o publica las tuyas.</p>
+      </div>
+      <form id="form-registro" class="formulario" novalidate>
+        <div class="aviso aviso--peligro" role="alert" data-aviso></div>
+        <fieldset class="campo">
+          <legend>¿Cómo usarás RentaHerramientas?</legend>
+          <div class="opciones-tarjeta">
+            <label class="opcion-tarjeta">
+              <input type="radio" name="rol" value="CLIENTE" checked>
+              <span><strong>Quiero alquilar</strong><span class="texto-sm texto-suave">Cuenta de cliente: reserva y paga herramientas.</span></span>
+            </label>
+            <label class="opcion-tarjeta">
+              <input type="radio" name="rol" value="PROVEEDOR">
+              <span><strong>Quiero publicar herramientas</strong><span class="texto-sm texto-suave">Cuenta de proveedor: ferreterías y empresas con NIT.</span></span>
+            </label>
+          </div>
+        </fieldset>
+        <div class="grupo-campos grupo-campos--2">
+    <div class="campo">
+      <label for="nombre">Nombre completo<span class="requerido" aria-hidden="true"> *</span></label>
+      <input id="nombre" name="nombre" type="text" required aria-describedby="nombre-error" autocomplete="name" maxlength="120">
+      <p class="campo__error" id="nombre-error"></p>
+    </div>
+    <div class="campo">
+      <label for="email">Correo electrónico<span class="requerido" aria-hidden="true"> *</span></label>
+      <input id="email" name="email" type="email" required aria-describedby="email-error" autocomplete="email" maxlength="150">
+      <p class="campo__error" id="email-error"></p>
+    </div>
+    <div class="campo">
+      <label for="password">Contraseña<span class="requerido" aria-hidden="true"> *</span></label>
+      <input id="password" name="password" type="password" required aria-describedby="password-ayuda password-error" autocomplete="new-password" minlength="8" maxlength="72">
+      <p class="campo__ayuda" id="password-ayuda">Mínimo 8 caracteres.</p>
+      <p class="campo__error" id="password-error"></p>
+    </div>
+    <div class="campo">
+      <label for="confirmacion">Repite la contraseña<span class="requerido" aria-hidden="true"> *</span></label>
+      <input id="confirmacion" name="confirmacion" type="password" required aria-describedby="confirmacion-error" autocomplete="new-password" maxlength="72">
+      <p class="campo__error" id="confirmacion-error"></p>
+    </div>
+        </div>
+        <fieldset id="datos-cliente" class="grupo-campos">
+          <legend class="etiqueta">Datos de cliente</legend>
+          <div class="grupo-campos grupo-campos--2">
+    <div class="campo">
+      <label for="documento">Documento (cédula)<span class="requerido" aria-hidden="true"> *</span></label>
+      <input id="documento" name="datosCliente.documento" type="text" required aria-describedby="documento-ayuda documento-error" inputmode="numeric" pattern="[0-9]{5,15}" maxlength="20" data-mensaje-patron="Escribe de 5 a 15 dígitos, sin puntos.">
+      <p class="campo__ayuda" id="documento-ayuda">Solo dígitos, de 5 a 15.</p>
+      <p class="campo__error" id="documento-error"></p>
+    </div>
+    <div class="campo">
+      <label for="telefono">Teléfono<span class="requerido" aria-hidden="true"> *</span></label>
+      <input id="telefono" name="datosCliente.telefono" type="tel" required aria-describedby="telefono-ayuda telefono-error" autocomplete="tel" pattern="\+?[0-9]{7,15}" maxlength="20" data-mensaje-patron="De 7 a 15 dígitos, con + opcional.">
+      <p class="campo__ayuda" id="telefono-ayuda">Ej.: 3001234567</p>
+      <p class="campo__error" id="telefono-error"></p>
+    </div>
+          </div>
+    <div class="campo">
+      <label for="direccion">Dirección<span class="requerido" aria-hidden="true"> *</span></label>
+      <input id="direccion" name="datosCliente.direccion" type="text" required aria-describedby="direccion-error" autocomplete="street-address" maxlength="200">
+      <p class="campo__error" id="direccion-error"></p>
+    </div>
+        </fieldset>
+        <fieldset id="datos-proveedor" class="grupo-campos" hidden disabled>
+          <legend class="etiqueta">Datos de la empresa</legend>
+          <div class="grupo-campos grupo-campos--2">
+    <div class="campo">
+      <label for="razon-social">Razón social<span class="requerido" aria-hidden="true"> *</span></label>
+      <input id="razon-social" name="datosProveedor.razonSocial" type="text" required aria-describedby="razon-social-error" autocomplete="organization" maxlength="150">
+      <p class="campo__error" id="razon-social-error"></p>
+    </div>
+    <div class="campo">
+      <label for="nit">NIT<span class="requerido" aria-hidden="true"> *</span></label>
+      <input id="nit" name="datosProveedor.nit" type="text" required aria-describedby="nit-ayuda nit-error" pattern="[0-9]{6,10}(-[0-9])?" maxlength="20" data-mensaje-patron="De 6 a 10 dígitos y dígito de verificación opcional (900123456-7).">
+      <p class="campo__ayuda" id="nit-ayuda">Ej.: 900123456-7</p>
+      <p class="campo__error" id="nit-error"></p>
+    </div>
+          </div>
+        </fieldset>
+        <button class="btn btn--primario btn--lg btn--bloque" type="submit"><span>Crear cuenta</span></button>
+      </form>
+      <p class="texto-centro texto-sm" style="margin-top:1.5rem">¿Ya tienes cuenta? <a href="/login.html">Inicia sesión</a></p>
+    </section>
+  </main>
+
+  <footer id="pie"></footer>
+</body>
+</html>

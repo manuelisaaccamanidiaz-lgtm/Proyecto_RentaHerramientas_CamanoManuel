@@ -1,0 +1,1 @@
+ALTER TABLE herramientas ADD COLUMN marca VARCHAR (60);

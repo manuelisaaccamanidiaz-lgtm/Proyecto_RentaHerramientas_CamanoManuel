@@ -1,0 +1,33 @@
+# Solo se envía al build lo necesario para compilar (POM + src de cada módulo).
+#
+# Al ejecutar "docker compose up --build", Docker empaqueta la carpeta del proyecto (el
+# "contexto de build") y se la envía al motor de build. Todo lo que coincida con estas
+# reglas se excluye de ese envío: el build es más rápido y la imagen no puede contener
+# por accidente secretos ni archivos locales. Sintaxis similar a .gitignore; "**/"
+# significa "en cualquier subcarpeta".
+
+# Secretos: las variables llegan por docker-compose, nunca dentro de la imagen.
+.env
+.env.*
+
+# Resultados de compilación y archivos locales
+# (target/ se regenera dentro del contenedor; uploads/ son imágenes de pruebas locales.)
+**/target/
+uploads/
+node_modules/
+
+# Control de versiones, IDE y documentación
+# Excluir el Dockerfile y los .yml no afecta al build: Docker los lee aparte.
+.git/
+.gitignore
+.idea/
+.vscode/
+.settings/
+.project
+.classpath
+*.iml
+docs/
+*.md
+Dockerfile
+.dockerignore
+docker-compose*.yml

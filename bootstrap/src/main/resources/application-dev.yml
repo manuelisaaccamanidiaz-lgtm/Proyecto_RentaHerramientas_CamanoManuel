@@ -1,0 +1,36 @@
+# Perfil de desarrollo local. Importa el .env de la raíz del proyecto (el mismo
+# que usa docker-compose); se prueban dos rutas porque la app puede lanzarse
+# desde la raíz o desde el módulo bootstrap. Las variables del sistema tienen
+# prioridad sobre el .env, y los valores por defecto apuntan al Postgres local.
+spring:
+  config:
+    import:
+      - optional:file:./.env[.properties]
+      - optional:file:../.env[.properties]
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:rentaherramientas}
+    username: ${POSTGRES_USER:renta_user}
+    password: ${POSTGRES_PASSWORD:}
+
+  flyway:
+    # Solo en dev se cargan además los datos semilla (db/seed/V100__...). prod no los ve.
+    locations: classpath:db/migration,classpath:db/seed
+    # V100 queda aplicada antes que migraciones futuras (V7, V8...); sin esto Flyway
+    # las rechazaría en dev por llegar "fuera de orden".
+    out-of-order: true
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+app:
+  jwt:
+    # Valor por defecto SOLO para desarrollo (≥ 32 bytes); normalmente lo pisa JWT_SECRET del .env.
+    secret: ${JWT_SECRET:dev-only-secreto-de-desarrollo-no-usar-en-produccion-0123456789}
+
+logging:
+  level:
+    com.rentaherramientas: DEBUG

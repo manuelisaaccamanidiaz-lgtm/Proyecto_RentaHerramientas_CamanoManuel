@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RentaHerramientas · Alquiler de herramientas en Bucaramanga</title>
+  <meta name="description" content="Alquila taladros, andamios, mezcladoras y más a proveedores de Bucaramanga, Floridablanca, Girón y Piedecuesta.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script type="module" src="/js/paginas/inicio.js"></script>
+</head>
+<body>
+  <a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
+  <header id="encabezado"></header>
+
+  <main id="contenido" tabindex="-1">
+    <section class="hero" aria-labelledby="titulo-hero">
+      <div class="contenedor">
+        <h1 class="hero__titulo" id="titulo-hero">La herramienta que tu obra necesita, <span>por días</span>.</h1>
+        <p class="hero__texto">Alquila taladros, andamios, mezcladoras y equipos profesionales a ferreterías y proveedores de tu ciudad. Reserva en línea, paga seguro y recoge.</p>
+        <form class="buscador" role="search" action="/catalogo.html" method="get">
+          <label class="sr-only" for="buscar">Buscar herramientas</label>
+          <input id="buscar" name="texto" type="search" placeholder="¿Qué necesitas? Ej.: taladro, andamio, hidrolavadora" autocomplete="off">
+          <button class="btn btn--primario btn--lg" type="submit">Buscar</button>
+        </form>
+        <p class="hero__datos" id="hero-datos" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="seccion" aria-labelledby="titulo-categorias">
+      <div class="contenedor">
+        <div class="seccion__cabecera">
+          <h2 id="titulo-categorias">Explora por categoría</h2>
+        </div>
+        <div id="categorias"></div>
+      </div>
+    </section>
+
+    <section class="seccion" aria-labelledby="titulo-destacadas" style="padding-top:0">
+      <div class="contenedor">
+        <div class="seccion__cabecera">
+          <div>
+            <h2 id="titulo-destacadas">Herramientas disponibles</h2>
+            <p class="texto-suave">Listas para reservar desde hoy.</p>
+          </div>
+          <a class="btn btn--secundario" href="/catalogo.html">Ver todo el catálogo</a>
+        </div>
+        <div id="destacadas"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="pie"></footer>
+</body>
+</html>

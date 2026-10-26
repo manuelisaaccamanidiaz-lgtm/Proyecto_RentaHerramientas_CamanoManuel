@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+          <groupId>com.rentaherramientas</groupId>
+          <artifactId>proyecto-rentaherramientas</artifactId>
+          <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <groupId>com.rentaherramientas</groupId>
+    <artifactId>bootstrap</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <!-- Punto de arranque: ensambla todas las capas y genera el jar ejecutable. -->
+    <dependencies>
+        <dependency>
+            <groupId>com.rentaherramientas</groupId>
+            <artifactId>infrastructure</artifactId>
+        </dependency>
+        <!-- Páginas, estilos y scripts del frontend (classpath:/static/), mismo origen que la API. -->
+        <dependency>
+            <groupId>com.rentaherramientas</groupId>
+            <artifactId>frontend</artifactId>
+        </dependency>
+        <!-- Solo para /actuator/health (healthcheck de Docker); el resto de endpoints no se expone. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- ===== Pruebas de integración (las ejecuta failsafe en mvn verify) ===== -->
+        <!-- Spring Boot 4.x: MockMvc y su autoconfiguración viven en el starter webmvc-test. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- @ServiceConnection: Spring Boot toma la URL/credenciales del contenedor. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Testcontainers 2.x (versión gestionada por Spring Boot): artefactos con prefijo testcontainers-. -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--
+                Pruebas de integración (*IntegrationTest) con PostgreSQL real en Testcontainers.
+                Corren en la fase integration-test (mvn verify); surefire las excluye (POM padre),
+                así "mvn test" solo ejecuta las unitarias y no necesita Docker.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*IntegrationTest.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

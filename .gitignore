@@ -1,0 +1,20 @@
+# Secretos locales
+.env
+
+# Maven
+target/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Imágenes subidas en desarrollo (app.uploads.dir)
+uploads/
+
+# Archivos de sistema de Windows / OneDrive
+desktop.ini
+Thumbs.db

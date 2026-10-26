@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Categorías · RentaHerramientas</title>
+  <meta name="description" content="Categorías del catálogo.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script type="module" src="/js/paginas/admin-categorias.js"></script>
+</head>
+<body>
+  <a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
+  <header id="encabezado"></header>
+
+  <main id="contenido" class="pagina contenedor" tabindex="-1">
+    <div class="encabezado-pagina">
+      <div>
+        <h1>Categorías</h1>
+        <p>Organiza el catálogo. Una categoría en uso no se puede eliminar.</p>
+      </div>
+      <div class="acciones"><button class="btn btn--primario" type="button" id="nueva"><span>+ Nueva categoría</span></button></div>
+    </div>
+    <section aria-label="Listado de categorías"><div id="lista"></div></section>
+  </main>
+
+  <footer id="pie"></footer>
+</body>
+</html>

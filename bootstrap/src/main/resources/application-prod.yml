@@ -1,0 +1,24 @@
+# Perfil de producción. No importa .env ni define valores por defecto: si falta
+# alguna variable de entorno la app falla al arrancar en lugar de conectarse a
+# una base equivocada.
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+
+  jpa:
+    show-sql: false
+
+  flyway:
+    # Impide que un "flyway clean" accidental borre el esquema de producción.
+    clean-disabled: true
+
+app:
+  jwt:
+    # Sin valor por defecto: si falta JWT_SECRET la app no arranca.
+    secret: ${JWT_SECRET}
+
+logging:
+  level:
+    com.rentaherramientas: INFO

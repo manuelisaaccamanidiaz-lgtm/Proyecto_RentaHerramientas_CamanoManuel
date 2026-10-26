@@ -1,0 +1,88 @@
+/*
+ * Tokens del sistema de diseño "ferretería moderna": confiable, robusta y cálida.
+ * Todo color, radio, sombra, espacio y duración de la interfaz sale de aquí.
+ */
+:root {
+  /* Marca */
+  --color-primario: #F97316;          /* naranja seguridad */
+  --color-primario-hover: #EA580C;
+  --color-primario-suave: #FFF7ED;
+  --color-primario-texto: #9A3412;    /* naranja oscuro con contraste AA sobre blanco */
+  --color-secundario: #1F2937;        /* carbón */
+  --color-secundario-hover: #111827;
+
+  /* Superficies y texto */
+  --color-fondo: #F8FAFC;
+  --color-superficie: #FFFFFF;
+  --color-superficie-alt: #F1F5F9;
+  --color-texto: #0F172A;
+  --color-texto-suave: #475569;
+  --color-texto-tenue: #64748B;       /* placeholders: 4.7:1 sobre blanco (AA) */
+  --color-borde: #E2E8F0;
+  --color-borde-fuerte: #CBD5E1;
+
+  /* Estados */
+  --color-exito: #16A34A;
+  --color-exito-suave: #DCFCE7;
+  --color-exito-texto: #166534;
+  --color-advertencia: #CA8A04;
+  --color-advertencia-suave: #FEF9C3;
+  --color-advertencia-texto: #854D0E;
+  --color-peligro: #DC2626;
+  --color-peligro-hover: #B91C1C;
+  --color-peligro-suave: #FEE2E2;
+  --color-peligro-texto: #991B1B;
+  --color-info: #2563EB;
+  --color-info-suave: #DBEAFE;
+  --color-info-texto: #1E40AF;
+  --color-neutro-suave: #E2E8F0;
+  --color-neutro-texto: #334155;
+
+  /* Tipografía: escala 12/14/16/20/24/32/40 */
+  --fuente: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --texto-xs: 0.75rem;
+  --texto-sm: 0.875rem;
+  --texto-md: 1rem;
+  --texto-lg: 1.25rem;
+  --texto-xl: 1.5rem;
+  --texto-2xl: 2rem;
+  --texto-3xl: 2.5rem;
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-semi: 600;
+  --peso-negrita: 700;
+  --interlineado: 1.5;
+
+  /* Espacios: escala de 4 px */
+  --esp-1: 0.25rem;
+  --esp-2: 0.5rem;
+  --esp-3: 0.75rem;
+  --esp-4: 1rem;
+  --esp-5: 1.25rem;
+  --esp-6: 1.5rem;
+  --esp-8: 2rem;
+  --esp-10: 2.5rem;
+  --esp-12: 3rem;
+  --esp-16: 4rem;
+
+  /* Radios */
+  --radio-sm: 8px;
+  --radio-md: 12px;
+  --radio-lg: 16px;
+  --radio-pildora: 999px;
+
+  /* Sombras suaves en 3 niveles */
+  --sombra-1: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  --sombra-2: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+  --sombra-3: 0 12px 24px -6px rgba(15, 23, 42, 0.16), 0 4px 8px -4px rgba(15, 23, 42, 0.08);
+
+  /* Movimiento */
+  --transicion: 150ms ease;
+
+  /* Foco notorio */
+  --foco: 0 0 0 3px var(--color-superficie), 0 0 0 6px var(--color-info);
+
+  /* Layout */
+  --ancho-max: 1200px;
+  --alto-navbar: 64px;
+}

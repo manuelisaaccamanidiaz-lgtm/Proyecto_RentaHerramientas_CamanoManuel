@@ -1,0 +1,4 @@
+ALTER TABLE reservas DROP CONSTRAINT ck_reservas_estado;
+
+ALTER TABLE reservas ADD CONSTRAINT ck_reservas_estado CHECK (estado IN
+    ('PENDIENTE','ACEPTADA','RECHAZADA','ENTREGADA','DEVUELTA','VENCIDA','CANCELADA'));

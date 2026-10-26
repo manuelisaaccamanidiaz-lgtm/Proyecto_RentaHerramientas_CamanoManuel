@@ -1,0 +1,307 @@
+package com.rentaherramientas.infrastructure.reporting.adapters.out.persistence;
+
+import com.rentaherramientas.application.reporting.dto.ClienteFrecuenteResponse;
+import com.rentaherramientas.application.reporting.dto.HerramientaAlquiladaResponse;
+import com.rentaherramientas.application.reporting.dto.HerramientaDaniosResponse;
+import com.rentaherramientas.application.reporting.dto.IngresoMensualResponse;
+import com.rentaherramientas.application.reporting.dto.InventarioResponse;
+import com.rentaherramientas.application.reporting.dto.RentabilidadResponse;
+import com.rentaherramientas.application.reporting.dto.ResumenGeneralResponse;
+import com.rentaherramientas.application.reporting.dto.ResumenProveedorResponse;
+import com.rentaherramientas.application.reporting.port.ConsultasReportes;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Adaptador de salida de reporting: SQL nativo de solo lectura con JdbcClient.
+ * Agrega en la base de datos (SUM, COUNT, GROUP BY, date_trunc) en lugar de
+ * cargar agregados en memoria. Convenciones de todos los reportes:
+ * - "ingresos" = pagos APROBADOS, agrupados por moneda (nunca se suman monedas distintas);
+ * - "alquiler" = reserva que llegó a entregarse (ENTREGADA o DEVUELTA).
+ * Los parámetros siempre van enlazados (:nombre), nunca concatenados en el SQL.
+ *
+ * TÉCNICA AVANZADA (Spring): `@Transactional` a nivel de clase
+ *   Qué hace: se aplica a todos los métodos públicos. Con `readOnly = true` el driver de PostgreSQL puede
+ *     optimizar la conexión y ninguna escritura accidental se confirma.
+ *
+ * TÉCNICA AVANZADA (seguridad): parámetros enlazados
+ *   Qué hace: `.param("limite", x)` envía el valor por separado del SQL, lo que impide la inyección SQL. La
+ *     única cadena que se inserta con `formatted` es la constante ESTADOS_ALQUILADA, que no viene del
+ *     usuario.
+ */
+@Component
+@Transactional(readOnly = true)
+public class ConsultasReportesJdbc implements ConsultasReportes {
+
+    private static final String ESTADOS_ALQUILADA = "('ENTREGADA', 'DEVUELTA')";
+
+    private final JdbcClient jdbc;
+
+    /** Recibe el JdbcClient que configura Spring Boot. */
+    public ConsultasReportesJdbc(JdbcClient jdbc) {
+        this.jdbc = jdbc;
+    }
+
+    /** Ingresos por moneda, pagos aprobados, facturas y conteos por estado o rol, cada uno con su consulta agregada. */
+    @Override
+    public ResumenGeneralResponse resumenGeneral() {
+        Map<String, BigDecimal> ingresos = montosPorClave("""
+                select moneda as clave, sum(monto) as total
+                from pagos where estado = 'APROBADO'
+                group by moneda order by moneda
+                """, Map.of());
+        long pagosAprobados = contar("select count(*) from pagos where estado = 'APROBADO'", Map.of());
+        long facturas = contar("select count(*) from facturas", Map.of());
+        return new ResumenGeneralResponse(ingresos, pagosAprobados, facturas,
+                conteoPorClave("select estado as clave, count(*) as total from reservas group by estado order by estado",
+                        Map.of()),
+                conteoPorClave("select rol as clave, count(*) as total from usuarios group by rol order by rol",
+                        Map.of()),
+                conteoPorClave("select estado as clave, count(*) as total from herramientas group by estado order by estado",
+                        Map.of()));
+    }
+
+    /**
+     * date_trunc agrupa por mes calendario; el filtro usa [desde 00:00, hasta+1 00:00) para incluir todo "hasta".
+     *
+     * TÉCNICA AVANZADA (PostgreSQL): `date_trunc('month', fecha)`
+     *   Qué hace: recorta la fecha al primer instante del mes, así todas las fechas de un mismo mes quedan
+     *     iguales y se pueden agrupar con `GROUP BY`. `to_char(..., 'YYYY-MM')` la convierte en texto.
+     *
+     * TÉCNICA AVANZADA (Spring): `RowMapper` con lambda
+     *   Qué hace: `.query((rs, fila) -> new ...)` convierte cada fila del `ResultSet` en un objeto.
+     */
+    @Override
+    public List<IngresoMensualResponse> ingresosPorMes(LocalDate desde, LocalDate hasta) {
+        return jdbc.sql("""
+                        select to_char(date_trunc('month', p.fecha), 'YYYY-MM') as mes,
+                               p.moneda, sum(p.monto) as total, count(*) as pagos
+                        from pagos p
+                        where p.estado = 'APROBADO'
+                          and p.fecha >= :inicio and p.fecha < :finExclusivo
+                        group by date_trunc('month', p.fecha), p.moneda
+                        order by date_trunc('month', p.fecha), p.moneda
+                        """)
+                .param("inicio", desde.atStartOfDay())
+                .param("finExclusivo", hasta.plusDays(1).atStartOfDay())
+                .query((rs, fila) -> new IngresoMensualResponse(rs.getString("mes"), rs.getString("moneda"),
+                        rs.getBigDecimal("total"), rs.getLong("pagos")))
+                .list();
+    }
+
+    /**
+     * Ranking de herramientas por número de alquileres y días alquilados.
+     *
+     * TÉCNICA AVANZADA (PostgreSQL): aritmética de fechas
+     *   Qué hace: restar dos columnas `DATE` devuelve los días entre ellas como entero; se suma 1 porque
+     *     ambos extremos cuentan. `LIMIT :limite` corta el ranking en la base de datos.
+     */
+    @Override
+    public List<HerramientaAlquiladaResponse> herramientasMasAlquiladas(int limite) {
+        return jdbc.sql("""
+                        select h.id, h.nombre, pr.razon_social as proveedor,
+                               count(r.id) as alquileres,
+                               sum(r.fecha_fin - r.fecha_inicio + 1) as dias
+                        from reservas r
+                        join herramientas h on h.id = r.herramienta_id
+                        join proveedores pr on pr.usuario_id = h.proveedor_id
+                        where r.estado in %s
+                        group by h.id, h.nombre, pr.razon_social
+                        order by alquileres desc, dias desc, h.id
+                        limit :limite
+                        """.formatted(ESTADOS_ALQUILADA))
+                .param("limite", limite)
+                .query((rs, fila) -> new HerramientaAlquiladaResponse(rs.getLong("id"), rs.getString("nombre"),
+                        rs.getString("proveedor"), rs.getLong("alquileres"), rs.getLong("dias")))
+                .list();
+    }
+
+    /**
+     * El LEFT JOIN con pagos solo toma el APROBADO, y el índice único parcial
+     * garantiza que hay como mucho uno por reserva: el JOIN no duplica reservas.
+     *
+     * Nota: `coalesce(sum(p.monto), 0)` devuelve 0 en lugar de null cuando el cliente no tiene pagos
+     *   aprobados.
+     */
+    @Override
+    public List<ClienteFrecuenteResponse> clientesFrecuentes(int limite) {
+        return jdbc.sql("""
+                        select u.id, u.nombre, u.email, r.moneda,
+                               count(r.id) as alquileres,
+                               coalesce(sum(p.monto), 0) as total_pagado
+                        from reservas r
+                        join usuarios u on u.id = r.cliente_id
+                        left join pagos p on p.reserva_id = r.id and p.estado = 'APROBADO'
+                        where r.estado in %s
+                        group by u.id, u.nombre, u.email, r.moneda
+                        order by alquileres desc, total_pagado desc, u.id
+                        limit :limite
+                        """.formatted(ESTADOS_ALQUILADA))
+                .param("limite", limite)
+                .query((rs, fila) -> new ClienteFrecuenteResponse(rs.getLong("id"), rs.getString("nombre"),
+                        rs.getString("email"), rs.getLong("alquileres"), rs.getString("moneda"),
+                        rs.getBigDecimal("total_pagado")))
+                .list();
+    }
+
+    /** Categorías sin herramientas aparecen con 0 (LEFT JOIN). */
+    @Override
+    public InventarioResponse inventario() {
+        List<InventarioResponse.ConteoCategoria> porCategoria = jdbc.sql("""
+                        select c.id, c.nombre, count(hc.herramienta_id) as herramientas
+                        from categorias c
+                        left join herramienta_categorias hc on hc.categoria_id = c.id
+                        group by c.id, c.nombre
+                        order by herramientas desc, c.nombre
+                        """)
+                .query((rs, fila) -> new InventarioResponse.ConteoCategoria(rs.getLong("id"), rs.getString("nombre"),
+                        rs.getLong("herramientas")))
+                .list();
+        return new InventarioResponse(
+                contar("select count(*) from herramientas", Map.of()),
+                conteoPorClave("select estado as clave, count(*) as total from herramientas group by estado order by estado",
+                        Map.of()),
+                porCategoria);
+    }
+
+    /** Dos rankings de ingresos de pagos APROBADOS: por herramienta y por proveedor. */
+    @Override
+    public RentabilidadResponse rentabilidad(int limite) {
+        List<RentabilidadResponse.IngresoHerramienta> porHerramienta = jdbc.sql("""
+                        select h.id, h.nombre, pr.razon_social as proveedor, p.moneda,
+                               sum(p.monto) as ingresos, count(p.id) as pagos
+                        from pagos p
+                        join reservas r on r.id = p.reserva_id
+                        join herramientas h on h.id = r.herramienta_id
+                        join proveedores pr on pr.usuario_id = h.proveedor_id
+                        where p.estado = 'APROBADO'
+                        group by h.id, h.nombre, pr.razon_social, p.moneda
+                        order by ingresos desc, h.id
+                        limit :limite
+                        """)
+                .param("limite", limite)
+                .query((rs, fila) -> new RentabilidadResponse.IngresoHerramienta(rs.getLong("id"),
+                        rs.getString("nombre"), rs.getString("proveedor"), rs.getString("moneda"),
+                        rs.getBigDecimal("ingresos"), rs.getLong("pagos")))
+                .list();
+        List<RentabilidadResponse.IngresoProveedor> porProveedor = jdbc.sql("""
+                        select pr.usuario_id as id, pr.razon_social, p.moneda,
+                               sum(p.monto) as ingresos, count(p.id) as pagos
+                        from pagos p
+                        join reservas r on r.id = p.reserva_id
+                        join herramientas h on h.id = r.herramienta_id
+                        join proveedores pr on pr.usuario_id = h.proveedor_id
+                        where p.estado = 'APROBADO'
+                        group by pr.usuario_id, pr.razon_social, p.moneda
+                        order by ingresos desc, pr.usuario_id
+                        limit :limite
+                        """)
+                .param("limite", limite)
+                .query((rs, fila) -> new RentabilidadResponse.IngresoProveedor(rs.getLong("id"),
+                        rs.getString("razon_social"), rs.getString("moneda"), rs.getBigDecimal("ingresos"),
+                        rs.getLong("pagos")))
+                .list();
+        return new RentabilidadResponse(porHerramienta, porProveedor);
+    }
+
+    /** Indicadores de un proveedor: todas las consultas filtran por `h.proveedor_id = :proveedorId`. */
+    @Override
+    public ResumenProveedorResponse resumenProveedor(Long proveedorId) {
+        Map<String, Object> proveedor = Map.of("proveedorId", proveedorId);
+        Map<String, BigDecimal> ingresos = montosPorClave("""
+                select p.moneda as clave, sum(p.monto) as total
+                from pagos p
+                join reservas r on r.id = p.reserva_id
+                join herramientas h on h.id = r.herramienta_id
+                where p.estado = 'APROBADO' and h.proveedor_id = :proveedorId
+                group by p.moneda order by p.moneda
+                """, proveedor);
+        long pagosAprobados = contar("""
+                select count(*)
+                from pagos p
+                join reservas r on r.id = p.reserva_id
+                join herramientas h on h.id = r.herramienta_id
+                where p.estado = 'APROBADO' and h.proveedor_id = :proveedorId
+                """, proveedor);
+        Map<String, Long> reservasPorEstado = conteoPorClave("""
+                select r.estado as clave, count(*) as total
+                from reservas r
+                join herramientas h on h.id = r.herramienta_id
+                where h.proveedor_id = :proveedorId
+                group by r.estado order by r.estado
+                """, proveedor);
+        Map<String, Long> herramientasPorEstado = conteoPorClave("""
+                select estado as clave, count(*) as total
+                from herramientas where proveedor_id = :proveedorId
+                group by estado order by estado
+                """, proveedor);
+        return new ResumenProveedorResponse(proveedorId, ingresos, pagosAprobados, reservasPorEstado,
+                herramientasPorEstado);
+    }
+
+    @Override 
+    public List<HerramientaDaniosResponse> herramientasConMasDanios(int limite){
+        return jdbc.sql("""
+                        select h.id, h.nombre, pr.razon_social as proveedor,
+                        count(d.id)                          as reportes,     -- cuántos reportes de daño
+                        coalesce(sum(d.costo_estimado), 0)   as costo_total   -- el costo es OPCIONAL (puede ser null)
+                        from reportes_danio d                                        -- partimos de los DAÑOS
+                        join reservas r      on r.id = d.reserva_id                  -- daño → su reserva
+                        join herramientas h  on h.id = r.herramienta_id              -- reserva → su herramienta
+                        join proveedores pr  on pr.usuario_id = h.proveedor_id       -- herramienta → su proveedor
+                        group by h.id, h.nombre, pr.razon_social                     -- una fila POR herramienta
+                        order by reportes desc, costo_total desc, h.id
+                        limit :limite
+                        """).param("limite", limite)
+                .query((rs, fila) -> new HerramientaDaniosResponse(rs.getLong("id"), rs.getString("nombre"),
+                        rs.getString("proveedor"), rs.getLong("reportes"), rs.getBigDecimal("costo_total")))
+                .list();
+    }
+
+
+    // ------------------------------------------------------------ utilidades
+
+    /** Ejecuta una consulta `COUNT` y devuelve su único valor. */
+    private long contar(String sql, Map<String, ?> parametros) {
+        return jdbc.sql(sql).params(parametros).query(Long.class).single();
+    }
+
+    /**
+     * Consulta con columnas (clave, total) → mapa ordenado como la consulta.
+     *
+     * TÉCNICA AVANZADA (Spring): `RowCallbackHandler`
+     *   Qué hace: la lambda `(ResultSet rs) -> { ... }` se ejecuta una vez por fila y no devuelve nada; sirve
+     *     para llenar una estructura propia. `LinkedHashMap` conserva el orden del ORDER BY.
+     */
+    private Map<String, Long> conteoPorClave(String sql, Map<String, ?> parametros) {
+        Map<String, Long> resultado = new LinkedHashMap<>();
+        jdbc.sql(sql).params(parametros).query((ResultSet rs) -> {
+            resultado.put(rs.getString("clave"), rs.getLong("total"));
+        });
+        return resultado;
+    }
+
+    /** Consulta con columnas (clave, total) → mapa de montos ordenado como la consulta. */
+    private Map<String, BigDecimal> montosPorClave(String sql, Map<String, ?> parametros) {
+        Map<String, BigDecimal> resultado = new LinkedHashMap<>();
+        jdbc.sql(sql).params(parametros).query((ResultSet rs) -> {
+            resultado.put(rs.getString("clave"), montoDe(rs));
+        });
+        return resultado;
+    }
+
+    /** Lee la columna "total" como BigDecimal; null (SUM sin filas) se convierte en cero. */
+    private static BigDecimal montoDe(ResultSet rs) throws SQLException {
+        BigDecimal total = rs.getBigDecimal("total");
+        return total == null ? BigDecimal.ZERO : total;
+    }
+}

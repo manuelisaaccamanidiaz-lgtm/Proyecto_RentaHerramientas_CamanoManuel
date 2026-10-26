@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" width="200" height="150" role="img" aria-label="Herramienta sin imagen">
+  <title>Herramienta sin imagen</title>
+  <rect width="200" height="150" fill="#F1F5F9"/>
+  <path d="M0 150 L50 100 L200 150 Z" fill="#E2E8F0"/>
+  <path d="M118 46a16 16 0 0 0-21 20l-30 30a7 7 0 0 0 10 10l30-30a16 16 0 0 0 20-21l-10 10-9-2-2-9z" fill="#94A3B8"/>
+</svg>
