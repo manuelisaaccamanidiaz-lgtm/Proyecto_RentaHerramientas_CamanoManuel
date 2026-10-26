@@ -1,7 +1,9 @@
 package com.rentaherramientas.domain.rental.model.aggregate;
 
 import com.rentaherramientas.domain.rental.exception.DanioNoPermitidoException;
+import com.rentaherramientas.domain.rental.event.ReservaReprogramada;
 import com.rentaherramientas.domain.rental.exception.FechaInvalidaException;
+import com.rentaherramientas.domain.rental.exception.ReservaNoReprogramableException;
 import com.rentaherramientas.domain.rental.exception.TransicionDeEstadoInvalidaException;
 import com.rentaherramientas.domain.rental.model.valueobject.EstadoReserva;
 import com.rentaherramientas.domain.rental.model.valueobject.RangoFechas;
@@ -137,6 +139,39 @@ class ReservaTest {
         Reserva reserva = enEstado(EstadoReserva.ACEPTADA);
 
         assertThrows(TransicionDeEstadoInvalidaException.class, () -> reserva.cancelar());
+    }
+
+    // --------------------------------------------------------- reprogramar
+
+    @Test
+    @DisplayName("reprogramar PENDIENTE: cambia las fechas, recalcula precio = tarifa actual × días y emite el evento")
+    void reprogramarPendiente() {
+        Reserva reserva = enEstado(EstadoReserva.PENDIENTE);
+        RangoFechas nuevo = new RangoFechas(LocalDate.of(2026, 11, 20), LocalDate.of(2026, 11, 21));
+        Dinero tarifaNueva = Dinero.de(new BigDecimal("30000"), "COP");
+
+        reserva.reprogramar(nuevo, tarifaNueva);
+
+        assertEquals(nuevo, reserva.getRango());
+        assertEquals(Dinero.de(new BigDecimal("60000"), "COP"), reserva.getPrecioTotal());
+        assertEquals(EstadoReserva.PENDIENTE, reserva.getEstado());
+        ReservaReprogramada evento = (ReservaReprogramada) reserva.extraerEventos().getFirst();
+        assertEquals(RANGO, evento.rangoAnterior());
+        assertEquals(nuevo, evento.rangoNuevo());
+        assertEquals(reserva.getPrecioTotal(), evento.precioTotal());
+    }
+
+    @Test
+    @DisplayName("reprogramar ACEPTADA 💥 ReservaNoReprogramableException y no cambia nada")
+    void reprogramarAceptadaFalla() {
+        Reserva reserva = enEstado(EstadoReserva.ACEPTADA);
+        Dinero precioAntes = reserva.getPrecioTotal();
+
+        assertThrows(ReservaNoReprogramableException.class, () -> reserva.reprogramar(
+                new RangoFechas(LocalDate.of(2026, 11, 20), LocalDate.of(2026, 11, 21)), TARIFA));
+        assertEquals(RANGO, reserva.getRango());
+        assertEquals(precioAntes, reserva.getPrecioTotal());
+        assertTrue(reserva.extraerEventos().isEmpty());
     }
 
     @Test

@@ -58,6 +58,21 @@ public interface ReservaJpaRepository extends JpaRepository<ReservaEntity, Long>
                                @Param("fin") LocalDate fin,
                                @Param("estados") Collection<EstadoReserva> estados);
 
+    /** La misma consulta que existeSolapamiento, sin contar la reserva que se está reprogramando. */
+    @Query("""
+            select count(r) > 0 from ReservaEntity r
+            where r.herramientaId = :herramientaId
+              and r.estado in :estados
+              and r.fechaInicio <= :fin
+              and r.fechaFin >= :inicio
+              and r.id <> :reservaId
+            """)
+    boolean existeSolapamientoExcluyendo(@Param("herramientaId") Long herramientaId,
+                                         @Param("inicio") LocalDate inicio,
+                                         @Param("fin") LocalDate fin,
+                                         @Param("estados") Collection<EstadoReserva> estados,
+                                         @Param("reservaId") Long reservaId);
+
     /**
      * Solo las fechas: el endpoint de disponibilidad es público y no debe cargar reservas completas.
      *

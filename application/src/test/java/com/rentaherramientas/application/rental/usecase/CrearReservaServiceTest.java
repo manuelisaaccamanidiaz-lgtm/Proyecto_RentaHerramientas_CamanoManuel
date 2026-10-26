@@ -328,6 +328,11 @@ class CrearReservaServiceTest {
         }
 
         @Override
+        public boolean existeSolapamientoExcluyendo(Long herramientaId, RangoFechas rango, Long reservaId) {
+            throw new UnsupportedOperationException("no lo usa CrearReservaService");
+        }
+
+        @Override
         public long contarPorClienteYEstado(Long clienteId, EstadoReserva estado) {
             return guardadas.stream()
                     .filter(r -> r.getClienteId().equals(clienteId) && r.getEstado() == estado)

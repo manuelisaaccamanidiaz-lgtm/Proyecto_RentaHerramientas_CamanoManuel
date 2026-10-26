@@ -11,9 +11,11 @@ import com.rentaherramientas.domain.rental.event.ReservaCancelada;
 import com.rentaherramientas.domain.rental.event.ReservaDevuelta;
 import com.rentaherramientas.domain.rental.event.ReservaEntregada;
 import com.rentaherramientas.domain.rental.event.ReservaRechazada;
+import com.rentaherramientas.domain.rental.event.ReservaReprogramada;
 import com.rentaherramientas.domain.rental.event.ReservaSolicitada;
 import com.rentaherramientas.domain.rental.exception.DanioNoPermitidoException;
 import com.rentaherramientas.domain.rental.exception.FechaInvalidaException;
+import com.rentaherramientas.domain.rental.exception.ReservaNoReprogramableException;
 import com.rentaherramientas.domain.rental.exception.TransicionDeEstadoInvalidaException;
 import com.rentaherramientas.domain.rental.model.valueobject.EstadoReserva;
 import com.rentaherramientas.domain.rental.model.valueobject.RangoFechas;
@@ -27,7 +29,8 @@ import com.rentaherramientas.domain.shared.model.valueobject.Dinero;
  * estado y fechas de entrega/devolución, y que los daños solo se reporten tras
  * la devolución. La herramienta (catalog) y el cliente (identity) se referencian
  * solo por id. El precio total es una foto del momento de la reserva (ver
- * NORMALIZACION §3.3), por eso se calcula una vez y no se recalcula. Que no se
+ * NORMALIZACION §3.3): solo se recalcula si el cliente la reprograma mientras
+ * está PENDIENTE, con la tarifa vigente en ese momento. Que no se
  * solape con otras reservas lo verifica el caso de uso, porque involucra varios
  * agregados.
  */
@@ -36,9 +39,9 @@ public final class Reserva extends AggregateRoot {
     private final Long id;
     private final Long herramientaId;
     private final Long clienteId;
-    private final RangoFechas rango;
+    private RangoFechas rango;
     private EstadoReserva estado;
-    private final Dinero precioTotal;
+    private Dinero precioTotal;
     private LocalDateTime fechaEntrega;
     private LocalDateTime fechaDevolucion;
     private final LocalDateTime creadoEn;
@@ -131,6 +134,28 @@ public final class Reserva extends AggregateRoot {
         registrarEvento(new ReservaDevuelta(id, herramientaId, LocalDateTime.now()));
     }
 
+    /**
+     * El cliente cambia las fechas de su reserva PENDIENTE: el precio se recalcula
+     * con la tarifa vigente (tarifa × días) y se emite ReservaReprogramada. Que las
+     * fechas nuevas estén libres lo comprueba el caso de uso.
+     */
+    public void reprogramar(RangoFechas nuevoRango, Dinero tarifaActual) {
+        Validaciones.requerido(nuevoRango, "rango");
+        Validaciones.requerido(tarifaActual, "tarifaActual");
+        if (estado != EstadoReserva.PENDIENTE) {
+            throw new ReservaNoReprogramableException(estado);
+        }
+        Dinero nuevoPrecio = tarifaActual.multiplicar(Math.toIntExact(nuevoRango.dias()));
+        if (!nuevoPrecio.esPositivo()) {
+            throw new ValorInvalidoException("El precio total de la reserva debe ser positivo");
+        }
+        RangoFechas anterior = this.rango;
+        this.rango = nuevoRango;
+        this.precioTotal = nuevoPrecio;
+        registrarEvento(new ReservaReprogramada(id, herramientaId, clienteId, anterior, nuevoRango, nuevoPrecio,
+                LocalDateTime.now()));
+    }
+
     /** Punto único de cambio de estado: rechaza transiciones no permitidas por EstadoReserva. */
     private void cambiarEstado(EstadoReserva destino) {
         if (!estado.puedeCambiarA(destino)) {
@@ -187,7 +212,7 @@ public final class Reserva extends AggregateRoot {
         return estado;
     }
 
-    /** Precio total calculado al crearla (días × tarifa diaria). */
+    /** Precio total (días × tarifa diaria), calculado al crearla o al reprogramarla. */
     public Dinero getPrecioTotal() {
         return precioTotal;
     }

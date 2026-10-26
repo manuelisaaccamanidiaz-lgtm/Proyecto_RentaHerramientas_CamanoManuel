@@ -629,6 +629,7 @@ Response **201**: K2 con la nueva imagen (`"url": "/uploads/31603bf4-….png"`).
 | GET | `/api/reservas/{id}` | 🔑 | Detalle (su cliente, el proveedor dueño o un ADMIN) | R2 |
 | GET | `/api/proveedor/reservas?estado=&page=&size=` | P | Reservas de las herramientas del proveedor | R2 |
 | GET | `/api/admin/reservas?estado=&clienteId=&herramientaId=&desde=&hasta=&page=&size=` | A | Historial con filtros | R2 |
+| PATCH | `/api/reservas/{id}/reprogramar` | C (dueño) | Cambia las fechas de su reserva `PENDIENTE`; recalcula el total con la tarifa vigente (409 si se cruza con otra) | — |
 | PATCH | `/api/reservas/{id}/aceptar` | P (dueño), A | `PENDIENTE` → `ACEPTADA` | R2 |
 | PATCH | `/api/reservas/{id}/rechazar` | P (dueño), A | `PENDIENTE` → `RECHAZADA` | R2 |
 | PATCH | `/api/reservas/{id}/entregar` | P (dueño), A | `ACEPTADA` y pagada → `ENTREGADA` | R2 |

@@ -61,7 +61,8 @@ public class ReservaRepositoryAdapter implements ReservaRepository {
     /**
      * saveAndFlush fuerza el INSERT/UPDATE dentro del método, así la violación de
      * la restricción de exclusión llega aquí y se traduce a la excepción de
-     * dominio (409) en vez de salir como un error genérico al hacer commit.
+     * dominio (409) en vez de salir como un error genérico al hacer commit. Cubre
+     * tanto el alta como el UPDATE de una reprogramación (el mismo save, con id).
      *
      * TÉCNICA AVANZADA (Spring Data): `saveAndFlush`
      *   Qué hace: `save` solo deja el cambio pendiente en memoria y el SQL se ejecuta al final de la
@@ -130,6 +131,14 @@ public class ReservaRepositoryAdapter implements ReservaRepository {
     @Transactional(readOnly = true)
     public boolean existeSolapamiento(Long herramientaId, RangoFechas rango) {
         return jpaRepository.existeSolapamiento(herramientaId, rango.inicio(), rango.fin(), ESTADOS_QUE_BLOQUEAN);
+    }
+
+    /** Como existeSolapamiento, sin contar la reserva indicada. */
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existeSolapamientoExcluyendo(Long herramientaId, RangoFechas rango, Long reservaId) {
+        return jpaRepository.existeSolapamientoExcluyendo(herramientaId, rango.inicio(), rango.fin(),
+                ESTADOS_QUE_BLOQUEAN, reservaId);
     }
 
     /**

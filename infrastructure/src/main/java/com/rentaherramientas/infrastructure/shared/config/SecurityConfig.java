@@ -77,6 +77,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/reservas").hasRole(CLIENTE)
                         .requestMatchers(HttpMethod.GET, "/api/reservas/mias").hasRole(CLIENTE)
                         .requestMatchers(HttpMethod.PATCH, "/api/reservas/*/cancelar").hasRole(CLIENTE)
+                        // Antes de PATCH /api/reservas/*/*: si no, esa regla (PROVEEDOR/ADMIN) ganaría.
+                        .requestMatchers(HttpMethod.PATCH, "/api/reservas/*/reprogramar").hasRole(CLIENTE)
                         .requestMatchers(HttpMethod.PATCH, "/api/reservas/*/*").hasAnyRole(PROVEEDOR, ADMIN)
                         .requestMatchers(HttpMethod.POST, "/api/reservas/*/danios").hasAnyRole(PROVEEDOR, ADMIN)
                         // Pagos y facturas: el cliente paga y consulta los suyos; el proveedor (dueño) o

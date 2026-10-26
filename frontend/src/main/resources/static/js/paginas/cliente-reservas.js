@@ -1,6 +1,7 @@
 /**
  * Cliente · Mis reservas: filtro por estado, detalle con reportes de daño y pago
- * de las reservas ACEPTADAS (modal con el método de pago).
+ * de las reservas ACEPTADAS (modal con el método de pago) y reprogramar o
+ * cancelar las PENDIENTES.
  */
 import { api } from '../api.js';
 import { requerirSesion } from '../auth.js';
@@ -8,8 +9,8 @@ import { nombreHerramienta } from '../datos.js';
 import { montarLayout } from '../layout.js';
 import { crearListado, filtrosEnUrl } from '../listado.js';
 import {
-  abrirModal, badge, badgeEstado, botonAccion, confirmar, cop, datos, el, fechaHora, modalFormulario, rangoFechas,
-  tabla, toast,
+  abrirModal, badge, badgeEstado, botonAccion, campo, confirmar, cop, datos, el, fechaHora, hoyIso, modalFormulario,
+  rangoFechas, tabla, toast,
   toastError,
 } from '../ui.js';
 
@@ -89,6 +90,7 @@ function iniciar() {
     const cancelable = reserva.estado === 'PENDIENTE';
     return el('div', { class: 'acciones' },
       botonAccion('Detalle', 'btn--fantasma', async () => verDetalle(reserva, nombre), { 'aria-label': `Ver detalle de la reserva de ${nombre}` }),
+      cancelable ? botonAccion('Reprogramar', 'btn--secundario', async () => reprogramar(reserva, nombre), { 'aria-label': `Reprogramar la reserva de ${nombre}` }) : null,
       cancelable ? botonAccion('Cancelar', 'btn--peligro', async () => cancelar(reserva, nombre), { 'aria-label': `Cancelar la reserva de ${nombre}` }) : null,
       puedePagar ? botonAccion('Pagar', 'btn--primario', async () => pagar(reserva, nombre), { 'aria-label': `Pagar la reserva de ${nombre}` }) : null);
   }
@@ -147,6 +149,24 @@ function iniciar() {
       toast('Pago en efectivo registrado: el proveedor lo confirmará cuando lo reciba.', 'info', 7000);
     }
     await listado.recargar();
+  }
+
+  async function reprogramar(reserva, nombre) {
+    const hoy = hoyIso();
+    const actualizada = await modalFormulario({
+      titulo: `Reprogramar reserva de ${nombre}`,
+      textoEnviar: 'Reprogramar',
+      campos: [
+        el('p', { class: 'texto-sm texto-suave', text: `Fechas actuales: ${rangoFechas(reserva.fechaInicio, reserva.fechaFin)}. El total se recalcula con la tarifa vigente (máximo 30 días).` }),
+        campo({ etiqueta: 'Fecha de inicio', nombre: 'fechaInicio', tipo: 'date', valor: reserva.fechaInicio, requerido: true, atributos: { min: hoy } }),
+        campo({ etiqueta: 'Fecha de fin', nombre: 'fechaFin', tipo: 'date', valor: reserva.fechaFin, requerido: true, atributos: { min: hoy } }),
+      ],
+      alEnviar: (valores) => api.patch(`/reservas/${reserva.id}/reprogramar`, valores),
+    });
+    if (actualizada) {
+      toast(`Reserva reprogramada: ${rangoFechas(actualizada.fechaInicio, actualizada.fechaFin)}. Nuevo total: ${cop(actualizada.precioTotal)}.`, 'exito', 7000);
+      await listado.recargar();
+    }
   }
 
   async function cancelar(reserva, nombre){

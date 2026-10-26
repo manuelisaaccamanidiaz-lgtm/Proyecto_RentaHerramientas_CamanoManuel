@@ -18,6 +18,8 @@ import com.rentaherramientas.application.rental.usecase.RegistrarEntregaService;
 import com.rentaherramientas.application.rental.usecase.RegistrarEntregaUseCase;
 import com.rentaherramientas.application.rental.usecase.ReportarDanioService;
 import com.rentaherramientas.application.rental.usecase.ReportarDanioUseCase;
+import com.rentaherramientas.application.rental.usecase.ReprogramarReservaService;
+import com.rentaherramientas.application.rental.usecase.ReprogramarReservaUseCase;
 import com.rentaherramientas.application.rental.usecase.VencerReservasService;
 import com.rentaherramientas.application.rental.usecase.VencerReservasUseCase;
 import com.rentaherramientas.application.shared.port.PublicadorEventos;
@@ -84,6 +86,16 @@ public class RentalBeansConfig {
                                                   UnidadDeTrabajo unidadDeTrabajo,
                                                   PublicadorEventos publicadorEventos) {
         return new CancelarReservaService(reservaRepository, unidadDeTrabajo, publicadorEventos);
+    }
+
+    /** Bean del caso de uso de reprogramar reservas (lo hace el cliente). */
+    @Bean
+    ReprogramarReservaUseCase reprogramarReservaUseCase(ReservaRepository reservaRepository,
+                                                        CatalogoHerramientas catalogoHerramientas,
+                                                        UnidadDeTrabajo unidadDeTrabajo,
+                                                        PublicadorEventos publicadorEventos, Clock relojNegocio) {
+        return new ReprogramarReservaService(reservaRepository, catalogoHerramientas, unidadDeTrabajo,
+                publicadorEventos, relojNegocio);
     }
 
     /** Bean del caso de uso de registrar entregas. */

@@ -47,6 +47,9 @@ public interface ReservaRepository {
      */
     boolean existeSolapamiento(Long herramientaId, RangoFechas rango);
 
+    /** Igual que existeSolapamiento pero sin contar la propia reserva (al reprogramarla). */
+    boolean existeSolapamientoExcluyendo(Long herramientaId, RangoFechas rango, Long reservaId);
+
     /** Búsqueda paginada con filtros opcionales, de la más reciente a la más antigua. */
     Pagina<Reserva> buscar(CriteriosBusquedaReserva criterios);
 

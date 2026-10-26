@@ -10,6 +10,7 @@ import com.rentaherramientas.application.rental.usecase.RechazarReservaUseCase;
 import com.rentaherramientas.application.rental.usecase.RegistrarDevolucionUseCase;
 import com.rentaherramientas.application.rental.usecase.RegistrarEntregaUseCase;
 import com.rentaherramientas.application.rental.usecase.ReportarDanioUseCase;
+import com.rentaherramientas.application.rental.usecase.ReprogramarReservaUseCase;
 import com.rentaherramientas.application.shared.dto.PaginaResponse;
 import com.rentaherramientas.domain.rental.model.valueobject.EstadoReserva;
 import com.rentaherramientas.infrastructure.shared.adapters.in.rest.SolicitanteJwt;
@@ -51,6 +52,7 @@ public class ReservaController {
     private final AceptarReservaUseCase aceptarReserva;
     private final RechazarReservaUseCase rechazarReserva;
     private final CancelarReservaUseCase cancelarReserva;
+    private final ReprogramarReservaUseCase reprogramarReserva;
     private final RegistrarEntregaUseCase registrarEntrega;
     private final RegistrarDevolucionUseCase registrarDevolucion;
     private final ReportarDanioUseCase reportarDanio;
@@ -58,13 +60,15 @@ public class ReservaController {
 
     /** Recibe los casos de uso por constructor (inyección de dependencias de Spring). */
     public ReservaController(CrearReservaUseCase crearReserva, AceptarReservaUseCase aceptarReserva,
-                             RechazarReservaUseCase rechazarReserva, CancelarReservaUseCase cancelarReserva, RegistrarEntregaUseCase registrarEntrega,
+                             RechazarReservaUseCase rechazarReserva, CancelarReservaUseCase cancelarReserva,
+                             ReprogramarReservaUseCase reprogramarReserva, RegistrarEntregaUseCase registrarEntrega,
                              RegistrarDevolucionUseCase registrarDevolucion, ReportarDanioUseCase reportarDanio,
                              ConsultarReservasUseCase consultarReservas) {
         this.crearReserva = crearReserva;
         this.aceptarReserva = aceptarReserva;
         this.rechazarReserva = rechazarReserva;
         this.cancelarReserva = cancelarReserva;
+        this.reprogramarReserva = reprogramarReserva;
         this.registrarEntrega = registrarEntrega;
         this.registrarDevolucion = registrarDevolucion;
         this.reportarDanio = reportarDanio;
@@ -191,6 +195,68 @@ public class ReservaController {
     @Operation(summary = "Cancela la reserva hecha por el CLIENTE")
     public ReservaResponse cancelar(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
         return cancelarReserva.cancelar(id, SolicitanteJwt.desde(jwt));
+    }
+
+    /** PATCH /api/reservas/{id}/reprogramar : el cliente cambia las fechas de su reserva PENDIENTE. */
+    @PatchMapping("/api/reservas/{id}/reprogramar")
+    @Operation(summary = "Reprograma una reserva PENDIENTE propia (solo CLIENTE)",
+            description = "Mismas reglas de fechas que al crear (desde hoy, máximo 30 días). El total se recalcula "
+                    + "con la tarifa vigente de la herramienta (con su descuento). La propia reserva no cuenta como "
+                    + "cruce; cualquier otra reserva activa en esas fechas sí.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Reserva reprogramada, con el nuevo precio total",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ReservaResponse.class),
+                            examples = @ExampleObject(name = "Reserva reprogramada", value = """
+                                    {
+                                      "id": 15,
+                                      "herramientaId": 7,
+                                      "clienteId": 22,
+                                      "fechaInicio": "2026-11-03",
+                                      "fechaFin": "2026-11-05",
+                                      "dias": 3,
+                                      "estado": "PENDIENTE",
+                                      "precioTotal": 135000.00,
+                                      "moneda": "COP",
+                                      "pagada": false,
+                                      "fechaEntrega": null,
+                                      "fechaDevolucion": null,
+                                      "creadoEn": "2026-10-19T09:42:13.512",
+                                      "reportesDanio": []
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "400", description = "Fechas inválidas (en el pasado, fin antes de inicio o "
+                    + "más de 30 días)", content = @Content),
+            @ApiResponse(responseCode = "403", description = "No es CLIENTE o la reserva es de otro cliente",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "La reserva no existe", content = @Content),
+            @ApiResponse(responseCode = "409",
+                    description = "La reserva no está PENDIENTE o las fechas se cruzan con otra reserva activa",
+                    content = @Content(mediaType = "application/problem+json",
+                            examples = {
+                                    @ExampleObject(name = "No reprogramable", value = """
+                                            {
+                                              "type": "about:blank",
+                                              "title": "Regla de negocio incumplida",
+                                              "status": 409,
+                                              "detail": "Solo se pueden reprogramar reservas PENDIENTE; la reserva está ACEPTADA",
+                                              "instance": "/api/reservas/15/reprogramar"
+                                            }
+                                            """),
+                                    @ExampleObject(name = "Reserva solapada", value = """
+                                            {
+                                              "type": "about:blank",
+                                              "title": "Regla de negocio incumplida",
+                                              "status": 409,
+                                              "detail": "La herramienta 7 ya está reservada entre 2026-11-03 y 2026-11-05",
+                                              "instance": "/api/reservas/15/reprogramar"
+                                            }
+                                            """)
+                            }))
+    })
+    public ReservaResponse reprogramar(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id,
+                                       @Valid @RequestBody ReprogramarReservaRequest request) {
+        return reprogramarReserva.reprogramar(request.toCommand(id, SolicitanteJwt.desde(jwt)));
     }
 
     /** PATCH /api/reservas/{id}/entregar : registra la entrega de una reserva ACEPTADA y pagada. */

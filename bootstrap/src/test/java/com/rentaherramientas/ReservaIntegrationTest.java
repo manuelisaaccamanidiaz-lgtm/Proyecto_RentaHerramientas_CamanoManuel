@@ -1,6 +1,7 @@
 package com.rentaherramientas;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -99,6 +100,44 @@ class ReservaIntegrationTest extends IntegracionBase {
 
         crearReserva(HOY.plusDays(12), HOY.plusDays(14))
                 .andExpect(status().isConflict());
+    }
+
+    private ResultActions reprogramar(String token, long reservaId, LocalDate inicio, LocalDate fin) throws Exception {
+        return mvc.perform(conJson(patch("/api/reservas/{id}/reprogramar", reservaId), token, """
+                {"fechaInicio": "%s", "fechaFin": "%s"}
+                """.formatted(inicio, fin)));
+    }
+
+    @Test
+    @DisplayName("reservar → reprogramar a fechas libres → 200 con el nuevo precio y aviso al proveedor")
+    void reprogramarAFechasLibres() throws Exception {
+        long reservaId = leerId(crearReserva(HOY.plusDays(5), HOY.plusDays(7))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.precioTotal").value(75000)));
+
+        reprogramar(tokenCliente, reservaId, HOY.plusDays(15), HOY.plusDays(16))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("PENDIENTE"))
+                .andExpect(jsonPath("$.fechaInicio").value(HOY.plusDays(15).toString()))
+                .andExpect(jsonPath("$.dias").value(2))
+                .andExpect(jsonPath("$.precioTotal").value(50000));
+
+        // Las fechas antiguas quedaron libres: otra reserva en ellas ya no se cruza.
+        crearReserva(HOY.plusDays(5), HOY.plusDays(7)).andExpect(status().isCreated());
+
+        mvc.perform(conToken(get("/api/notificaciones/mias"), tokenProveedor))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contenido[?(@.mensaje =~ /El cliente reprogramó la reserva #%d.*/)]"
+                        .formatted(reservaId)).exists());
+    }
+
+    @Test
+    @DisplayName("reprogramar: el PROVEEDOR recibe 403 (la regla de CLIENTE va antes de PATCH /*/*)")
+    void reprogramarSoloCliente() throws Exception {
+        long reservaId = leerId(crearReserva(HOY.plusDays(5), HOY.plusDays(6)).andExpect(status().isCreated()));
+
+        reprogramar(tokenProveedor, reservaId, HOY.plusDays(8), HOY.plusDays(9))
+                .andExpect(status().isForbidden());
     }
 
     @Test

@@ -8,21 +8,26 @@ import com.rentaherramientas.domain.notification.port.repository.NotificacionRep
 import com.rentaherramientas.domain.rental.event.ReservaAceptada;
 import com.rentaherramientas.domain.rental.event.ReservaCancelada;
 import com.rentaherramientas.domain.rental.event.ReservaRechazada;
+import com.rentaherramientas.domain.rental.event.ReservaReprogramada;
 import com.rentaherramientas.domain.rental.event.ReservaSolicitada;
+import com.rentaherramientas.domain.rental.model.valueobject.RangoFechas;
 import com.rentaherramientas.domain.shared.event.DomainEvent;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 
 /**
  * Decide a quién avisar de cada evento y con qué texto:
- * ReservaSolicitada y ReservaCancelada → proveedor de la herramienta;
+ * ReservaSolicitada, ReservaCancelada y ReservaReprogramada → proveedor de la herramienta;
  * ReservaAceptada y ReservaRechazada → cliente; PagoAprobado → cliente (con el
  * número de factura) y proveedor. Si la herramienta o la reserva ya no existen
  * no hay a quién avisar y no se crea nada.
  */
 public class NotificarEventoService implements NotificarEventoUseCase {
+
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final NotificacionRepository notificacionRepository;
     private final ConsultaDestinatarios consultaDestinatarios;
@@ -56,6 +61,9 @@ public class NotificarEventoService implements NotificarEventoUseCase {
             case ReservaCancelada e -> conHerramienta(e.herramientaId(), h ->
                     crear(h.proveedorId(), "El cliente canceló la reserva #" + e.reservaId() + " de "
                             + h.nombre() + "."));
+            case ReservaReprogramada e -> conHerramienta(e.herramientaId(), h ->
+                    crear(h.proveedorId(), "El cliente reprogramó la reserva #" + e.reservaId() + " de "
+                            + h.nombre() + " al " + fechas(e.rangoNuevo()) + "."));
             case PagoAprobado e -> notificarPagoAprobado(e);
             default -> {
                 // El resto de eventos (entregas, devoluciones, daños...) no genera avisos por ahora.
@@ -81,6 +89,12 @@ public class NotificarEventoService implements NotificarEventoUseCase {
     /** Ejecuta la acción solo si la herramienta sigue existiendo. */
     private void conHerramienta(Long herramientaId, Consumer<HerramientaNotificable> accion) {
         consultaDestinatarios.herramienta(herramientaId).ifPresent(accion);
+    }
+
+    /** "01/11/2026 – 03/11/2026"; un solo día se muestra una vez. */
+    private static String fechas(RangoFechas rango) {
+        String inicio = rango.inicio().format(FORMATO_FECHA);
+        return rango.dias() == 1 ? inicio : inicio + " – " + rango.fin().format(FORMATO_FECHA);
     }
 
     private void crear(Long usuarioId, String mensaje) {
