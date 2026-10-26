@@ -64,7 +64,8 @@ function iniciar() {
       toast('Categoría eliminada.', 'exito');
       await cargar();
     } catch (error) {
-      toastError(error, error.status === 409 ? 'No se puede eliminar porque está en uso' : undefined);
+      // El detail del 409 ya explica que la categoría está en uso: se muestra tal cual.
+      toastError(error);
     }
   }
 

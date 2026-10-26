@@ -1,6 +1,8 @@
 package com.rentaherramientas.infrastructure.catalog.adapters.out.persistence;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -24,4 +26,13 @@ public interface CategoriaJpaRepository extends JpaRepository<CategoriaEntity, L
      *     comprueba que existen N ids con una sola consulta.
      */
     long countByIdIn(Collection<Long> ids);
+
+    /**
+     * true si alguna herramienta usa la categoría. Consulta nativa porque la tabla
+     * de unión herramienta_categorias no tiene entidad propia; `exists` se detiene
+     * en la primera fila (usa ix_herramienta_categorias_categoria_id).
+     */
+    @Query(value = "select exists(select 1 from herramienta_categorias where categoria_id = :id)",
+            nativeQuery = true)
+    boolean estaEnUso(@Param("id") Long id);
 }

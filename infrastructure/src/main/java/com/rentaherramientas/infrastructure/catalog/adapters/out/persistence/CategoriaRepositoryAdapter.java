@@ -70,6 +70,13 @@ public class CategoriaRepositoryAdapter implements CategoriaRepository {
         return distintos.isEmpty() || jpaRepository.countByIdIn(distintos) == distintos.size();
     }
 
+    /** Indica si alguna herramienta usa la categoría. */
+    @Override
+    @Transactional(readOnly = true)
+    public boolean estaEnUso(Long categoriaId) {
+        return jpaRepository.estaEnUso(categoriaId);
+    }
+
     /**
      * El flush fuerza el DELETE dentro del método: si la FK lo rechaza, la
      * excepción sale ya traducida a DataIntegrityViolationException.

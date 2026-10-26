@@ -1,12 +1,15 @@
 package com.rentaherramientas.application.catalog.usecase;
 
+import com.rentaherramientas.application.catalog.exception.CategoriaEnUsoException;
 import com.rentaherramientas.application.catalog.exception.CategoriaNoEncontradaException;
+import com.rentaherramientas.domain.catalog.model.aggregate.Categoria;
 import com.rentaherramientas.domain.catalog.port.repository.CategoriaRepository;
 
 /**
- * Elimina una categoría. Si alguna herramienta la usa, la FK
- * fk_herramienta_categorias_categoria impide el borrado y el adaptador REST
- * responde 409: así la regla no depende de una comprobación previa con carreras.
+ * Elimina una categoría que ninguna herramienta usa. La comprobación previa da un
+ * 409 con un mensaje claro; la FK fk_herramienta_categorias_categoria (sin cascade)
+ * sigue siendo la red de seguridad si otra petición asigna la categoría entre la
+ * comprobación y el DELETE.
  */
 public class EliminarCategoriaService implements EliminarCategoriaUseCase {
 
@@ -17,11 +20,13 @@ public class EliminarCategoriaService implements EliminarCategoriaUseCase {
         this.categoriaRepository = categoriaRepository;
     }
 
-    /** Elimina la categoría; lanza 404 si no existe. */
+    /** Elimina la categoría; lanza 404 si no existe y 409 si está en uso. */
     @Override
     public void eliminar(Long id) {
-        if (categoriaRepository.buscarPorId(id).isEmpty()) {
-            throw new CategoriaNoEncontradaException(id);
+        Categoria categoria = categoriaRepository.buscarPorId(id)
+                .orElseThrow(() -> new CategoriaNoEncontradaException(id));
+        if (categoriaRepository.estaEnUso(id)) {
+            throw new CategoriaEnUsoException(categoria.getNombre());
         }
         categoriaRepository.eliminar(id);
     }

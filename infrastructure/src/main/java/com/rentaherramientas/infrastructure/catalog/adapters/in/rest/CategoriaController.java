@@ -6,6 +6,10 @@ import com.rentaherramientas.application.catalog.usecase.ConsultarCategoriaUseCa
 import com.rentaherramientas.application.catalog.usecase.CrearCategoriaUseCase;
 import com.rentaherramientas.application.catalog.usecase.EliminarCategoriaUseCase;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -80,7 +84,24 @@ public class CategoriaController {
     /** DELETE /api/categorias/{id} : elimina la categoría y responde 204 No Content. */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Elimina una categoría sin herramientas (solo ADMIN); si está en uso responde 409")
+    @Operation(summary = "Elimina una categoría sin herramientas (solo ADMIN)",
+            description = "Si alguna herramienta tiene asignada la categoría, responde 409 y no la borra.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Categoría eliminada", content = @Content),
+            @ApiResponse(responseCode = "403", description = "El usuario no es ADMIN", content = @Content),
+            @ApiResponse(responseCode = "404", description = "La categoría no existe", content = @Content),
+            @ApiResponse(responseCode = "409", description = "La categoría está en uso por alguna herramienta",
+                    content = @Content(mediaType = "application/problem+json",
+                            examples = @ExampleObject(name = "Categoría en uso", value = """
+                                    {
+                                      "type": "about:blank",
+                                      "title": "Conflicto",
+                                      "status": 409,
+                                      "detail": "No se puede eliminar la categoría Corte porque tiene herramientas asociadas; quítala de esas herramientas primero",
+                                      "instance": "/api/categorias/2"
+                                    }
+                                    """)))
+    })
     public void eliminar(@PathVariable Long id) {
         eliminarCategoria.eliminar(id);
     }

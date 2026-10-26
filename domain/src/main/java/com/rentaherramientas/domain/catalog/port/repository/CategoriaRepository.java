@@ -29,6 +29,9 @@ public interface CategoriaRepository {
     /** true si existen todas las categorías con esos ids (los duplicados se ignoran). */
     boolean existenTodas(Collection<Long> ids);
 
+    /** true si alguna herramienta tiene asignada la categoría. */
+    boolean estaEnUso(Long categoriaId);
+
     /** Si la categoría está en uso por alguna herramienta, la FK de la BD impide borrarla. */
     void eliminar(Long id);
 }
